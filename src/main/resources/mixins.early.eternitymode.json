@@ -1,0 +1,12 @@
+{
+	"package": "org.sporotofpoorety.eternitymode.mixins",
+	"required": true,
+	"refmap": "mixins.eternitymode.refmap.json",
+	"target": "@env(DEFAULT)",
+	"minVersion": "0.8.5",
+	"compatibilityLevel": "JAVA_8",
+	"mixins": [
+    ],
+	"server": [],
+	"client": []
+}
