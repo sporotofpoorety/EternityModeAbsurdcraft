@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
 
 
 import org.sporotofpoorety.eternitymode.Tags;
+import org.sporotofpoorety.eternitymode.entity.*;
 import org.sporotofpoorety.eternitymode.entity.projectile.*;
 
 
@@ -87,14 +88,19 @@ public class EternityModeEntityRegistry
 
 
 //IDs go up
-    private static int id = 6769;
+    private static int id = 676869;
 //List of entities to register
     @SubscribeEvent
     public static void registerEntities(RegistryEvent.Register<EntityEntry> event) 
     {
 
 //Pass this entity register event, the entity class, name and id
-        registerUnspawnable(event, EntityFlameShotBurst.class, "flame_shot_burst", id++);
+        registerUnspawnable(event, EntityFlameShotBouncing.class, "flame_shot_bouncing", id++);
+        registerUnspawnable(event, EntityFlameShotHoming.class, "flame_shot_homing", id++);
         registerUnspawnable(event, EntityFlameShotLinear.class, "flame_shot_linear", id++);
+        registerUnspawnable(event, EntityFlameShotLinearSplits.class, "flame_shot_linear_splits", id++);
+        registerUnspawnable(event, EntityExplosiveShockwave.class, "explosive_shockwave", id++);
+        registerUnspawnable(event, EntityThrownBlock.class, "thrown_block", id++);
+        registerUnspawnable(event, EntityOrbVoidCustom.class, "void_orb_custom", id++);
     }
 }

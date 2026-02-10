@@ -2,11 +2,13 @@ package org.sporotofpoorety.eternitymode.config;
 
 import net.minecraftforge.common.config.Configuration;
 
-public class EternityModeConfigMobs {
+public class EternityModeConfigMobs 
+{
 
     public static int placeholderValue;
 
-	public static void load(Configuration config) {
+	public static void load(Configuration config) 
+    {
 		String category1 = "Placeholder category";
 
 //Adds config category

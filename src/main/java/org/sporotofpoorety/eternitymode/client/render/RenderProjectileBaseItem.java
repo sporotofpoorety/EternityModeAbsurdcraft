@@ -20,12 +20,12 @@ import net.minecraft.util.ResourceLocation;
 
 
 
-public class RenderProjectileItem<T extends Entity> extends Render<T>
+public class RenderProjectileBaseItem<T extends Entity> extends Render<T>
 {
     private final float scale;
     private final Item textureItem;
 
-    public RenderProjectileItem(RenderManager renderManagerIn, float scaleIn, Item item)
+    public RenderProjectileBaseItem(RenderManager renderManagerIn, float scaleIn, Item item)
     {
         super(renderManagerIn);
         this.scale = scaleIn;

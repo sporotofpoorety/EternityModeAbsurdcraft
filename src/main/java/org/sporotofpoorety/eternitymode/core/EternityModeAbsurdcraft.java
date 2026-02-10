@@ -1,6 +1,7 @@
 package org.sporotofpoorety.eternitymode.core;
 
 
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -10,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.sporotofpoorety.eternitymode.Tags;
 import org.sporotofpoorety.eternitymode.config.EternityModeConfig;
 import org.sporotofpoorety.eternitymode.core.EternityModeCommonProxy;
+import org.sporotofpoorety.eternitymode.events.EternityModePlayerEvents;
 
 
 
@@ -38,6 +40,7 @@ public class EternityModeAbsurdcraft {
 
         eternityModeProxy.registerRenderers();
 		EternityModeConfig.load(event);
+        MinecraftForge.EVENT_BUS.register(new EternityModePlayerEvents());
     }
 
 }

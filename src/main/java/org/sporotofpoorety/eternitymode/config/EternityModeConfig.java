@@ -16,24 +16,25 @@ public class EternityModeConfig
 {
 
 	static Configuration config;
+
+
 	public static void load(FMLPreInitializationEvent event) 
     {
 		File dir = getEternityModeConfigurationLocation(event);
-		
 		if(!dir.exists())
-		{
-			dir.mkdirs();
-		}
+		    { dir.mkdirs(); }
 
 		config = new Configuration(new File(dir, "eternitymode.cfg"));
 		reloadConfig();
 		
+
 		MinecraftForge.EVENT_BUS.register(new EternityModeConfig());
 	}
 
+
 	private static void reloadConfig() 
-    {
-		
+    {		
+		EternityModeConfigGeneral.load(config);
 		EternityModeConfigMobs.load(config);
 
 		if (config.hasChanged()) 
@@ -41,6 +42,7 @@ public class EternityModeConfig
 			config.save();
 		}
 	}
+
 
 	@SubscribeEvent
 	public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) 
@@ -51,6 +53,7 @@ public class EternityModeConfig
 		}
 	}
 	
+
 	public static File getEternityModeConfigurationLocation(FMLPreInitializationEvent event)
 	{
 		return new File(event.getModConfigurationDirectory(), "eternitymode");
