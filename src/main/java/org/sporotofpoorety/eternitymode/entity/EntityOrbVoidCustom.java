@@ -168,7 +168,7 @@ public class EntityOrbVoidCustom extends EntityOrbVoid {
 
             scatterBlock.setBlockNormal(false);
 
-            this.getEntityWorld().spawnEntity(scatterBlock);
+            if (!this.world.isRemote) { this.getEntityWorld().spawnEntity(scatterBlock); }
 
             System.out.println("Spawned test block at " + scatterBlock.posY);
         }
@@ -185,7 +185,7 @@ public class EntityOrbVoidCustom extends EntityOrbVoid {
 
             aimedBlock.setBlockNormal(false);
 
-            this.getEntityWorld().spawnEntity(aimedBlock);
+            if(!this.world.isRemote) { this.getEntityWorld().spawnEntity(aimedBlock); }
 
             System.out.println("Spawned test block at " + aimedBlock.posY);
         }
