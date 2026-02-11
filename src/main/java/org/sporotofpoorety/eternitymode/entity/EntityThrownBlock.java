@@ -19,6 +19,7 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.relauncher.Side;
@@ -42,7 +43,7 @@ public class EntityThrownBlock extends Entity
     public double expelRadians;
 
 
-    public double controllerInitialDistance;
+    public Vec3d controllerInitialVec;
     public double controllerGlueDistance;
     public boolean controllerReached;
     public boolean blockExpelled;
@@ -87,7 +88,7 @@ public class EntityThrownBlock extends Entity
         this.controllerOrbUUID = null;
         this.expelRadians = 6.9420D;
 
-        this.controllerInitialDistance = 6.9420D;
+        this.controllerInitialVec = new Vec3d(0.0D, -0.1D, 0.0D);
         this.controllerGlueDistance = 6.9420D;
         this.controllerReached = false;
         this.blockExpelled = false;
@@ -221,7 +222,7 @@ public class EntityThrownBlock extends Entity
         this.motionZ *= this.accelerationVal;
 
 
-        if (this.onGround)
+        if (this.onGround && this.dealsDamage)
         {
             this.motionX *= 0.699999988079071D;
             this.motionZ *= 0.699999988079071D;
@@ -244,7 +245,6 @@ public class EntityThrownBlock extends Entity
 //Validate controller and return if successful
     public boolean validateController()
     {
-        System.out.println("Reached validate controller");
         boolean checkSuccessful = false;
 
    
@@ -283,7 +283,6 @@ public class EntityThrownBlock extends Entity
 
     public void controlByOrb()
     {
-        System.out.println("Reached control by orb");
 //If at orb center
         if(this.controllerReached)
         {
@@ -316,10 +315,13 @@ public class EntityThrownBlock extends Entity
 //And first tick of orb growth
                 if(this.controllerOrb.getTimeSinceIgnited() == 1)
                 { 
-//Set initial distance to orb
-                    this.controllerInitialDistance = this.getDistance(this.controllerOrb);
+//Set initial vec to orb
+                    this.controllerInitialVec
+                        = new Vec3d(this.controllerOrb.posX - this.posX, this.controllerOrb.posY - this.posY, this.controllerOrb.posZ - this.posZ)
+                        .scale(1.0D / (controllerOrb.getFuseState() / 2.0D));
 //Set glue distance
-                    this.controllerGlueDistance = (controllerInitialDistance / (controllerOrb.getFuseState() / 2.0D)) * 2.0D;
+                    this.controllerGlueDistance 
+                    = 2.0D * controllerInitialVec.length();
 //Set block "not normal"
                     this.setBlockNormal(false);
                 }
@@ -327,9 +329,9 @@ public class EntityThrownBlock extends Entity
 
 //In any case, move to orb,
 //in a fraction of growth time + using orb motion
-                this.motionX = (controllerInitialDistance / (controllerOrb.getFuseState() / 2.0D)) + controllerOrb.motionX;
-                this.motionY = (controllerInitialDistance / (controllerOrb.getFuseState() / 2.0D)) + controllerOrb.motionY;
-                this.motionZ = (controllerInitialDistance / (controllerOrb.getFuseState() / 2.0D)) + controllerOrb.motionZ;
+                this.motionX = (controllerInitialVec.x + controllerOrb.motionX);
+                this.motionY = (controllerInitialVec.y + controllerOrb.motionY);
+                this.motionZ = (controllerInitialVec.z + controllerOrb.motionZ);
 
 
 //Check if close enough to orb to glue
@@ -538,7 +540,12 @@ public class EntityThrownBlock extends Entity
         if(this.controllerOrbUUID != null) { compound.setUniqueId("ControllerOrbUUID", this.controllerOrbUUID); }
         compound.setDouble("ExpelRadians", this.expelRadians);
 
-        compound.setDouble("ControllerInitialDistance", this.controllerInitialDistance);
+        if(this.controllerInitialVec != null)
+        {
+            compound.setDouble("ControllerInitialVecX", this.controllerInitialVec.x);
+            compound.setDouble("ControllerInitialVecY", this.controllerInitialVec.y);
+            compound.setDouble("ControllerInitialVecZ", this.controllerInitialVec.z);
+        }
         compound.setDouble("ControllerGlueDistance", this.controllerGlueDistance);
         compound.setBoolean("ControllerReached", this.controllerReached);
         compound.setBoolean("BlockExpelled", this.blockExpelled);
@@ -568,7 +575,10 @@ public class EntityThrownBlock extends Entity
         if (compound.hasKey("ControllerOrbUUID")) { this.controllerOrbUUID = compound.getUniqueId("ControllerOrbUUID"); }
         if (compound.hasKey("ExpelRadians")) { this.expelRadians = compound.getDouble("ExpelRadians"); }
 
-        if (compound.hasKey("ControllerInitialDistance")) { this.controllerInitialDistance = compound.getDouble("ControllerInitialDistance"); }
+        if (compound.hasKey("ControllerInitialVecX") 
+        && compound.hasKey("ControllerInitialVecY") && compound.hasKey("ControllerInitialVecZ")) 
+            { this.controllerInitialVec = new Vec3d(compound.getDouble("ControllerInitialVecX"), 
+            compound.getDouble("ControllerInitialVecY"), compound.getDouble("ControllerInitialVecZ")); }
         if (compound.hasKey("ControllerGlueDistance")) { this.controllerGlueDistance = compound.getDouble("ControllerGlueDistance"); }
         if (compound.hasKey("ControllerReached")) { this.controllerReached = compound.getBoolean("ControllerReached"); }
         if (compound.hasKey("BlockExpelled")) { this.blockExpelled = compound.getBoolean("BlockExpelled"); }
@@ -597,5 +607,9 @@ public class EntityThrownBlock extends Entity
         if (compound.hasKey("AcceleratesVertically")) { this.acceleratesVertically = compound.getBoolean("AcceleratesVertically"); }
         if (compound.hasKey("AccelerationVal")) { this.accelerationVal = compound.getDouble("AccelerationVal"); }
     }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public boolean isInvisible() { return true; }
 }
 

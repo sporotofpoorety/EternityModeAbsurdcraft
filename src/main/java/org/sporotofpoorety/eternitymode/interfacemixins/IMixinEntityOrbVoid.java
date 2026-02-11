@@ -3,7 +3,9 @@ package org.sporotofpoorety.eternitymode.interfacemixins;
 
 public interface IMixinEntityOrbVoid
 {
-    public boolean getOrbVoidIsAbsurdcraft();
+    void whenOrbStartsGrowing();
 
-    public void setOrbVoidIsAbsurdcraft(boolean isAbsurdcraft);
+    boolean getOrbVoidIsAbsurdcraft();
+
+    void setOrbVoidIsAbsurdcraft(boolean isAbsurdcraft);
 }

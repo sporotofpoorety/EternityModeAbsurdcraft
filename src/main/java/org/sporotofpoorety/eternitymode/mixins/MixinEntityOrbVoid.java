@@ -55,7 +55,7 @@ import org.sporotofpoorety.eternitymode.interfacemixins.IMixinEntityOrbVoid;
 
 
 
-@Mixin(value = EntityOrbVoid.class, remap = false)
+@Mixin(value = EntityOrbVoid.class, remap = true)
 //Abstract since mixins should not be instantiated
 public abstract class MixinEntityOrbVoid implements IMixinEntityOrbVoid
 {
@@ -83,32 +83,6 @@ public abstract class MixinEntityOrbVoid implements IMixinEntityOrbVoid
         return !this.getOrbVoidIsAbsurdcraft();
     }
 
-
-
-
-//Perform action when orb starts growing
-    @Inject
-    (
-        method = "onUpdate",
-        at = @At("TAIL")
-    )
-    private void onUpdateOnGrowth(CallbackInfo callInfo)
-    {
-        EntityOrbVoid self = (EntityOrbVoid) (Object) this;
-        Entity selfEntity = (Entity) (Object) this;
-
-        System.out.println("Reached mixin orb growth");
-
-//When orb at end of wait phase
-        if(selfEntity.ticksExisted == self.getStartState())
-        {
-            System.out.println("Reached mixin orb growth tick check");
-
-//Perform a function for start of growing
-            this.whenOrbStartsGrowing();
-            System.out.println("Reached mixin orb growth instanceof");
-        }
-    }
 
 
 

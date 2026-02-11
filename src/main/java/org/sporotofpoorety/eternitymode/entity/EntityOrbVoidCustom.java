@@ -124,7 +124,6 @@ public class EntityOrbVoidCustom extends EntityOrbVoid {
 
     public void setCustomOrbVoid()
     {
-        System.out.println("PLEASE PRINT SOMETHING");
         orbVoidMixin = (IMixinEntityOrbVoid) this;
 
         orbVoidMixin.setOrbVoidIsAbsurdcraft(true);
@@ -133,10 +132,22 @@ public class EntityOrbVoidCustom extends EntityOrbVoid {
 
 
 
+    public void onUpdate()
+    {
+        super.onUpdate();
+
+        if(this.ticksExisted == this.getStartState())
+        {
+//Perform a function for start of growing
+            this.whenOrbStartsGrowing();
+        }
+    }
+
+
+
+
     public void whenOrbStartsGrowing()
     {
-        System.out.println("Reached custom orb growth");
-
 //Generate and return 150/100 blocks
 //in a random 64 cube, no owner, breaks them conditionally
         ArrayList<EntityThrownBlock> scatterBlocks = EntityUtil.generateAndReturnRandomBlocks(this,
@@ -155,6 +166,8 @@ public class EntityOrbVoidCustom extends EntityOrbVoid {
             scatterBlock.controlMode = 1;
             scatterBlock.controllerReleaseMode = 1;
 
+            scatterBlock.setBlockNormal(false);
+
             this.getEntityWorld().spawnEntity(scatterBlock);
 
             System.out.println("Spawned test block at " + scatterBlock.posY);
@@ -169,6 +182,8 @@ public class EntityOrbVoidCustom extends EntityOrbVoid {
 
             aimedBlock.controlMode = 1;
             aimedBlock.controllerReleaseMode = 2;
+
+            aimedBlock.setBlockNormal(false);
 
             this.getEntityWorld().spawnEntity(aimedBlock);
 
