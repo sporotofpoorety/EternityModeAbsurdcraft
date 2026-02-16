@@ -5,7 +5,6 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.IProjectile;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
@@ -19,10 +18,14 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-public class EntityProjectileRaytrace extends Entity implements IProjectile {
+import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
 
-    public EntityLivingBase owner;
-    protected NBTTagCompound ownerNbt;
+
+
+
+public class EntityProjectileRaytrace extends EntityWithOwner
+{
+
     public int maxLifetime;
     public boolean firstBeenShot;
 
@@ -52,7 +55,7 @@ public class EntityProjectileRaytrace extends Entity implements IProjectile {
     int splitProjectileCount = 50; 
     double splitConeRadians = Math.PI;
     int splitAimMode = 0;
-    float splitDamage = 5.0F; 
+    float splitDamage = 1.0F; 
     double splitSpeed = 1.0D;
     double splitAcceleration = 1.01D;
 
@@ -87,7 +90,7 @@ public class EntityProjectileRaytrace extends Entity implements IProjectile {
 
     public EntityProjectileRaytrace(World worldIn, EntityLivingBase owner)
     {
-        super(worldIn);
+        super(worldIn, owner);
 
         this.setNoGravity(true);
 
@@ -122,11 +125,10 @@ public class EntityProjectileRaytrace extends Entity implements IProjectile {
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage,
     int particleLifetime, int particleDensity, double particleVelocity)
     {
-        super(worldIn);
+        super(worldIn, owner);
 
         this.setNoGravity(true);
 
-        this.owner = owner;
         if(this.owner != null) { this.setPosition(owner.posX, owner.posY + (double) owner.getEyeHeight() - 0.10000000149011612D, owner.posZ); }
         else { this.setPosition(manualPosX, manualPosY, manualPosZ); }
 
@@ -163,18 +165,12 @@ public class EntityProjectileRaytrace extends Entity implements IProjectile {
     {
         super.onUpdate();
 
+
 //Implemented lifetime
         if (!world.isRemote && this.ticksExisted > this.maxLifetime) 
         {
             this.onTrueSetDead();
             this.setDead();
-        }
-
-
-//Inefficient vanilla owner restoration but eh it works
-        if (this.ownerNbt != null)
-        {
-            this.restoreOwnerFromSave();
         }
 
 
@@ -496,63 +492,8 @@ public class EntityProjectileRaytrace extends Entity implements IProjectile {
 
 
 
-    public void shoot(double x, double y, double z, float velocity, float inaccuracy)
-    {
-        float f = MathHelper.sqrt(x * x + y * y + z * z);
-        x = x / (double)f;
-        y = y / (double)f;
-        z = z / (double)f;
-        x = x + this.rand.nextGaussian() * 0.007499999832361937D * (double)inaccuracy;
-        y = y + this.rand.nextGaussian() * 0.007499999832361937D * (double)inaccuracy;
-        z = z + this.rand.nextGaussian() * 0.007499999832361937D * (double)inaccuracy;
-        x = x * (double)velocity;
-        y = y * (double)velocity;
-        z = z * (double)velocity;
-        this.motionX = x;
-        this.motionY = y;
-        this.motionZ = z;
-        float horizontalSpeed = MathHelper.sqrt(x * x + z * z);
-        this.rotationYaw = (float)(MathHelper.atan2(x, z) * (180D / Math.PI));
-        this.rotationPitch = (float)(MathHelper.atan2(y, horizontalSpeed) * (180D / Math.PI));
-        this.prevRotationYaw = this.rotationYaw;
-        this.prevRotationPitch = this.rotationPitch;
-    }
-
-
-
-
-    private void restoreOwnerFromSave()
-    {
-        if (this.ownerNbt != null && this.ownerNbt.hasUniqueId("OwnerUUID"))
-        {
-            UUID uuid = this.ownerNbt.getUniqueId("OwnerUUID");
-
-            for (EntityLivingBase livingBase : this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().grow(15.0D)))
-            {
-                if (livingBase.getUniqueID().equals(uuid))
-                {
-                    this.owner = livingBase;
-                    break;
-                }
-            }
-        }
-
-        this.ownerNbt = null;
-    }
-
-
     protected void writeEntityToNBT(NBTTagCompound compound)
     {
-
-        if (this.owner != null)
-        {
-            NBTTagCompound nbttagcompound = new NBTTagCompound();
-            UUID uuid = this.owner.getUniqueID();
-            nbttagcompound.setUniqueId("OwnerUUID", uuid);
-            compound.setTag("Owner", nbttagcompound);
-        }
-
-
         compound.setInteger("MaxLifetime", this.maxLifetime);
         compound.setBoolean("FirstBeenShot", this.firstBeenShot);
 
@@ -590,12 +531,6 @@ public class EntityProjectileRaytrace extends Entity implements IProjectile {
 
     protected void readEntityFromNBT(NBTTagCompound compound)
     {
-        if (compound.hasKey("Owner", 10))
-        {
-            this.ownerNbt = compound.getCompoundTag("Owner");
-        }
-
-
         if (compound.hasKey("MaxLifetime")) { this.maxLifetime = compound.getInteger("MaxLifetime"); }
         if (compound.hasKey("FirstBeenShot")) { this.firstBeenShot = compound.getBoolean("FirstBeenShot"); }
 

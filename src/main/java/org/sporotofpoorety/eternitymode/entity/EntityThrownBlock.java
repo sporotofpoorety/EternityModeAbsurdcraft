@@ -26,20 +26,14 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import org.sporotofpoorety.eternitymode.entity.EntityOrbVoidCustom;
+import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
 
 
 
 
-public class EntityThrownBlock extends Entity
+public class EntityThrownBlock extends EntityWithOwner
 {
 
-    public EntityLivingBase owner;
-
-
-//For if owner is orb
-//Note to self: refactor later to be more modular
-    public EntityOrbVoidCustom controllerOrb;
-    public UUID controllerOrbUUID;
     public double expelRadians;
 
 
@@ -78,14 +72,11 @@ public class EntityThrownBlock extends Entity
 
     public EntityThrownBlock(World worldIn, EntityLivingBase owner, BlockPos blockPos, double x, double y, double z, float thrownBlockDamage)
     {
-        this(worldIn);
+        super(worldIn, owner);
+        this.preventEntitySpawning = true;
+        this.setSize(1.0F, 1.0F);
 
-        this.owner = owner;
 
-
-//Just safeguarding defaults
-        this.controllerOrb = null;
-        this.controllerOrbUUID = null;
         this.expelRadians = 6.9420D;
 
         this.controllerInitialVec = new Vec3d(0.0D, -0.1D, 0.0D);
@@ -159,19 +150,17 @@ public class EntityThrownBlock extends Entity
      */
     public void onUpdate()
     {
-//NOTE TO SELF: LATER REFACTOR THIS INTO SUPERCLASS "validateOwner()" and "validateController()"
-//Try to validate controller (for stability)
-        if((this.ticksExisted % 20) == 0 && !world.isRemote)
-        {
-//If no controller found resume normal behavior     
-            if(!this.validateController()) { this.setBlockNormal(true); }
-        }
+        super.onUpdate();
 
-
-//If being controlled by a void orb and not already expelled
-        if(this.controllerOrb != null && !this.blockExpelled)
+//If being controlled 
+        if(this.controller != null) 
         {
-            this.controlByOrb();
+//By a void orb and not already expelled
+            if((this.controller instanceof EntityOrbVoidCustom) && !this.blockExpelled)
+            {
+//Control by orb
+                this.controlByOrb();
+            }
         }
 
 
@@ -239,43 +228,10 @@ public class EntityThrownBlock extends Entity
         }
     }
 
-
-
-
-//Validate controller and return if successful
-    public boolean validateController()
+//Restore block to normal if no owner
+    public void performControllerValidation()
     {
-        boolean checkSuccessful = false;
-
-   
-//If no valid controller
-        if(this.controllerOrb == null
-//But there is stored controller UUID
-        && this.controllerOrbUUID != null) 
-        {
-//Try to get entity from UUID
-            Entity foundEntity  
-            = ((WorldServer)world).getEntityFromUuid(this.controllerOrbUUID);
-
-//If it's orb void
-            if (foundEntity instanceof EntityOrbVoidCustom) 
-            {
-//Set controller orb to it
-                this.controllerOrb = (EntityOrbVoidCustom) foundEntity;
-//Check successful
-                checkSuccessful = true;
-            }
-
-//If no controller found
-            else
-            {
-//Check failed
-                checkSuccessful = false;
-            }
-        }
-
-    
-        return checkSuccessful;
+        if(!this.validateController()) { this.setBlockNormal(true); }
     }
 
 
@@ -283,6 +239,9 @@ public class EntityThrownBlock extends Entity
 
     public void controlByOrb()
     {
+        EntityOrbVoidCustom controllerOrb = (EntityOrbVoidCustom) this.controller;
+
+
 //If at orb center
         if(this.controllerReached)
         {
@@ -313,15 +272,15 @@ public class EntityThrownBlock extends Entity
             if(controllerOrb.ticksExisted >= controllerOrb.getStartState() && controllerOrb.getTimerDDD() <= 0)
             {
 //And first tick of orb growth
-                if(this.controllerOrb.getTimeSinceIgnited() == 1)
+                if(controllerOrb.getTimeSinceIgnited() == 1)
                 { 
 //Set initial vec to orb
                     this.controllerInitialVec
-                        = new Vec3d(this.controllerOrb.posX - this.posX, this.controllerOrb.posY - this.posY, this.controllerOrb.posZ - this.posZ)
-                        .scale(1.0D / (controllerOrb.getFuseState() / 2.0D));
+                        = new Vec3d(controllerOrb.posX - this.posX, controllerOrb.posY - this.posY, controllerOrb.posZ - this.posZ)
+                        .scale(1.25D / controllerOrb.getFuseState());
 //Set glue distance
                     this.controllerGlueDistance 
-                    = 2.0D * controllerInitialVec.length();
+                    = 1.5D * controllerInitialVec.length();
 //Set block "not normal"
                     this.setBlockNormal(false);
                 }
@@ -335,12 +294,12 @@ public class EntityThrownBlock extends Entity
 
 
 //Check if close enough to orb to glue
-                if(this.getDistance(this.controllerOrb) <= this.controllerGlueDistance)
+                if(this.getDistance(controllerOrb) <= this.controllerGlueDistance)
                 {
 //If so set glued
                     this.controllerReached = true;
 //Follow orb
-                    this.setPosition(this.controllerOrb.posX, this.controllerOrb.posY, this.controllerOrb.posZ);
+                    this.setPosition(controllerOrb.posX, controllerOrb.posY, controllerOrb.posZ);
 //No motion
                     this.motionX = 0.0D;
                     this.motionY = 0.0D;
@@ -363,7 +322,7 @@ public class EntityThrownBlock extends Entity
         if(controllerReleaseMode == 1)
         {
 //Random force
-            double expelForce = (80.0D * rand.nextDouble()) / 20.0D;              
+            double expelForce = (160.0D * rand.nextDouble()) / 20.0D;              
 //Shoot out block
             this.setMovement(Math.cos(this.expelRadians) * expelForce, -2.0D, Math.sin(this.expelRadians) * expelForce,
 //Flat-ish gravity and quick horizontal deceleration 
@@ -376,18 +335,6 @@ public class EntityThrownBlock extends Entity
 //If aimed release (radians calculated at expel time)
         if(controllerReleaseMode == 2)
         {
-/*
-//If orb owner valid and orb owner target valid
-            if(controllerOrb.ownerCustom != null && controllerOrb.ownerCustom.getAttackTarget() != null) 
-            {
-//Get owner target
-                EntityLivingBase ownerTarget = controllerOrb.ownerCustom.getAttackTarget();
-//Get radians to owner target 
-                this.expelRadians = Math.atan2(ownerTargetZ - this.posZ, ownerTarget.posX - this.posX);
-//Randomize radians
-                this.expelRadians += (0.5D * Math.PI) * (rand.nextDouble() - rand.nextDouble());
-            }
-*/
 //If owner valid
             if(this.owner != null && (this.owner instanceof EntityLiving) && ((EntityLiving) this.owner).getAttackTarget() != null) 
             {
@@ -405,7 +352,7 @@ public class EntityThrownBlock extends Entity
             }
 
 //Random force
-            double expelForce = (80.0D * rand.nextDouble()) / 20.0D;              
+            double expelForce = (160.0D * rand.nextDouble()) / 20.0D;              
 //Shoot out block
             this.setMovement(Math.cos(this.expelRadians) * expelForce, -2.0D, Math.sin(this.expelRadians) * expelForce,
 //Flat-ish gravity and quick horizontal deceleration 
@@ -537,7 +484,9 @@ public class EntityThrownBlock extends Entity
      */
     protected void writeEntityToNBT(NBTTagCompound compound)
     {
-        if(this.controllerOrbUUID != null) { compound.setUniqueId("ControllerOrbUUID", this.controllerOrbUUID); }
+        super.writeEntityToNBT(compound);
+
+
         compound.setDouble("ExpelRadians", this.expelRadians);
 
         if(this.controllerInitialVec != null)
@@ -572,7 +521,9 @@ public class EntityThrownBlock extends Entity
      */
     protected void readEntityFromNBT(NBTTagCompound compound)
     {
-        if (compound.hasKey("ControllerOrbUUID")) { this.controllerOrbUUID = compound.getUniqueId("ControllerOrbUUID"); }
+        super.readEntityFromNBT(compound);
+
+
         if (compound.hasKey("ExpelRadians")) { this.expelRadians = compound.getDouble("ExpelRadians"); }
 
         if (compound.hasKey("ControllerInitialVecX") 

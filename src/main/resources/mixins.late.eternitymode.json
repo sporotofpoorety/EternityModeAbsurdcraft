@@ -6,8 +6,12 @@
 	"minVersion": "0.8.5",
 	"compatibilityLevel": "JAVA_8",
 	"mixins": [
+        "MixinEntityParasiteBase",
+        "MixinEntityPCosmical",
         "MixinEntityOrbVoid",
-        "MixinEntityShyco"
+        "MixinEntityShyco",
+        "MixinSRPBlockFluid",
+        "MixinSRPEffectBase"
     ],
 	"server": [],
 	"client": []

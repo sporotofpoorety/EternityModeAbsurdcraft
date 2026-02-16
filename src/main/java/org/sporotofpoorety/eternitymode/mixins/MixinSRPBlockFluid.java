@@ -15,18 +15,17 @@ import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.nbt.NBTTagCompound;
 
 
-import com.dhanantry.scapeandrunparasites.entity.ai.misc.EntityParasiteBase;
+import com.dhanantry.scapeandrunparasites.block.BlockFluid;
 
 
 
 
 //Mixin this class
-@Mixin(value = EntityParasiteBase.class, remap = false)
+@Mixin(value = BlockFluid.class, remap = false)
 //Abstract since mixins should not be instantiated
-public abstract class MixinEntityParasiteBase
+public abstract class MixinSRPBlockFluid
 {
 
 

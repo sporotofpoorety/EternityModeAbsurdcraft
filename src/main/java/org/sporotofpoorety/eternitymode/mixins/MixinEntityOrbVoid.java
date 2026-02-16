@@ -55,7 +55,7 @@ import org.sporotofpoorety.eternitymode.interfacemixins.IMixinEntityOrbVoid;
 
 
 
-@Mixin(value = EntityOrbVoid.class, remap = true)
+@Mixin(value = EntityOrbVoid.class, remap = false)
 //Abstract since mixins should not be instantiated
 public abstract class MixinEntityOrbVoid implements IMixinEntityOrbVoid
 {

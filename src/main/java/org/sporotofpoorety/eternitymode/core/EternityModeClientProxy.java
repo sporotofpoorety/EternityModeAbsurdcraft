@@ -21,7 +21,6 @@ import com.dhanantry.scapeandrunparasites.client.renderer.entity.misc.RenderOrbV
 import org.sporotofpoorety.eternitymode.client.render.RenderProjectileBase;
 import org.sporotofpoorety.eternitymode.client.render.RenderProjectileBaseItem;
 import org.sporotofpoorety.eternitymode.client.render.RenderThrownBlock;
-import org.sporotofpoorety.eternitymode.client.render.RenderVoidPortal;
 import org.sporotofpoorety.eternitymode.core.EternityModeCommonProxy;
 import org.sporotofpoorety.eternitymode.entity.*;
 import org.sporotofpoorety.eternitymode.entity.projectile.*;

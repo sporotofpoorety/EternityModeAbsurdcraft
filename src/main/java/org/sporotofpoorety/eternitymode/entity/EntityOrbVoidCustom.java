@@ -151,22 +151,24 @@ public class EntityOrbVoidCustom extends EntityOrbVoid {
 //Generate and return 150/100 blocks
 //in a random 64 cube, no owner, breaks them conditionally
         ArrayList<EntityThrownBlock> scatterBlocks = EntityUtil.generateAndReturnRandomBlocks(this,
-        null, 150, 64, 64, 2);
+        null, 150, 64, 32, 2, 2);
         ArrayList<EntityThrownBlock> aimedBlocks = EntityUtil.generateAndReturnRandomBlocks(this, 
-        null, 100, 64, 64, 2);
+        null, 100, 64, 32, 2, 2);
 
 
         for(EntityThrownBlock scatterBlock : scatterBlocks)
         {
             scatterBlock.owner = this.ownerCustom;
 
-            scatterBlock.controllerOrb = this;
-            scatterBlock.controllerOrbUUID = this.getUniqueID();
+            scatterBlock.controller = this;
+            scatterBlock.controllerUUID = this.getUniqueID();
 
             scatterBlock.controlMode = 1;
             scatterBlock.controllerReleaseMode = 1;
 
             scatterBlock.setBlockNormal(false);
+
+            scatterBlock.expelRadians = (2.0D * Math.PI) * rand.nextDouble();
 
             if (!this.world.isRemote) { this.getEntityWorld().spawnEntity(scatterBlock); }
 
@@ -177,8 +179,8 @@ public class EntityOrbVoidCustom extends EntityOrbVoid {
         {
             aimedBlock.owner = this.ownerCustom;
 
-            aimedBlock.controllerOrb = this;
-            aimedBlock.controllerOrbUUID = this.getUniqueID();
+            aimedBlock.controller = this;
+            aimedBlock.controllerUUID = this.getUniqueID();
 
             aimedBlock.controlMode = 1;
             aimedBlock.controllerReleaseMode = 2;

@@ -190,14 +190,14 @@ public class EntityProjectileHoming extends EntityProjectileRaytrace {
 
     public void projectileHomingAbsolute()
     {
+        EntityLivingBase ownerTarget = this.getProjectileOwnerTarget();
+
+
 //If owner is a living entity
         if(this.owner != null && this.owner instanceof EntityLiving
 //With a target 
-        && ((EntityLiving) this.owner).getAttackTarget() != null)
+        && ownerTarget != null)
         {
-//Get target
-            EntityLivingBase ownerTarget = ((EntityLiving) this.owner).getAttackTarget();
-
 //Get distance vector (normalized)
             Vec3d targetDistNormalized = new Vec3d
             (
@@ -222,14 +222,14 @@ public class EntityProjectileHoming extends EntityProjectileRaytrace {
 
     public void projectileHomingRelative()
     {
+        EntityLivingBase ownerTarget = this.getProjectileOwnerTarget();
+
+
 //If owner is a living entity
         if(this.owner != null && this.owner instanceof EntityLiving
 //With a target 
-        && ((EntityLiving) this.owner).getAttackTarget() != null)
+        && ownerTarget != null)
         {
-//Get target
-            EntityLivingBase ownerTarget = ((EntityLiving) this.owner).getAttackTarget();
-
 //Get distance
             double targetDistX = ownerTarget.posX - this.posX;
             double targetDistY = ownerTarget.posY - this.posY;

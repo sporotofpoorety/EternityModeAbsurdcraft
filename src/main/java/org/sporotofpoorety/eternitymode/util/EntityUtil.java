@@ -15,49 +15,19 @@ import net.minecraft.world.World;
 
 
 import org.sporotofpoorety.eternitymode.entity.EntityThrownBlock;
+import org.sporotofpoorety.eternitymode.util.BlockUtil;
 
 
 
 
-public final class EntityUtil {
-
-
-    @Nullable
-    public static BlockPos findSolidBlockBelow(Entity entity, int maxDepth, float addRandomRadius)
-    {
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos
-        (
-            (int) (entity.posX + (entity.world.rand.nextFloat() * ((entity.width / 2.0F)
-                + (entity.world.rand.nextFloat() - entity.world.rand.nextFloat()) * addRandomRadius))),
-            (int) entity.getEntityBoundingBox().minY,
-            (int) (entity.posZ + (entity.world.rand.nextFloat() * ((entity.width / 2.0F)
-                + (entity.world.rand.nextFloat() - entity.world.rand.nextFloat()) * addRandomRadius)))
-        );
-
-        World world = entity.world;
-
-        for (int depthAt = 0; depthAt < maxDepth; depthAt++)
-        {
-            pos.setY(pos.getY() - 1);
-
-            IBlockState blockState = world.getBlockState(pos);
-
-            if (blockState.getBlock().isFullBlock(blockState))
-            {
-                return pos.toImmutable();
-            }
-        }
-        return null;
-    }
-
-
-
+public final class EntityUtil 
+{
 
 //Generate and return random thrown blocks 
 //from a specified volume, and optionally destroy
     @Nullable
     public static ArrayList<EntityThrownBlock> generateAndReturnRandomBlocks(Entity searchOrigin, EntityLivingBase owner,
-    int blockTotal, int searchWidth, int searchDepth, int destroyMode)
+    int blockTotal, int searchWidth, int searchDepth, int searchMode, int destroyMode)
     {
 //Block list to fill and return
         ArrayList<EntityThrownBlock> blockList = new ArrayList<>();
@@ -67,17 +37,16 @@ public final class EntityUtil {
         for(int blockAt = 0; blockAt < blockTotal; blockAt++)
         {
 //Get origin
-            BlockPos blockOrigin = findSolidBlockBelow(searchOrigin, searchDepth, (float) searchWidth);
+            BlockPos blockOrigin = BlockUtil.findFirstSolidBlock(searchOrigin, (float) searchWidth, searchDepth, searchMode);
 
 
 //If origin not null
             if(blockOrigin != null)
             {
-//Make block
+//Make entity block at origin
                 EntityThrownBlock thrownBlock = new EntityThrownBlock
                 (
-//Try using origin for pos (may need to add 0.5D for intended behavior, i don't know)
-                    searchOrigin.world, owner, blockOrigin, blockOrigin.getX(), blockOrigin.getY(), blockOrigin.getZ(), 1.0F
+                    searchOrigin.world, owner, blockOrigin, blockOrigin.getX() + 0.5D, blockOrigin.getY() + 0.5D, blockOrigin.getZ() + 0.5D, 1.0F
                 );
 
 
@@ -85,13 +54,14 @@ public final class EntityUtil {
                 blockList.add(thrownBlock);
 
 
-//Only destroy high up blocks
-                if(destroyMode == 2)
+                if(!searchOrigin.world.isRemote)
                 {
-/*
+//Only destroy high up blocks
+                    if(destroyMode == 2)
+                    {
 //Optionally destroy blocks
-                    miscUtil.destroyBlockPos(blockOrigin, 9999.0F, false, 2);
-*/
+//                      BlockUtil.destroyBlockPos(blockOrigin, searchOrigin.world, 9999.0F);
+                    }
                 }
             }
         }
