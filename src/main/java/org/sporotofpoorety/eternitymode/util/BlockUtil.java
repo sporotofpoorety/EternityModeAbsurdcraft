@@ -21,14 +21,75 @@ public final class BlockUtil
     {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos
         (
-            (int) (entity.posX + (entity.world.rand.nextFloat() * ((entity.width / 2.0F)
-                + (entity.world.rand.nextFloat() - entity.world.rand.nextFloat()) * addRandomRadius))),
+            (int) (entity.posX 
+                + (entity.world.rand.nextFloat() - entity.world.rand.nextFloat()) * ((entity.width / 2.0F) + addRandomRadius)),
             (int) entity.getEntityBoundingBox().minY,
-            (int) (entity.posZ + (entity.world.rand.nextFloat() * ((entity.width / 2.0F)
-                + (entity.world.rand.nextFloat() - entity.world.rand.nextFloat()) * addRandomRadius)))
+            (int) (entity.posZ 
+                + (entity.world.rand.nextFloat() - entity.world.rand.nextFloat()) * ((entity.width / 2.0F) + addRandomRadius))
         );
 
         World world = entity.world;
+
+
+//Search below
+        if(searchMode == 1)
+        {
+            for (int depthAt = 0; depthAt < maxDepth; depthAt++)
+            {
+                pos.setY(pos.getY() - 1);
+
+                IBlockState blockState = world.getBlockState(pos);
+
+                if (blockState.getBlock().isFullBlock(blockState))
+                {
+                    return pos.toImmutable();
+                }
+            }
+        }
+//Search above and below
+        if(searchMode == 2)
+        {
+//Starting Y
+            int startingY = pos.getY();
+
+            for (int depthAt = 0; depthAt < maxDepth; depthAt++)
+            {
+//Iterate up
+                pos.setY(startingY + depthAt);
+
+                IBlockState blockState = world.getBlockState(pos);
+
+                if (blockState.getBlock().isFullBlock(blockState))
+                {
+                    return pos.toImmutable();
+                }
+
+
+//Iterate down
+                pos.setY(startingY - depthAt);
+
+                blockState = world.getBlockState(pos);
+
+                if (blockState.getBlock().isFullBlock(blockState))
+                {
+                    return pos.toImmutable();
+                }
+            }
+        }
+
+        return null;
+    }
+
+
+    @Nullable
+    public static BlockPos findFirstSolidBlock(World world, int atX, int atY, int atZ, float addRandomRadius, int maxDepth, int searchMode)
+    {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos
+        (
+            (int) (atX + ((world.rand.nextFloat() - world.rand.nextFloat()) * addRandomRadius)),
+            (int) atY,
+            (int) (atZ + ((world.rand.nextFloat() - world.rand.nextFloat()) * addRandomRadius))
+        );
 
 
 //Search below

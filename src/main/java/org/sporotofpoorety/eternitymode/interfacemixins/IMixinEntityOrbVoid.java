@@ -8,4 +8,5 @@ public interface IMixinEntityOrbVoid
     boolean getOrbVoidIsAbsurdcraft();
 
     void setOrbVoidIsAbsurdcraft(boolean isAbsurdcraft);
+    void setOrbPoos(double x, double y, double z);
 }

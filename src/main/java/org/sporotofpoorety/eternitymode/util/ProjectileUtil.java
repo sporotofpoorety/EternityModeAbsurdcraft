@@ -22,7 +22,7 @@ public final class ProjectileUtil {
     {
     	for(int i = 0; i < particleDensity; i++)
         {
-
+/*
 			double dx = (fireball.world.rand.nextDouble() - 0.5) * fireball.width;
 			double dy = (fireball.world.rand.nextDouble() - 0.5) * fireball.height + (fireball.height / 2) - 0.1; // -0.1 because flames aren't centred
 			double dz = (fireball.world.rand.nextDouble() - 0.5) * fireball.width;
@@ -30,12 +30,14 @@ public final class ProjectileUtil {
 			ParticleBuilder.create(ParticleBuilder.Type.MAGIC_FIRE)
 					.pos(fireball.getPositionVector().add(dx - fireball.motionX / 2, dy, dz - fireball.motionZ / 2))
 					.vel(-v * dx, -v * dy, -v * dz).scale(fireball.width * 2).time(particleLifetime).spawn(fireball.world);
+*/
 
 			if(fireball.ticksExisted > 1)
             {
-				dx = (fireball.world.rand.nextDouble() - 0.5) * fireball.width;
-				dy = (fireball.world.rand.nextDouble() - 0.5) * fireball.height + (fireball.height / 2) - 0.1;
-				dz = (fireball.world.rand.nextDouble() - 0.5) * fireball.width;
+				double dx = (fireball.world.rand.nextDouble() - 0.5) * fireball.width;
+				double dy = (fireball.world.rand.nextDouble() - 0.5) * fireball.height + (fireball.height / 2) - 0.1;
+				double dz = (fireball.world.rand.nextDouble() - 0.5) * fireball.width;
+			    double v = particleVelocity;
 				ParticleBuilder.create(ParticleBuilder.Type.MAGIC_FIRE)
 						.pos(fireball.getPositionVector().add(dx - fireball.motionX, dy, dz - fireball.motionZ))
 					    .vel(-v * dx, -v * dy, -v * dz).scale(fireball.width * 2).time(particleLifetime).spawn(fireball.world);
@@ -224,7 +226,7 @@ public final class ProjectileUtil {
             currentDirection.x * shotSpeed, currentDirection.y * shotSpeed, currentDirection.z * shotSpeed,
             shotAcceleration, 0.0D,
             0.3D, true, true, shotDamage,
-            2, 2, 0.06D,
+            1, 2, 0.06D,
             20, shotExplodes, shotExplosionPower, shotFire, shotDestruction);
 
 //(Bugfix) should spawn at aimer entity now

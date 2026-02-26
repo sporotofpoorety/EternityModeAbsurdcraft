@@ -4,7 +4,6 @@ package org.sporotofpoorety.eternitymode.entity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
-import net.minecraft.entity.projectile.EntitySmallFireball;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
@@ -12,9 +11,6 @@ import net.minecraft.world.World;
 import electroblob.wizardry.client.DrawingUtils;
 import electroblob.wizardry.util.ParticleBuilder;
 import electroblob.wizardry.util.ParticleBuilder.Type;
-
-
-import org.sporotofpoorety.eternitymode.entity.projectile.EntityFlameShotLinear;
 
 
 
@@ -42,27 +38,7 @@ public class EntityExplosiveShockwave extends Entity
     float explosionRadius;
     int specialExplosionCounter;
     int specialExplosionThreshold;
-    boolean fireParticlesSpawned;
-    boolean setsFire;
 
-
-    boolean fireballEnabled;
-    int fireballAmount;
-    
-    int fireballMaxLifetime;
-
-    double fireballSpeedHorizontal; 
-    double fireballSpeedVertical;
-    double fireballAccelerationRate; 
-    double fireballGravitySpeed; 
-
-    double fireballHitCheckSize; 
-    boolean fireballProjectileStopsAtEntity; 
-    boolean fireballProjectileStopsAtBlock;
-    float fireballProjectileHitDamage;
-
-
-    int fireballFireDuration;
 
     boolean subshockwavesEnabled;
     double subshockwavesSpeedX;
@@ -72,7 +48,6 @@ public class EntityExplosiveShockwave extends Entity
  
     int subshockwavesExplosionTimer;
     float subshockwavesExplosionRadius;
-    boolean subshockwavesSetsFire;
 
 
 
@@ -87,13 +62,9 @@ public class EntityExplosiveShockwave extends Entity
     int lifetimeTicks, boolean hasGravity, float shockwaveStepHeight, double speedX, double speedY, double speedZ, double accelerationRate,
     boolean oscillationEnabled, double oscillationDistance, int oscillationOrientationDuration,
     int explosionTimer, float explosionRadius, int specialExplosionThreshold, 
-    boolean setsFire, boolean fireballEnabled, int fireballAmount,
-    int fireballMaxLifetime, double fireballSpeedHorizontal, double fireballSpeedVertical,
-    double fireballAccelerationRate, double fireballGravitySpeed,  
-    double fireballHitCheckSize, boolean fireballProjectileStopsAtEntity, boolean fireballProjectileStopsAtBlock, float fireballProjectileHitDamage,
-    int fireballFireDuration, boolean subshockwavesEnabled,
+    boolean subshockwavesEnabled,
     double subshockwavesSpeedX, double subshockwavesSpeedY, double subshockwavesSpeedZ, double subshockwavesAccelerationRate,
-    int subshockwavesExplosionTimer, float subshockwavesExplosionRadius, boolean subshockwavesSetsFire) 
+    int subshockwavesExplosionTimer, float subshockwavesExplosionRadius) 
     {
         this(world);
         this.owner = owner;
@@ -127,26 +98,6 @@ public class EntityExplosiveShockwave extends Entity
 
         this.explosionTimer = explosionTimer;
         this.explosionRadius = explosionRadius;
-        this.fireParticlesSpawned = false;
-        this.setsFire = setsFire;
-
-
-        this.fireballEnabled = fireballEnabled;
-        this.fireballAmount = fireballAmount;
-
-        this.fireballMaxLifetime = fireballMaxLifetime;
-
-        this.fireballSpeedHorizontal = fireballSpeedHorizontal; 
-        this.fireballSpeedVertical = fireballSpeedVertical;
-        this.fireballAccelerationRate = fireballAccelerationRate;
-        this.fireballGravitySpeed = fireballGravitySpeed;
-
-        this.fireballHitCheckSize = fireballHitCheckSize; 
-        this.fireballProjectileStopsAtEntity = fireballProjectileStopsAtEntity; 
-        this.fireballProjectileStopsAtBlock = fireballProjectileStopsAtBlock;
-        this.fireballProjectileHitDamage = fireballProjectileHitDamage;
-
-        this.fireballFireDuration = fireballFireDuration;
 
         this.subshockwavesEnabled = subshockwavesEnabled;
         this.subshockwavesSpeedX = subshockwavesSpeedX;
@@ -156,7 +107,6 @@ public class EntityExplosiveShockwave extends Entity
      
         this.subshockwavesExplosionTimer = subshockwavesExplosionTimer;
         this.subshockwavesExplosionRadius = subshockwavesExplosionRadius;
-        this.subshockwavesSetsFire = subshockwavesSetsFire;
 	}
 
 
@@ -226,7 +176,7 @@ public class EntityExplosiveShockwave extends Entity
             {
                 Entity entityResponsible = (this.owner != null) ? this.owner : this;
 
-                this.world.newExplosion(entityResponsible, this.posX, this.posY + (this.explosionRadius / 1.5F), this.posZ, this.explosionRadius, this.setsFire, false);
+                this.world.newExplosion(entityResponsible, this.posX, this.posY + (this.explosionRadius / 1.5F), this.posZ, this.explosionRadius, false, false);
 
 //Increment explosion counter
                 ++this.specialExplosionCounter;
@@ -240,6 +190,7 @@ public class EntityExplosiveShockwave extends Entity
 
 //Do special explosion
 
+/*
 //With potentially fireballs
                     if(this.fireballEnabled)
                     {
@@ -284,6 +235,7 @@ public class EntityExplosiveShockwave extends Entity
                             }
                         }
                     }
+*/
 //Potentially sub-shockwaves too
                     if(this.subshockwavesEnabled)
                     {
@@ -293,13 +245,9 @@ public class EntityExplosiveShockwave extends Entity
                             50, false, 3.0F, this.subshockwavesSpeedX, this.subshockwavesSpeedY, this.subshockwavesSpeedZ, this.subshockwavesAccelerationRate,
                             false, 3.0D, 9,
                             this.subshockwavesExplosionTimer, this.subshockwavesExplosionRadius, 69420,
-                            this.subshockwavesSetsFire, false, 8,
-                            200, 1.0D, 1.0D,
-                            0.08D, 1.01D,  
-                            0.3D, true, true, 5.0F,
-                            20, false,
+                            false,
                             0.0D, 0.0D, 0.0D, 1.0D,
-                            10, 3.0F, false);
+                            10, 3.0F);
 
 		                    splitShockwave.setLocationAndAngles(this.posX, this.posY, this.posZ, this.rotationYaw, 0.0F);
 
@@ -406,26 +354,6 @@ public class EntityExplosiveShockwave extends Entity
         compound.setFloat("ExplosionRadius", this.explosionRadius);
         compound.setInteger("SpecialExplosionCounter", this.specialExplosionCounter);
         compound.setInteger("SpecialExplosionThreshold", this.specialExplosionThreshold);
-        compound.setBoolean("FireParticlesSpawned", this.fireParticlesSpawned);
-        compound.setBoolean("SetsFire", this.setsFire);
-
-
-        compound.setBoolean("FireballEnabled", this.fireballEnabled);
-        compound.setInteger("FireballAmount", this.fireballAmount);
-
-        compound.setInteger("FireballMaxLifetime", this.fireballMaxLifetime);
-
-        compound.setDouble("FireballSpeedHorizontal", this.fireballSpeedHorizontal);
-        compound.setDouble("FireballSpeedVertical", this.fireballSpeedVertical);
-        compound.setDouble("FireballAccelerationRate", this.fireballAccelerationRate);
-        compound.setDouble("FireballGravitySpeed", this.fireballGravitySpeed);
-
-        compound.setDouble("FireballHitCheckSize", this.fireballHitCheckSize);
-        compound.setBoolean("FireballProjectileStopsAtEntity", this.fireballProjectileStopsAtEntity);
-        compound.setBoolean("FireballProjectileStopsAtBlock", this.fireballProjectileStopsAtBlock);
-        compound.setFloat("FireballProjectileHitDamage", this.fireballProjectileHitDamage);
-
-        compound.setInteger("FireballFireDuration", this.fireballFireDuration);
 
         compound.setBoolean("SubshockwavesEnabled", this.subshockwavesEnabled);
         compound.setDouble("SubshockwavesSpeedX", this.subshockwavesSpeedX);
@@ -435,7 +363,6 @@ public class EntityExplosiveShockwave extends Entity
      
         compound.setInteger("SubshockwavesExplosionTimer", this.subshockwavesExplosionTimer);
         compound.setFloat("SubshockwavesExplosionRadius", this.subshockwavesExplosionRadius);
-        compound.setBoolean("SubshockwavesSetsFire", this.subshockwavesSetsFire);
     }
 
 
@@ -464,26 +391,6 @@ public class EntityExplosiveShockwave extends Entity
         if (compound.hasKey("ExplosionRadius")) { this.explosionRadius = compound.getFloat("ExplosionRadius"); }
         if (compound.hasKey("SpecialExplosionCounter")) { this.specialExplosionCounter = compound.getInteger("SpecialExplosionCounter"); }
         if (compound.hasKey("SpecialExplosionThreshold")) { this.specialExplosionThreshold = compound.getInteger("SpecialExplosionThreshold"); }
-        if (compound.hasKey("FireParticlesSpawned")) { this.fireParticlesSpawned = compound.getBoolean("FireParticlesSpawned"); }
-        if (compound.hasKey("SetsFire")) { this.setsFire = compound.getBoolean("SetsFire"); }
-
-
-        if (compound.hasKey("FireballEnabled")) { this.fireballEnabled = compound.getBoolean("FireballEnabled"); }
-        if (compound.hasKey("FireballAmount")) { this.fireballAmount = compound.getInteger("FireballAmount"); }
-
-        if (compound.hasKey("FireballMaxLifetime")) { this.fireballMaxLifetime = compound.getInteger("FireballMaxLifetime"); }
-
-        if (compound.hasKey("FireballSpeedHorizontal")) { this.fireballSpeedHorizontal = compound.getDouble("FireballSpeedHorizontal"); }
-        if (compound.hasKey("FireballSpeedVertical")) { this.fireballSpeedVertical = compound.getDouble("FireballSpeedVertical"); }
-        if (compound.hasKey("FireballAccelerationRate")) { this.fireballAccelerationRate = compound.getDouble("FireballAccelerationRate"); }
-        if (compound.hasKey("FireballGravitySpeed")) { this.fireballGravitySpeed = compound.getDouble("FireballGravitySpeed"); }
-
-        if (compound.hasKey("FireballHitCheckSize")) { this.fireballHitCheckSize = compound.getDouble("FireballHitCheckSize"); } 
-        if (compound.hasKey("FireballProjectileStopsAtEntity")) { this.fireballProjectileStopsAtEntity = compound.getBoolean("FireballProjectileStopsAtEntity"); }
-        if (compound.hasKey("FireballProjectileStopsAtBlock")) { this.fireballProjectileStopsAtBlock = compound.getBoolean("FireballProjectileStopsAtBlock"); }
-        if (compound.hasKey("FireballProjectileHitDamage")) { this.fireballProjectileHitDamage = compound.getFloat("FireballProjectileHitDamage"); }
-
-        if (compound.hasKey("FireballFireDuration")) { this.fireballFireDuration = compound.getInteger("FireballFireDuration"); }
 
         if (compound.hasKey("SubshockwavesEnabled")) { this.subshockwavesEnabled = compound.getBoolean("SubshockwavesEnabled"); }
         if (compound.hasKey("SubshockwavesSpeedX")) { this.subshockwavesSpeedX = compound.getDouble("SubshockwavesSpeedX"); } 
@@ -493,6 +400,5 @@ public class EntityExplosiveShockwave extends Entity
 
         if (compound.hasKey("SubshockwavesExplosionTimer")) { this.subshockwavesExplosionTimer = compound.getInteger("SubshockwavesExplosionTimer"); }
         if (compound.hasKey("SubshockwavesExplosionRadius")) { this.subshockwavesExplosionRadius = compound.getFloat("SubshockwavesExplosionRadius"); }
-        if (compound.hasKey("SubshockwavesSetsFire")) { this.subshockwavesSetsFire = compound.getBoolean("SubshockwavesSetsFire"); }
     }
 }

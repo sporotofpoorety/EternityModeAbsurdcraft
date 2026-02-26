@@ -4,9 +4,11 @@ import java.util.UUID;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.MoverType;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+
 
 
 
@@ -19,12 +21,14 @@ public abstract class EntityWithOwner extends Entity
     public int ownerCheckCooldown;
     public int ownerCheckCooldownMax;
 
-
     public Entity controller;
     public UUID controllerUUID;
     public int controllerCheckCooldown;
     public int controllerCheckCooldownMax;
 
+    public double gravitySpeed;
+    public boolean acceleratesVertically;
+    public double accelerationVal;
 
 
 
@@ -32,18 +36,6 @@ public abstract class EntityWithOwner extends Entity
     public EntityWithOwner(World worldIn)
     {
         super(worldIn);
-
-//Just safeguarding defaults
-        this.owner = null;
-        this.ownerUUID = null;
-        this.ownerCheckCooldown = 0;
-        this.ownerCheckCooldownMax = 20;
-
-//Just safeguarding defaults
-        this.controller = null;
-        this.controllerUUID = null;
-        this.controllerCheckCooldown = 0;
-        this.controllerCheckCooldownMax = 20;
     }
 
 
@@ -62,6 +54,64 @@ public abstract class EntityWithOwner extends Entity
         this.controllerUUID = null;
         this.controllerCheckCooldown = 0;
         this.controllerCheckCooldownMax = 20;
+
+        this.motionX = 0.0D;
+        this.motionY = 0.0D;
+        this.motionZ = 0.0D;
+
+        this.gravitySpeed = 0.08D;
+        this.acceleratesVertically = true;
+        this.accelerationVal = 1.0D;
+    }
+
+    public void setMovement(double speedX, double speedY, double speedZ, 
+    double gravitySpeed, boolean acceleratesVertically, double accelerationVal)
+    {
+        this.motionX = speedX;
+        this.motionY = speedY;
+        this.motionZ = speedZ;
+
+
+        this.gravitySpeed = gravitySpeed;
+        this.acceleratesVertically = acceleratesVertically;
+        this.accelerationVal = accelerationVal;
+    }
+
+    /**
+     * (abstract) Protected helper method to write subclass entity data to NBT.
+     */
+    protected void writeEntityToNBT(NBTTagCompound compound)
+    {
+        if(this.ownerUUID != null) { compound.setUniqueId("OwnerUUID", this.ownerUUID); }
+        compound.setInteger("OwnerCheckCooldown", this.ownerCheckCooldown);
+        compound.setInteger("OwnerCheckCooldownMax", this.ownerCheckCooldownMax);
+
+        if(this.controllerUUID != null) { compound.setUniqueId("ControllerUUID", this.controllerUUID); }
+        compound.setInteger("ControllerCheckCooldown", this.controllerCheckCooldown);
+        compound.setInteger("ControllerCheckCooldownMax", this.controllerCheckCooldownMax);
+
+        compound.setDouble("GravitySpeed", this.gravitySpeed);
+        compound.setBoolean("AcceleratesVertically", this.acceleratesVertically);
+        compound.setDouble("AccelerationVal", this.accelerationVal);
+    }
+
+
+    /**
+     * (abstract) Protected helper method to read subclass entity data from NBT.
+     */
+    protected void readEntityFromNBT(NBTTagCompound compound)
+    {
+        if (compound.hasKey("OwnerUUID")) { this.ownerUUID = compound.getUniqueId("OwnerUUID"); }
+        if (compound.hasKey("OwnerCheckCooldown")) { this.ownerCheckCooldown = compound.getInteger("OwnerCheckCooldown"); }
+        if (compound.hasKey("OwnerCheckCooldownMax")) { this.ownerCheckCooldownMax = compound.getInteger("OwnerCheckCooldownMax"); }
+
+        if (compound.hasKey("ControllerUUID")) { this.controllerUUID = compound.getUniqueId("ControllerUUID"); }
+        if (compound.hasKey("ControllerCheckCooldown")) { this.controllerCheckCooldown = compound.getInteger("ControllerCheckCooldown"); }
+        if (compound.hasKey("ControllerCheckCooldownMax")) { this.controllerCheckCooldownMax = compound.getInteger("ControllerCheckCooldownMax"); }
+
+        if (compound.hasKey("GravitySpeed")) { this.gravitySpeed = compound.getDouble("GravitySpeed"); }
+        if (compound.hasKey("AcceleratesVertically")) { this.acceleratesVertically = compound.getBoolean("AcceleratesVertically"); }
+        if (compound.hasKey("AccelerationVal")) { this.accelerationVal = compound.getDouble("AccelerationVal"); }
     }
 
 
@@ -102,6 +152,27 @@ public abstract class EntityWithOwner extends Entity
             }
 
         }    
+    }
+
+    public void performBasicMovement()
+    {
+        this.prevPosX = this.posX;
+        this.prevPosY = this.posY;
+        this.prevPosZ = this.posZ;
+
+
+        this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
+
+
+        if (!this.hasNoGravity())
+        {
+            this.motionY -= this.gravitySpeed;
+        }
+
+
+        this.motionX *= this.accelerationVal;
+        if(this.acceleratesVertically) { this.motionY *= this.accelerationVal; }
+        this.motionZ *= this.accelerationVal;
     }
 
 
@@ -221,37 +292,4 @@ public abstract class EntityWithOwner extends Entity
     {
         this.validateController();
     }
-
-
-
-
-    /**
-     * (abstract) Protected helper method to write subclass entity data to NBT.
-     */
-    protected void writeEntityToNBT(NBTTagCompound compound)
-    {
-        if(this.ownerUUID != null) { compound.setUniqueId("OwnerUUID", this.ownerUUID); }
-        compound.setInteger("OwnerCheckCooldown", this.ownerCheckCooldown);
-        compound.setInteger("OwnerCheckCooldownMax", this.ownerCheckCooldownMax);
-
-        if(this.controllerUUID != null) { compound.setUniqueId("ControllerUUID", this.controllerUUID); }
-        compound.setInteger("ControllerCheckCooldown", this.controllerCheckCooldown);
-        compound.setInteger("ControllerCheckCooldownMax", this.controllerCheckCooldownMax);
-    }
-
-
-    /**
-     * (abstract) Protected helper method to read subclass entity data from NBT.
-     */
-    protected void readEntityFromNBT(NBTTagCompound compound)
-    {
-        if (compound.hasKey("OwnerUUID")) { this.ownerUUID = compound.getUniqueId("OwnerUUID"); }
-        if (compound.hasKey("OwnerCheckCooldown")) { this.ownerCheckCooldown = compound.getInteger("OwnerCheckCooldown"); }
-        if (compound.hasKey("OwnerCheckCooldownMax")) { this.ownerCheckCooldownMax = compound.getInteger("OwnerCheckCooldownMax"); }
-
-        if (compound.hasKey("ControllerUUID")) { this.controllerUUID = compound.getUniqueId("ControllerUUID"); }
-        if (compound.hasKey("ControllerCheckCooldown")) { this.controllerCheckCooldown = compound.getInteger("ControllerCheckCooldown"); }
-        if (compound.hasKey("ControllerCheckCooldownMax")) { this.controllerCheckCooldownMax = compound.getInteger("ControllerCheckCooldownMax"); }
-    }
-
 }

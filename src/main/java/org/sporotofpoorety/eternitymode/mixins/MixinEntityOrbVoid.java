@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -60,6 +61,11 @@ import org.sporotofpoorety.eternitymode.interfacemixins.IMixinEntityOrbVoid;
 public abstract class MixinEntityOrbVoid implements IMixinEntityOrbVoid
 {
 
+    @Shadow private double poosX;
+    @Shadow private double poosY;
+    @Shadow private double poosZ;
+
+
 //Boolean for if custom
     @Unique private boolean orbVoidIsAbsurdcraft;
 
@@ -111,7 +117,12 @@ public abstract class MixinEntityOrbVoid implements IMixinEntityOrbVoid
         this.orbVoidIsAbsurdcraft = isAbsurdcraft;
     }
 
-
+    public void setOrbPoos(double x, double y, double z)
+    {
+        this.poosX = x;
+        this.poosY = y;
+        this.poosZ = z;
+    }
 
 
     @Inject

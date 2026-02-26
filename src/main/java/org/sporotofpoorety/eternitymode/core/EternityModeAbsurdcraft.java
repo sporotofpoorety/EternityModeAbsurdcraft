@@ -16,7 +16,7 @@ import org.sporotofpoorety.eternitymode.events.EternityModePlayerEvents;
 
 
 @Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION,
-        guiFactory = "org.sporotofpoorety.eternitymode.config.EternityModeFactoryGui", dependencies= "required-after:mixinbooter@[10.1,);required-after:ebwizardry")
+        guiFactory = "org.sporotofpoorety.eternitymode.config.EternityModeFactoryGui", dependencies= "required-after:mixinbooter@[10.1,);required-after:ebwizardry;required-after:cleanroom@[0.3.27-alpha,);required-after:potioncore")
 public class EternityModeAbsurdcraft {
 
     public static final Logger LOGGER = LogManager.getLogger(Tags.MOD_NAME);

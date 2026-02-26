@@ -66,13 +66,10 @@ public abstract class MixinEntityShyco
                     EntityExplosiveShockwave shockwave = new EntityExplosiveShockwave(selfEntity.world, self, selfEntity.posX, selfEntity.posY, selfEntity.posZ, 
                     50, true, 3.0F, 2.0D * Math.cos(baseRadians + (Math.PI * 0.25D * angleAt)), 0.0D, 2.0D * Math.sin(baseRadians + (Math.PI * 0.25D * angleAt)), 1.0D,
                     true, 3.0D, 15, 
-                    2, 3.0F, 6, false, false, 8,
-                    100, 0.15D, 1.5D,
-                    1.0D, 0.0D,
-                    0.3D, true, true, 5.0F,
-                    20, false,
+                    2, 3.0F, 6,
+                    false,
                     0.0D, 4.0D, 0.0D, 1.01D,
-                    10, 3.0F, false);
+                    10, 3.0F);
 	                shockwave.setLocationAndAngles(selfEntity.posX, selfEntity.posY, selfEntity.posZ, selfEntity.rotationYaw, 0.0F);
 
 	                selfEntity.getEntityWorld().spawnEntity(shockwave);

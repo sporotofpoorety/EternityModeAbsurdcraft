@@ -95,12 +95,14 @@ public class EternityModeEntityRegistry
     {
 
 //Pass this entity register event, the entity class, name and id
+        registerUnspawnable(event, EntityEarthPiece.class, "earth_piece", id++);
+        registerUnspawnable(event, EntityExplosiveShockwave.class, "explosive_shockwave", id++);
         registerUnspawnable(event, EntityFlameShotBouncing.class, "flame_shot_bouncing", id++);
         registerUnspawnable(event, EntityFlameShotHoming.class, "flame_shot_homing", id++);
         registerUnspawnable(event, EntityFlameShotLinear.class, "flame_shot_linear", id++);
         registerUnspawnable(event, EntityFlameShotLinearSplits.class, "flame_shot_linear_splits", id++);
-        registerUnspawnable(event, EntityExplosiveShockwave.class, "explosive_shockwave", id++);
         registerUnspawnable(event, EntityThrownBlock.class, "thrown_block", id++);
         registerUnspawnable(event, EntityOrbVoidCustom.class, "void_orb_custom", id++);
+        registerUnspawnable(event, EntityParticleSpiral.class, "entity_spiral_particle", id++);
     }
 }

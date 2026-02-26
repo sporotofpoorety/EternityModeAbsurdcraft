@@ -10,7 +10,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.MoverType;
 import net.minecraft.entity.item.EntityFallingBlock;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
@@ -25,6 +24,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import org.sporotofpoorety.eternitymode.entity.EntityEarthPiece;
 import org.sporotofpoorety.eternitymode.entity.EntityOrbVoidCustom;
 import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
 
@@ -33,20 +33,6 @@ import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
 
 public class EntityThrownBlock extends EntityWithOwner
 {
-
-    public double expelRadians;
-
-
-    public Vec3d controllerInitialVec;
-    public double controllerGlueDistance;
-    public boolean controllerReached;
-    public boolean blockExpelled;
-
-
-    public int controlMode;
-    public int controllerReleaseMode;
-
-
     private IBlockState fallTile;
     public NBTTagCompound tileEntityData;
     protected static final DataParameter<BlockPos> ORIGIN = EntityDataManager.<BlockPos>createKey(EntityFallingBlock.class, DataSerializers.BLOCK_POS);
@@ -56,9 +42,26 @@ public class EntityThrownBlock extends EntityWithOwner
     public float thrownBlockDamage;
 
 
-    public double gravitySpeed;
-    public boolean acceleratesVertically;
-    public double accelerationVal;
+
+
+//Controller logic specific
+    public String controlMode = "none";
+    public String controllerReleaseMode = "none";
+
+    public double expelRadians;
+    public double expelForceHorizontal;
+    public double expelForceVertical;
+    public double expelGravity;
+    public double expelAcceleration;
+
+    public Vec3d controllerInitialVec = new Vec3d(0.0D, 0.0D, 0.0D);
+    public double controllerGlueDistance;
+    public boolean controllerReached;
+    public boolean blockExpelled;
+
+    public double stickX;
+    public double stickY;
+    public double stickZ;
     
     
 
@@ -77,17 +80,6 @@ public class EntityThrownBlock extends EntityWithOwner
         this.setSize(1.0F, 1.0F);
 
 
-        this.expelRadians = 6.9420D;
-
-        this.controllerInitialVec = new Vec3d(0.0D, -0.1D, 0.0D);
-        this.controllerGlueDistance = 6.9420D;
-        this.controllerReached = false;
-        this.blockExpelled = false;
-
-        this.controlMode = 1;
-        this.controllerReleaseMode = 1;
-
-
         this.setOrigin(blockPos);
 
 
@@ -100,34 +92,11 @@ public class EntityThrownBlock extends EntityWithOwner
         
         this.dealsDamage = true;
         this.thrownBlockDamage = thrownBlockDamage;
-
-
-        this.motionX = 0.69420D;
-        this.motionY = 0.69420D;
-        this.motionZ = 0.69420D;
-
-
-        this.gravitySpeed = 0.08D;
-        this.acceleratesVertically = true;
-        this.accelerationVal = 0.98D;
     }
 
     protected void entityInit()
     {
         this.dataManager.register(ORIGIN, BlockPos.ORIGIN);
-    }
-
-    public void setMovement(double speedX, double speedY, double speedZ, 
-    double gravitySpeed, boolean acceleratesVertically, double accelerationVal)
-    {
-        this.motionX = speedX;
-        this.motionY = speedY;
-        this.motionZ = speedZ;
-
-
-        this.gravitySpeed = gravitySpeed;
-        this.acceleratesVertically = acceleratesVertically;
-        this.accelerationVal = accelerationVal;
     }
 
     public void setBlockNormal(boolean normal)
@@ -140,6 +109,126 @@ public class EntityThrownBlock extends EntityWithOwner
         this.dealsDamage = normal;
     }
 
+    public void setBlockShower(String controlMode, String controllerReleaseMode,
+    double expelForceHorizontal, double expelForceVertical,
+    double expelGravity, double expelAcceleration)
+    {
+        this.controlMode = controlMode;
+        this.controllerReleaseMode = controllerReleaseMode;
+
+        this.expelForceHorizontal = expelForceHorizontal;
+        this.expelForceVertical = expelForceVertical;
+        this.expelGravity = expelGravity;
+        this.expelAcceleration = expelAcceleration;
+    }
+
+    public void setBlockPiece(String pieceType, double stickX, double stickY, double stickZ,
+    double expelForceHorizontal, double expelForceVertical,
+    double expelGravity, double expelAcceleration)
+    {
+        this.controlMode = pieceType;
+
+        this.stickX = stickX;
+        this.stickY = stickY;
+        this.stickZ = stickZ;
+
+        this.expelForceHorizontal = expelForceHorizontal;
+        this.expelForceVertical = expelForceVertical;
+        this.expelGravity = expelGravity;
+        this.expelAcceleration = expelAcceleration;    
+    }
+   
+
+    /**
+     * (abstract) Protected helper method to write subclass entity data to NBT.
+     */
+    protected void writeEntityToNBT(NBTTagCompound compound)
+    {
+        super.writeEntityToNBT(compound);
+
+
+		compound.setInteger("BlockPosX", this.getOrigin().getX());
+		compound.setInteger("BlockPosY", this.getOrigin().getY());
+		compound.setInteger("BlockPosZ", this.getOrigin().getZ());
+
+        compound.setBoolean("DealsDamage", this.dealsDamage);
+        compound.setFloat("ThrownBlockDamage", this.thrownBlockDamage);
+
+
+		compound.setString("ControlMode", this.controlMode);
+		compound.setString("ControllerReleaseMode", this.controllerReleaseMode);
+
+
+        compound.setDouble("ExpelRadians", this.expelRadians);
+        compound.setDouble("ExpelForceHorizontal", this.expelForceHorizontal);
+        compound.setDouble("ExpelForceVertical", this.expelForceVertical);
+        compound.setDouble("ExpelGravity", this.expelGravity);
+        compound.setDouble("ExpelAcceleration", this.expelAcceleration);
+
+        if(this.controllerInitialVec != null)
+        {
+            compound.setDouble("ControllerInitialVecX", this.controllerInitialVec.x);
+            compound.setDouble("ControllerInitialVecY", this.controllerInitialVec.y);
+            compound.setDouble("ControllerInitialVecZ", this.controllerInitialVec.z);
+        }
+        compound.setDouble("ControllerGlueDistance", this.controllerGlueDistance);
+        compound.setBoolean("ControllerReached", this.controllerReached);
+        compound.setBoolean("BlockExpelled", this.blockExpelled);
+
+        compound.setDouble("StickX", this.stickX);
+        compound.setDouble("StickY", this.stickY);
+        compound.setDouble("StickZ", this.stickZ);
+    }
+
+
+    /**
+     * (abstract) Protected helper method to read subclass entity data from NBT.
+     */
+    protected void readEntityFromNBT(NBTTagCompound compound)
+    {
+        super.readEntityFromNBT(compound);
+
+
+        if (compound.hasKey("BlockPosX") && compound.hasKey("BlockPosY") && compound.hasKey("BlockPosZ"))
+        {
+            int X = 0;
+            int Y = 0;
+            int Z = 0;
+
+	        X = compound.getInteger("BlockPosX");
+	        Y = compound.getInteger("BlockPosY");
+	        Z = compound.getInteger("BlockPosZ");
+
+    	    this.setOrigin(new BlockPos(X,Y,Z));
+        } else { this.setOrigin(new BlockPos(0, 0, 0)); }
+
+        if (compound.hasKey("DealsDamage")) { this.dealsDamage = compound.getBoolean("DealsDamage"); }
+        if (compound.hasKey("ThrownBlockDamage")) { this.thrownBlockDamage = compound.getFloat("ThrownBlockDamage"); }
+
+
+        if (compound.hasKey("ControlMode")) { this.controlMode = compound.getString("ControlMode"); }
+        if (compound.hasKey("ControllerReleaseMode")) { this.controllerReleaseMode = compound.getString("ControllerReleaseMode"); }
+
+
+        if (compound.hasKey("ExpelRadians")) { this.expelRadians = compound.getDouble("ExpelRadians"); }
+        if (compound.hasKey("ExpelForceHorizontal")) { this.expelForceHorizontal = compound.getDouble("ExpelForceHorizontal"); }
+        if (compound.hasKey("ExpelForceVertical")) { this.expelForceVertical = compound.getDouble("ExpelForceVertical"); }
+        if (compound.hasKey("ExpelGravity")) { this.expelGravity = compound.getDouble("ExpelGravity"); }
+        if (compound.hasKey("ExpelAcceleration")) { this.expelAcceleration = compound.getDouble("ExpelAcceleration"); }
+
+        if (compound.hasKey("ControllerInitialVecX") 
+        && compound.hasKey("ControllerInitialVecY") && compound.hasKey("ControllerInitialVecZ")) 
+            { this.controllerInitialVec = new Vec3d(compound.getDouble("ControllerInitialVecX"), 
+            compound.getDouble("ControllerInitialVecY"), compound.getDouble("ControllerInitialVecZ")); }
+        if (compound.hasKey("ControllerGlueDistance")) { this.controllerGlueDistance = compound.getDouble("ControllerGlueDistance"); }
+        if (compound.hasKey("ControllerReached")) { this.controllerReached = compound.getBoolean("ControllerReached"); }
+        if (compound.hasKey("BlockExpelled")) { this.blockExpelled = compound.getBoolean("BlockExpelled"); }
+
+        if (compound.hasKey("StickX")) { this.stickX = compound.getDouble("StickX"); }
+        if (compound.hasKey("StickY")) { this.stickY = compound.getDouble("StickY"); }
+        if (compound.hasKey("StickZ")) { this.stickZ = compound.getDouble("StickZ"); }
+    }
+
 
     
   
@@ -150,16 +239,20 @@ public class EntityThrownBlock extends EntityWithOwner
      */
     public void onUpdate()
     {
+//Block restored to normal if no owner
         super.onUpdate();
+
 
 //If being controlled 
         if(this.controller != null) 
         {
-//By a void orb and not already expelled
-            if((this.controller instanceof EntityOrbVoidCustom) && !this.blockExpelled)
+//If not already expelled
+            if(!this.blockExpelled)
             {
 //Control by orb
-                this.controlByOrb();
+                if(this.controller instanceof EntityOrbVoidCustom) { this.controlByOrb(); }
+//Control by piece
+                if(this.controller instanceof EntityEarthPiece) { this.controlByPiece(); }
             }
         }
 
@@ -192,23 +285,7 @@ public class EntityThrownBlock extends EntityWithOwner
         }
 
 
-        this.prevPosX = this.posX;
-        this.prevPosY = this.posY;
-        this.prevPosZ = this.posZ;
-
-
-        if (!this.hasNoGravity())
-        {
-            this.motionY -= this.gravitySpeed;
-        }
-
-
-        this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
-
-
-        this.motionX *= this.accelerationVal;
-        if(this.acceleratesVertically) { this.motionY *= this.accelerationVal; }
-        this.motionZ *= this.accelerationVal;
+        this.performBasicMovement();
 
 
         if (this.onGround && this.dealsDamage)
@@ -228,6 +305,9 @@ public class EntityThrownBlock extends EntityWithOwner
         }
     }
 
+
+
+
 //Restore block to normal if no owner
     public void performControllerValidation()
     {
@@ -238,6 +318,24 @@ public class EntityThrownBlock extends EntityWithOwner
 
 
     public void controlByOrb()
+    {
+        if(this.controlMode.equals("shower"))
+        {
+            this.controlByOrbShower();
+        }
+    }
+
+
+    public void controlByPiece()
+    {
+        if(this.controlMode.equals("spin"))
+        {
+            this.controlByPieceSpin();        
+        }
+    }
+
+    
+    public void controlByOrbShower()
     {
         EntityOrbVoidCustom controllerOrb = (EntityOrbVoidCustom) this.controller;
 
@@ -260,7 +358,8 @@ public class EntityThrownBlock extends EntityWithOwner
 //If orb started deflating
             else if(controllerOrb.getTimerDDD() > controllerOrb.orbDeflatesWhen)
             {
-                this.expelByOrb();
+//Expel
+                this.expelByOrbShower();
             }
         }
 
@@ -310,7 +409,99 @@ public class EntityThrownBlock extends EntityWithOwner
     }
 
 
-    public void expelByOrb()
+//If controlled by an earth piece (spin)
+    public void controlByPieceSpin()
+    {
+        EntityEarthPiece controllerPiece = (EntityEarthPiece) this.controller;
+
+
+//If controller piece is at "flung"
+        if(controllerPiece.phaseAt.equals("flung"))
+        {
+//If this collided
+            if(this.collidedHorizontally || this.collidedVertically)
+            {
+//Expel blocks
+                controllerPiece.phaseAt = "expel";
+            }
+        }
+
+//If piece at expel (also triggers for losing owner)
+        if(controllerPiece.phaseAt.equals("expel"))
+        {
+//Expel
+            this.expelByPieceSpin();
+//Cancel everything else
+            return;
+        }
+
+
+//If at position relative to piece
+        if(this.controllerReached)
+        {
+//But piece not at expel
+            if(!controllerPiece.phaseAt.equals("expel"))
+            {
+//Follow piece (at offset)
+                this.setPosition(controllerPiece.posX + this.stickX, controllerPiece.posY + this.stickY, controllerPiece.posZ + this.stickZ);
+//No motion
+                this.motionX = 0.0D;
+                this.motionY = 0.0D;
+                this.motionZ = 0.0D;
+            }
+        }
+
+
+//If not reached piece yet
+        else
+        {
+//If piece at gathering phase
+            if(controllerPiece.phaseAt.equals("gather"))
+            {
+//And first tick of piece gathering
+                if(controllerPiece.gatherCountdown == controllerPiece.gatherCountdownMax)
+                { 
+//Set initial vec to piece and offset
+                    this.controllerInitialVec
+                        = new Vec3d(
+                        (controllerPiece.posX + this.stickX) - this.posX, 
+                        (controllerPiece.posY + this.stickY) - this.posY, 
+                        (controllerPiece.posZ + this.stickZ) - this.posZ)
+                        .scale(1.25D / ((double) controllerPiece.gatherCountdownMax));
+//Set glue distance
+                    this.controllerGlueDistance 
+                    = 1.5D * controllerInitialVec.length();
+//Set block "not normal"
+                    this.setBlockNormal(false);
+                }
+
+
+//In any case, move to piece,
+//in a fraction of gather countdown + using piece motion
+                this.motionX = (controllerInitialVec.x + controllerPiece.motionX);
+                this.motionY = (controllerInitialVec.y + controllerPiece.motionY);
+                this.motionZ = (controllerInitialVec.z + controllerPiece.motionZ);
+
+
+//Check if close enough to piece to glue
+                if(this.getDistance
+                (controllerPiece.posX + this.stickX, controllerPiece.posY + this.stickY, controllerPiece.posZ + this.stickZ) <= this.controllerGlueDistance)
+                {
+//If so set glued
+                    this.controllerReached = true;
+//Follow piece (at offset)
+                    this.setPosition(controllerPiece.posX + this.stickX, controllerPiece.posY + this.stickY, controllerPiece.posZ + this.stickZ);
+//No motion
+                    this.motionX = 0.0D;
+                    this.motionY = 0.0D;
+                    this.motionZ = 0.0D;
+                }                 
+            }    
+        }
+    }
+
+
+    public void expelByOrbShower()
     {
 //Set block expelled
         this.blockExpelled = true;
@@ -319,21 +510,21 @@ public class EntityThrownBlock extends EntityWithOwner
 //Get block expel mode
 
 //If random release (radians provided by controller)
-        if(controllerReleaseMode == 1)
+        if(controllerReleaseMode.equals("scatter"))
         {
 //Random force
-            double expelForce = (160.0D * rand.nextDouble()) / 20.0D;              
+            double actualForce = this.expelForceHorizontal * rand.nextDouble();              
 //Shoot out block
-            this.setMovement(Math.cos(this.expelRadians) * expelForce, -2.0D, Math.sin(this.expelRadians) * expelForce,
+            this.setMovement(Math.cos(this.expelRadians) * actualForce, this.expelForceVertical, Math.sin(this.expelRadians) * actualForce,
 //Flat-ish gravity and quick horizontal deceleration 
-            0.01D, false, 0.96D);
+            this.expelGravity, false, this.expelAcceleration);
 //Restore block normal behavior
             this.setBlockNormal(true);          
         }
 
 
 //If aimed release (radians calculated at expel time)
-        if(controllerReleaseMode == 2)
+        if(controllerReleaseMode.equals("aimed"))
         {
 //If owner valid
             if(this.owner != null && (this.owner instanceof EntityLiving) && ((EntityLiving) this.owner).getAttackTarget() != null) 
@@ -352,20 +543,45 @@ public class EntityThrownBlock extends EntityWithOwner
             }
 
 //Random force
-            double expelForce = (160.0D * rand.nextDouble()) / 20.0D;              
+            double actualForce = this.expelForceHorizontal * rand.nextDouble();              
 //Shoot out block
-            this.setMovement(Math.cos(this.expelRadians) * expelForce, -2.0D, Math.sin(this.expelRadians) * expelForce,
+            this.setMovement(Math.cos(this.expelRadians) * actualForce, this.expelForceVertical, Math.sin(this.expelRadians) * actualForce,
 //Flat-ish gravity and quick horizontal deceleration 
-            0.01D, false, 0.96D);
+            this.expelGravity, false, this.expelAcceleration);
 //Restore block normal behavior
             this.setBlockNormal(true);          
         }
     }
 
 
+    public void expelByPieceSpin()
+    {
+//Set block expelled
+        this.blockExpelled = true;
+
+//Aim direction based on offset
+        Vec3d aimDirection = new Vec3d(this.stickX, this.stickY, this.stickZ).normalize();
+
+//Shoot out block
+        this.setMovement(aimDirection.x * this.expelForceHorizontal, aimDirection.y * this.expelForceVertical, aimDirection.z * this.expelForceHorizontal,
+//Flat-ish gravity and quick horizontal deceleration 
+        this.expelGravity, false, this.expelAcceleration);
+//Restore block normal behavior
+        this.setBlockNormal(true);        
+    }
+
+
 
     public void fall(float distance, float damageMultiplier)
     {
+//First if controller not null
+        if(this.controller != null) 
+        {
+//And controller is piece, expel
+            if(this.controller instanceof EntityEarthPiece) { ((EntityEarthPiece) this.controller).phaseAt = "expel"; }
+        }
+
+
         if(this.dealsDamage)
         {
             List<Entity> list = Lists.newArrayList(this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox().expand(1.25, 1.25, 1.25)));
@@ -476,91 +692,5 @@ public class EntityThrownBlock extends EntityWithOwner
         return false;
     }
     
-    
-
-
-    /**
-     * (abstract) Protected helper method to write subclass entity data to NBT.
-     */
-    protected void writeEntityToNBT(NBTTagCompound compound)
-    {
-        super.writeEntityToNBT(compound);
-
-
-        compound.setDouble("ExpelRadians", this.expelRadians);
-
-        if(this.controllerInitialVec != null)
-        {
-            compound.setDouble("ControllerInitialVecX", this.controllerInitialVec.x);
-            compound.setDouble("ControllerInitialVecY", this.controllerInitialVec.y);
-            compound.setDouble("ControllerInitialVecZ", this.controllerInitialVec.z);
-        }
-        compound.setDouble("ControllerGlueDistance", this.controllerGlueDistance);
-        compound.setBoolean("ControllerReached", this.controllerReached);
-        compound.setBoolean("BlockExpelled", this.blockExpelled);
-
-		compound.setInteger("ControlMode", this.controlMode);
-		compound.setInteger("ControllerReleaseMode", this.controllerReleaseMode);
-
-
-		compound.setInteger("BlockPosX", this.getOrigin().getX());
-		compound.setInteger("BlockPosY", this.getOrigin().getY());
-		compound.setInteger("BlockPosZ", this.getOrigin().getZ());
-
-        compound.setBoolean("DealsDamage", this.dealsDamage);
-        compound.setFloat("ThrownBlockDamage", this.thrownBlockDamage);
-
-        compound.setDouble("GravitySpeed", this.gravitySpeed);
-        compound.setBoolean("AcceleratesVertically", this.acceleratesVertically);
-        compound.setDouble("AccelerationVal", this.accelerationVal);
-    }
-
-
-    /**
-     * (abstract) Protected helper method to read subclass entity data from NBT.
-     */
-    protected void readEntityFromNBT(NBTTagCompound compound)
-    {
-        super.readEntityFromNBT(compound);
-
-
-        if (compound.hasKey("ExpelRadians")) { this.expelRadians = compound.getDouble("ExpelRadians"); }
-
-        if (compound.hasKey("ControllerInitialVecX") 
-        && compound.hasKey("ControllerInitialVecY") && compound.hasKey("ControllerInitialVecZ")) 
-            { this.controllerInitialVec = new Vec3d(compound.getDouble("ControllerInitialVecX"), 
-            compound.getDouble("ControllerInitialVecY"), compound.getDouble("ControllerInitialVecZ")); }
-        if (compound.hasKey("ControllerGlueDistance")) { this.controllerGlueDistance = compound.getDouble("ControllerGlueDistance"); }
-        if (compound.hasKey("ControllerReached")) { this.controllerReached = compound.getBoolean("ControllerReached"); }
-        if (compound.hasKey("BlockExpelled")) { this.blockExpelled = compound.getBoolean("BlockExpelled"); }
-
-        if (compound.hasKey("ControlMode")) { this.controlMode = compound.getInteger("ControlMode"); }
-        if (compound.hasKey("ControllerReleaseMode")) { this.controllerReleaseMode = compound.getInteger("ControllerReleaseMode"); }
-
-
-        if (compound.hasKey("BlockPosX") && compound.hasKey("BlockPosY") && compound.hasKey("BlockPosZ"))
-        {
-            int X = 0;
-            int Y = 0;
-            int Z = 0;
-
-	        X = compound.getInteger("BlockPosX");
-	        Y = compound.getInteger("BlockPosY");
-	        Z = compound.getInteger("BlockPosZ");
-
-    	    this.setOrigin(new BlockPos(X,Y,Z));
-        } else { this.setOrigin(new BlockPos(0, 0, 0)); }
-
-        if (compound.hasKey("DealsDamage")) { this.dealsDamage = compound.getBoolean("DealsDamage"); }
-        if (compound.hasKey("ThrownBlockDamage")) { this.thrownBlockDamage = compound.getFloat("ThrownBlockDamage"); }
-
-        if (compound.hasKey("GravitySpeed")) { this.gravitySpeed = compound.getDouble("GravitySpeed"); }
-        if (compound.hasKey("AcceleratesVertically")) { this.acceleratesVertically = compound.getBoolean("AcceleratesVertically"); }
-        if (compound.hasKey("AccelerationVal")) { this.accelerationVal = compound.getDouble("AccelerationVal"); }
-    }
-
-    @SideOnly(Side.CLIENT)
-    @Override
-    public boolean isInvisible() { return true; }
 }
 
