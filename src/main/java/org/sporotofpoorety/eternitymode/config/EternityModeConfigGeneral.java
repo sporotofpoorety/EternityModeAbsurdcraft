@@ -18,16 +18,4 @@ public class EternityModeConfigGeneral
         softHardcoreEnabled = config.get(category1, "Soft-Hardcore enabled", false, "Enables a mode similar to Hardcore Mode - Players can still respawn, but if they die within a short period of time after respawning, the death is permanent.").getBoolean();
         softHardcoreLength = config.get(category1, "Soft-Hardcore length", 600, "When dying in Soft-Hardcore, left susceptible to permadeath for this many seconds.").getInt();
 	}
-
-
-    public static boolean getSoftHardcoreEnabled()
-    {
-        return softHardcoreEnabled;
-    }
-
-    public static int getSoftHardcoreLength()
-    {
-        return softHardcoreLength;
-    }
-
 }

@@ -1,5 +1,6 @@
 package org.sporotofpoorety.eternitymode.util;
 
+import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -151,17 +152,12 @@ public final class AbsurdcraftMathUtils {
         Vec3d zerothApproxDist = new Vec3d
         (
             vecTarget.posX - aimX,
-            vecTarget.posY - aimY,
+            0.0D,
             vecTarget.posZ - aimZ
         );
 
 //Get arrival time to target's current distance
-        double zerothApproxArrivalTime = Math.sqrt
-        (
-            (vecTarget.posX - aimX) * (vecTarget.posX - aimX)
-            + (vecTarget.posZ - aimZ) * (vecTarget.posZ - aimZ)
-        ) 
-        / (aimerSpeedFactor * aimerSpeedFactor);
+        double zerothApproxArrivalTime = zerothApproxDist.length() / aimerSpeedFactor;
 
 
 
@@ -175,7 +171,7 @@ public final class AbsurdcraftMathUtils {
             );
 
 //Get arrival time to target's predicted distance
-        double firstApproxArrivalTime = (firstApproxDist.length()) / aimerSpeedFactor;
+        double firstApproxArrivalTime = firstApproxDist.length() / aimerSpeedFactor;
 
 
 
@@ -188,10 +184,39 @@ public final class AbsurdcraftMathUtils {
                 vecTarget.motionZ * firstApproxArrivalTime
             );
 
+//Get arrival time to target's final predicted distance
+        double secondApproxArrivalTime = secondApproxDist.length() / aimerSpeedFactor;
+
 
         return secondApproxDist;
     }
 
+
+
+
+    @Nullable
+	public static Vec3d predictTargetPositionNoVertical
+    (double aimX, double aimY, double aimZ,
+    Entity target, double aimerSpeed)
+    {
+        double targetDistance = Math.sqrt(Math.pow(target.posX - aimX, 2) + Math.pow(target.posZ - aimZ, 2));
+
+        double ticksUntilHit = targetDistance / aimerSpeed;
+
+        Vec3d targetPos = new Vec3d(target.posX, target.posY + (target.height / 2.0D), target.posZ);
+        Vec3d prevTargetPos = new Vec3d(target.prevPosX, target.prevPosY + (target.height / 2.0D), target.prevPosZ);
+
+        Vec3d targetMovement = targetPos.subtract(prevTargetPos).scale(ticksUntilHit * 0.95);
+        targetMovement = targetMovement.subtract(0, targetMovement.y, 0);
+
+        Vec3d futureTargetPos = targetPos.add(targetMovement);
+
+        Vec3d aimerVec = new Vec3d(aimX, aimY, aimZ);
+
+        Vec3d shootVec = futureTargetPos.subtract(aimerVec).normalize().scale(aimerSpeed);
+
+        return shootVec;
+	}
 
 
 

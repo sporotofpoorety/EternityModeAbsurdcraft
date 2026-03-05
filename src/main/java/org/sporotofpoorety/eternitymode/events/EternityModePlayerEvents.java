@@ -27,6 +27,7 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
 import org.sporotofpoorety.eternitymode.config.EternityModeConfigGeneral;
+import org.sporotofpoorety.eternitymode.config.EternityModeConfigPlayerAttributes;
 import org.sporotofpoorety.eternitymode.util.MiscUtil;
 
 import com.tmtravlr.potioncore.PotionCoreAttributes;
@@ -74,11 +75,21 @@ as a flag against their reapplication
         playerBaseStepInstance.removeModifier(playerBaseStepModifierUUID);
 
 //Create modifiers for each attribute
-        AttributeModifier playerBaseHealthModifier = new AttributeModifier(playerBaseHealthModifierUUID, "generic.maxHealth", 180, 0);
-        AttributeModifier playerBaseAttackModifier = new AttributeModifier(playerBaseAttackModifierUUID, "generic.attackDamage", 3, 0);
-        AttributeModifier playerBaseSpeedModifier = new AttributeModifier(playerBaseSpeedModifierUUID, "generic.movementSpeed", 0.02, 0);
-        AttributeModifier playerBaseJumpModifier = new AttributeModifier(playerBaseJumpModifierUUID, "potioncore.jumpHeight", 1.0, 0);
-        AttributeModifier playerBaseStepModifier = new AttributeModifier(playerBaseStepModifierUUID, "potioncore.stepHeight", 0.5, 0);
+        AttributeModifier playerBaseHealthModifier
+//80 
+            = new AttributeModifier(playerBaseHealthModifierUUID, "generic.maxHealth", EternityModeConfigPlayerAttributes.playerBaseHealthIncrease, 0);
+        AttributeModifier playerBaseAttackModifier 
+//3
+            = new AttributeModifier(playerBaseAttackModifierUUID, "generic.attackDamage", EternityModeConfigPlayerAttributes.playerBaseAttackIncrease, 0);
+        AttributeModifier playerBaseSpeedModifier   
+//0.3
+            = new AttributeModifier(playerBaseSpeedModifierUUID, "generic.movementSpeed", EternityModeConfigPlayerAttributes.playerBaseSpeedIncrease, 0);
+        AttributeModifier playerBaseJumpModifier 
+//1.2
+            = new AttributeModifier(playerBaseJumpModifierUUID, "potioncore.jumpHeight", EternityModeConfigPlayerAttributes.playerBaseJumpIncrease, 0);
+        AttributeModifier playerBaseStepModifier
+//1.0 
+            = new AttributeModifier(playerBaseStepModifierUUID, "potioncore.stepHeight", 1.0, 0);
 
 //Finally, apply them to the player
         playerBaseHealthInstance.applyModifier(playerBaseHealthModifier);
@@ -202,14 +213,14 @@ as a flag against their reapplication
     public void playerRoguelikeRespawn(PlayerRespawnEvent event) 
     {
 //If soft-hardcore enabled and player not in creative mode
-        if(EternityModeConfigGeneral.getSoftHardcoreEnabled() && !(event.player.isCreative()))
+        if(EternityModeConfigGeneral.softHardcoreEnabled && !(event.player.isCreative()))
         {
 //Get persistent data (ForgeData)
             NBTTagCompound persistentData = event.player.getEntityData().getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG);
 
 
 //Set permadeath end tick
-            long permadeathEndTick = event.player.world.getTotalWorldTime() + (EternityModeConfigGeneral.getSoftHardcoreLength() * 20);
+            long permadeathEndTick = event.player.world.getTotalWorldTime() + (EternityModeConfigGeneral.softHardcoreLength * 20);
 
 //Set permadeath true
             persistentData.setBoolean("PermadeathEnabled", true);
@@ -227,7 +238,7 @@ as a flag against their reapplication
                 event.player.addPotionEffect(new PotionEffect
                 (
                     MobEffects.GLOWING,
-                    EternityModeConfigGeneral.getSoftHardcoreLength() * 20,
+                    EternityModeConfigGeneral.softHardcoreLength * 20,
                     0,
                     false,
                     true

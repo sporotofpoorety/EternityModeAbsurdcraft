@@ -10,6 +10,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.MoverType;
 import net.minecraft.entity.item.EntityFallingBlock;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
@@ -31,17 +32,27 @@ import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
 
 
 
-public class EntityThrownBlock extends EntityWithOwner
+public class EntityThrownBlocka extends EntityFallingBlock
 {
-    private IBlockState fallTile;
-    public NBTTagCompound tileEntityData;
-    protected static final DataParameter<BlockPos> ORIGIN = EntityDataManager.<BlockPos>createKey(EntityFallingBlock.class, DataSerializers.BLOCK_POS);
+
+    public EntityLivingBase owner;
+    public UUID ownerUUID;
+    public int ownerCheckCooldown;
+    public int ownerCheckCooldownMax;
+
+    public Entity controller;
+    public UUID controllerUUID;
+    public int controllerCheckCooldown;
+    public int controllerCheckCooldownMax;
+
+    public double gravitySpeed;
+    public boolean acceleratesVertically;
+    public double accelerationVal;
+
 
 
     public boolean dealsDamage;
     public float thrownBlockDamage;
-
-
 
 
 //Controller logic specific
@@ -66,39 +77,46 @@ public class EntityThrownBlock extends EntityWithOwner
     
 
 
-    public EntityThrownBlock(World worldIn)
+    public EntityThrownBlocka(World worldIn)
     {
         super(worldIn);
-        this.preventEntitySpawning = true;
-        this.setSize(1.0F, 1.0F);
     }
 
-    public EntityThrownBlock(World worldIn, EntityLivingBase owner, BlockPos blockPos, double x, double y, double z, float thrownBlockDamage)
+    public EntityThrownBlocka(World worldIn, double x, double y, double z, IBlockState fallingBlockState, EntityLivingBase owner, float thrownBlockDamage)
     {
-        super(worldIn, owner);
-        this.preventEntitySpawning = true;
-        this.setSize(1.0F, 1.0F);
+        super(worldIn, x, y, z, fallingBlockState);
 
+//Just safeguarding defaults
+        this.owner = owner;
+        if(this.owner != null) { this.ownerUUID = owner.getUniqueID(); }
+        this.ownerCheckCooldown = 0;
+        this.ownerCheckCooldownMax = 20;
 
-        this.setOrigin(blockPos);
+//Just safeguarding defaults
+        this.controller = null;
+        this.controllerUUID = null;
+        this.controllerCheckCooldown = 0;
+        this.controllerCheckCooldownMax = 20;
 
-
-        this.setPosition(x, y, z); 
-
+        this.gravitySpeed = 0.08D;
+        this.acceleratesVertically = true;
+        this.accelerationVal = 1.0D;
         
         this.dealsDamage = true;
         this.thrownBlockDamage = thrownBlockDamage;
     }
 
-    public void setDead()
+    public void setMovement(double speedX, double speedY, double speedZ, 
+    double gravitySpeed, boolean acceleratesVertically, double accelerationVal)
     {
-        super.setDead();
-        System.out.println("Block died at " + this.ticksExisted);
-    }
+        this.motionX = speedX;
+        this.motionY = speedY;
+        this.motionZ = speedZ;
 
-    protected void entityInit()
-    {
-        this.dataManager.register(ORIGIN, BlockPos.ORIGIN);
+
+        this.gravitySpeed = gravitySpeed;
+        this.acceleratesVertically = acceleratesVertically;
+        this.accelerationVal = accelerationVal;
     }
 
     public void setBlockNormal(boolean normal)
@@ -111,20 +129,7 @@ public class EntityThrownBlock extends EntityWithOwner
         this.dealsDamage = normal;
     }
 
-    public void setBlockShower(String controlMode, String controllerReleaseMode,
-    double expelForceHorizontal, double expelForceVertical,
-    double expelGravity, double expelAcceleration)
-    {
-        this.controlMode = controlMode;
-        this.controllerReleaseMode = controllerReleaseMode;
-
-        this.expelForceHorizontal = expelForceHorizontal;
-        this.expelForceVertical = expelForceVertical;
-        this.expelGravity = expelGravity;
-        this.expelAcceleration = expelAcceleration;
-    }
-
-    public void setBlockPiece(double stickX, double stickY, double stickZ)
+    public void setBlockStick(double stickX, double stickY, double stickZ)
     {
         this.stickX = stickX;
         this.stickY = stickY;
@@ -140,9 +145,18 @@ public class EntityThrownBlock extends EntityWithOwner
         super.writeEntityToNBT(compound);
 
 
-		compound.setInteger("BlockPosX", this.getOrigin().getX());
-		compound.setInteger("BlockPosY", this.getOrigin().getY());
-		compound.setInteger("BlockPosZ", this.getOrigin().getZ());
+        if(this.ownerUUID != null) { compound.setUniqueId("OwnerUUID", this.ownerUUID); }
+        compound.setInteger("OwnerCheckCooldown", this.ownerCheckCooldown);
+        compound.setInteger("OwnerCheckCooldownMax", this.ownerCheckCooldownMax);
+
+        if(this.controllerUUID != null) { compound.setUniqueId("ControllerUUID", this.controllerUUID); }
+        compound.setInteger("ControllerCheckCooldown", this.controllerCheckCooldown);
+        compound.setInteger("ControllerCheckCooldownMax", this.controllerCheckCooldownMax);
+
+        compound.setDouble("GravitySpeed", this.gravitySpeed);
+        compound.setBoolean("AcceleratesVertically", this.acceleratesVertically);
+        compound.setDouble("AccelerationVal", this.accelerationVal);
+
 
         compound.setBoolean("DealsDamage", this.dealsDamage);
         compound.setFloat("ThrownBlockDamage", this.thrownBlockDamage);
@@ -182,18 +196,18 @@ public class EntityThrownBlock extends EntityWithOwner
         super.readEntityFromNBT(compound);
 
 
-        if (compound.hasKey("BlockPosX") && compound.hasKey("BlockPosY") && compound.hasKey("BlockPosZ"))
-        {
-            int X = 0;
-            int Y = 0;
-            int Z = 0;
+        if (compound.hasKey("OwnerUUID")) { this.ownerUUID = compound.getUniqueId("OwnerUUID"); }
+        if (compound.hasKey("OwnerCheckCooldown")) { this.ownerCheckCooldown = compound.getInteger("OwnerCheckCooldown"); }
+        if (compound.hasKey("OwnerCheckCooldownMax")) { this.ownerCheckCooldownMax = compound.getInteger("OwnerCheckCooldownMax"); }
 
-	        X = compound.getInteger("BlockPosX");
-	        Y = compound.getInteger("BlockPosY");
-	        Z = compound.getInteger("BlockPosZ");
+        if (compound.hasKey("ControllerUUID")) { this.controllerUUID = compound.getUniqueId("ControllerUUID"); }
+        if (compound.hasKey("ControllerCheckCooldown")) { this.controllerCheckCooldown = compound.getInteger("ControllerCheckCooldown"); }
+        if (compound.hasKey("ControllerCheckCooldownMax")) { this.controllerCheckCooldownMax = compound.getInteger("ControllerCheckCooldownMax"); }
 
-    	    this.setOrigin(new BlockPos(X,Y,Z));
-        } else { this.setOrigin(new BlockPos(0, 0, 0)); }
+        if (compound.hasKey("GravitySpeed")) { this.gravitySpeed = compound.getDouble("GravitySpeed"); }
+        if (compound.hasKey("AcceleratesVertically")) { this.acceleratesVertically = compound.getBoolean("AcceleratesVertically"); }
+        if (compound.hasKey("AccelerationVal")) { this.accelerationVal = compound.getDouble("AccelerationVal"); }
+
 
         if (compound.hasKey("DealsDamage")) { this.dealsDamage = compound.getBoolean("DealsDamage"); }
         if (compound.hasKey("ThrownBlockDamage")) { this.thrownBlockDamage = compound.getFloat("ThrownBlockDamage"); }
@@ -224,15 +238,53 @@ public class EntityThrownBlock extends EntityWithOwner
 
 
     
-  
-
 
     /**
      * Called to update the entity's position/logic.
      */
     public void onUpdate()
     {
-//Block restored to normal if no owner
+
+//Server side
+        if(!this.world.isRemote)
+        {
+
+//If no owner check cooldown
+            if(this.ownerCheckCooldown <= 0)
+            {
+//Try to validate owner
+                this.performOwnerValidation();
+//Apply check cooldown
+                this.ownerCheckCooldown = this.ownerCheckCooldownMax;
+            }
+            else
+            {
+//Else decrement owner check cooldown
+                --this.ownerCheckCooldown;
+            }
+
+
+//If no controller check cooldown
+            if(this.controllerCheckCooldown <= 0)
+            {
+//Try to validate controller
+                this.performControllerValidation();
+//Apply check cooldown
+                this.controllerCheckCooldown = this.controllerCheckCooldownMax;
+            }
+            else
+            {
+//Else decrement controller check cooldown
+                --this.controllerCheckCooldown;
+            }
+
+        }  
+
+
+        this.performBasicMovement();
+
+
+//Normal falling block logic
         super.onUpdate();
 
 
@@ -276,9 +328,7 @@ public class EntityThrownBlock extends EntityWithOwner
         }
 
 
-        this.performBasicMovement();
-
-
+/*
         if (this.onGround && this.dealsDamage)
         {
             this.motionX *= 0.699999988079071D;
@@ -294,16 +344,13 @@ public class EntityThrownBlock extends EntityWithOwner
             
             this.setDead();
         }
+*/
     }
 
 
 
 
-//Restore block to normal if no controller
-    public void performControllerValidation()
-    {
-        if(!this.validateController()) { this.setBlockNormal(true); }
-    }
+
 
 
 
@@ -473,92 +520,135 @@ public class EntityThrownBlock extends EntityWithOwner
                 }
             }
         }
-    }
 
 
-
-    public void setOrigin(BlockPos p_184530_1_)
-    {
-        this.dataManager.set(ORIGIN, p_184530_1_);
-    }
-
-
-    public BlockPos getOrigin()
-    {
-        return (BlockPos)this.dataManager.get(ORIGIN);
-    }
-
-
-    /**
-     * returns null or the entityliving it was placed or ignited by
-     */
-    public EntityLivingBase getOwner()
-    {
-        return this.owner;
-    }
-
-
-    private void explode()
-    {
-    	boolean flag = true;
-    	
-
-       // this.getEntityWorld().createExplosion(this, this.posX, this.posY + (double)(this.height / 16.0F), this.posZ, 1, flag);
+        super.fall(distance, damageMultiplier);
     }
 
 
 
 
-
-
-    public float getEyeHeight()
+    public void performBasicMovement()
     {
-        return 0.0F;
+        this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
+
+
+        if (!this.hasNoGravity())
+        {
+            this.motionY -= this.gravitySpeed;
+        }
+
+
+        this.motionX *= this.accelerationVal;
+        if(this.acceleratesVertically) { this.motionY *= this.accelerationVal; }
+        this.motionZ *= this.accelerationVal;
     }
-    
-    /**
-     * Return whether this entity should be rendered as on fire.
-     */
-    @SideOnly(Side.CLIENT)
-    public boolean canRenderOnFire()
+
+
+
+
+//Validate owner and return if successful
+    public boolean validateOwner()
     {
+
+//If there is a owner UUID
+        if(this.ownerUUID != null)
+        {
+//But no valid owner 
+            if(this.owner == null)
+            {
+//Try to get owner from UUID
+                Entity foundEntity  
+                = ((WorldServer)world).getEntityFromUuid(this.ownerUUID);
+
+
+//If owner found
+//and owner conditions met
+                if(foundEntity != null && this.ownerValidConditions(foundEntity))
+                {
+//Restore owner
+                    this.owner = (EntityLivingBase) foundEntity;
+//Check successful
+                    return true;
+                }
+            }
+
+//If there's both a owner and its UUID
+            else
+            {
+//Check successful
+                return true;
+            }
+        }
+
+
+//If no UUID, check failed
         return false;
-    }
-    
 
-    @SideOnly(Side.CLIENT)
-    public World getWorldObj()
-    {
-        return this.world;
     }
 
-
-    /**
-     * returns if this entity triggers Block.onEntityWalking on the blocks they walk on. used for spiders and wolves to
-     * prevent them from trampling crops
-     */
-    protected boolean canTriggerWalking()
+    public boolean ownerValidConditions(Entity toValidate)
     {
+        return (toValidate instanceof EntityLivingBase);
+    }
+
+    public void performOwnerValidation()
+    {
+        this.validateOwner();
+    }
+
+
+
+
+//Validate controller and return if successful
+    public boolean validateController()
+    {
+
+//If there is a controller UUID
+        if(this.controllerUUID != null)
+        {
+//But no valid controller 
+            if(this.controller == null)
+            {
+//Try to get controller from UUID
+                Entity foundEntity  
+                = ((WorldServer)world).getEntityFromUuid(this.controllerUUID);
+
+
+//If controller found
+//and controller conditions met
+                if(foundEntity != null && this.controllerValidConditions(foundEntity))
+                {
+//Restore controller
+                    this.controller = foundEntity;
+//Check successful
+                    return true;
+                }
+            }
+
+//If there's both a controller and its UUID
+            else
+            {
+//Check successful
+                return true;
+            }
+        }
+
+
+//If no UUID, check failed
         return false;
+
     }
 
-
-    /**
-     * Returns true if other Entities should be prevented from moving through this Entity.
-     */
-    public boolean canBeCollidedWith()
+    public boolean controllerValidConditions(Entity toValidate)
     {
-        return !this.isDead;
+        return true;
     }
 
-
-    /**
-     * Returns true if it's possible to attack this entity with an item.
-     */
-    public boolean canBeAttackedWithItem()
+//Restore block to normal if no controller
+    public void performControllerValidation()
     {
-        return false;
+        if(!this.validateController()) { this.setBlockNormal(true); }
     }
-    
 }
 

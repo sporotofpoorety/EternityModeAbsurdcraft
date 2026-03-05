@@ -131,6 +131,8 @@ public abstract class EntityWithOwner extends Entity
             {
 //Try to validate owner
                 this.performOwnerValidation();
+//Apply check cooldown
+                this.ownerCheckCooldown = this.ownerCheckCooldownMax;
             }
             else
             {
@@ -144,6 +146,8 @@ public abstract class EntityWithOwner extends Entity
             {
 //Try to validate controller
                 this.performControllerValidation();
+//Apply check cooldown
+                this.controllerCheckCooldown = this.controllerCheckCooldownMax;
             }
             else
             {
@@ -202,12 +206,6 @@ public abstract class EntityWithOwner extends Entity
 //Check successful
                     return true;
                 }
-
-//Rate-limit failed owner checks
-                else
-                {
-                    this.ownerCheckCooldown = this.ownerCheckCooldownMax;
-                }
             }
 
 //If there's both a owner and its UUID
@@ -260,12 +258,6 @@ public abstract class EntityWithOwner extends Entity
                     this.controller = foundEntity;
 //Check successful
                     return true;
-                }
-
-//Rate-limit failed controller checks
-                else
-                {
-                    this.controllerCheckCooldown = this.controllerCheckCooldownMax;
                 }
             }
 

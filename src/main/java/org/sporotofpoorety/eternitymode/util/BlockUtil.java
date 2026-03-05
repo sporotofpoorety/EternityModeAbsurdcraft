@@ -7,6 +7,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -159,7 +160,7 @@ public final class BlockUtil
 
 
         float hardness = block.getBlockHardness(state, worldAt, destroyPos);
-        if (hardness < 0 || hardness > maxHardness) 
+        if (hardness > maxHardness || block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
         {
             return;
         }
@@ -184,7 +185,7 @@ public final class BlockUtil
 
 
         float hardness = block.getBlockHardness(state, worldAt, destroyPos);
-        if (hardness < 0 || hardness > maxHardness) 
+        if (hardness > maxHardness || block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
         {
             return;
         }

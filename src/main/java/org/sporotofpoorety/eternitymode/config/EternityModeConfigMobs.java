@@ -16,11 +16,4 @@ public class EternityModeConfigMobs
 //Format is category, key, default value, comment
         placeholderValue = config.get(category1, "Placeholder value", 2, "I'm just testing").getInt();
 	}
-
-
-    public static int getPlaceholderValue()
-    {
-        return placeholderValue;
-    }
-
 }

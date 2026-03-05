@@ -102,7 +102,6 @@ public class EternityModeEntityRegistry
         registerUnspawnable(event, EntityFlameShotLinear.class, "flame_shot_linear", id++);
         registerUnspawnable(event, EntityFlameShotLinearSplits.class, "flame_shot_linear_splits", id++);
         registerUnspawnable(event, EntityThrownBlock.class, "thrown_block", id++);
-        registerUnspawnable(event, EntityOrbVoidCustom.class, "void_orb_custom", id++);
         registerUnspawnable(event, EntityParticleSpiral.class, "entity_spiral_particle", id++);
     }
 }

@@ -15,9 +15,6 @@ import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import electroblob.wizardry.Wizardry;
 
 
-import com.dhanantry.scapeandrunparasites.client.renderer.entity.misc.RenderOrbVoid;
-
-
 import org.sporotofpoorety.eternitymode.client.render.RenderProjectileBase;
 import org.sporotofpoorety.eternitymode.client.render.RenderProjectileBaseItem;
 import org.sporotofpoorety.eternitymode.client.render.RenderThrownBlock;
@@ -68,13 +65,5 @@ public class EternityModeClientProxy extends EternityModeCommonProxy {
             EntityThrownBlock.class, 
             manager -> new RenderThrownBlock(manager)
         );
-
-        RenderingRegistry.registerEntityRenderingHandler(EntityOrbVoidCustom.class, new IRenderFactory<EntityOrbVoidCustom>() 
-        {
-            public Render<? super EntityOrbVoidCustom> createRenderFor(RenderManager manager) 
-            {
-               return new RenderOrbVoid(manager);
-            }
-        });
     }
 }
