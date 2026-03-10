@@ -36,6 +36,7 @@ public class EternityModeConfig
     {		
 		EternityModeConfigGeneral.load(config);
 		EternityModeConfigMobs.load(config);
+        EternityModeConfigPlayerAttributes.load(config);
 
 		if (config.hasChanged()) 
         {
