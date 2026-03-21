@@ -35,8 +35,8 @@ public class EntityFlameShotBouncing extends EntityProjectileBouncing {
         this.explosionDestruction = false;
     }
 
-    public EntityFlameShotBouncing(World worldIn, EntityLivingBase owner,
-    double manualPosX, double manualPosY, double manualPosZ, 
+    public EntityFlameShotBouncing(World worldIn, double x, double y, double z, 
+    EntityLivingBase owner,
     int maxLifetime, double speedX, double speedY, double speedZ, 
     double accelerationRate, double gravitySpeed, 
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage, 
@@ -44,8 +44,8 @@ public class EntityFlameShotBouncing extends EntityProjectileBouncing {
     boolean acceleratesVertically, boolean bounceUpExtra, double bounceUpForce,
     int fireDuration, boolean shouldExplode, float explosionPower, boolean explosionFire, boolean explosionDestruction)
     {
-        super(worldIn, owner,
-        manualPosX, manualPosY, manualPosZ, 
+        super(worldIn, x, y, z,
+        owner,
         maxLifetime, speedX, speedY, speedZ,
         accelerationRate, gravitySpeed, 
         hitCheckSize, projectileStopsAtEntity, projectileStopsAtBlock, projectileHitDamage,  
@@ -61,8 +61,8 @@ public class EntityFlameShotBouncing extends EntityProjectileBouncing {
         this.explosionDestruction = explosionDestruction;
     }
 
-    public EntityFlameShotBouncing(World worldIn, EntityLivingBase owner,
-    double manualPosX, double manualPosY, double manualPosZ, 
+    public EntityFlameShotBouncing(World worldIn, double x, double y, double z, 
+    EntityLivingBase owner,
     int maxLifetime, double speedX, double speedY, double speedZ, 
     double accelerationRate, double gravitySpeed, 
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage, 
@@ -71,8 +71,8 @@ public class EntityFlameShotBouncing extends EntityProjectileBouncing {
     boolean acceleratesVertically, boolean bounceUpExtra, double bounceUpForce,
     int fireDuration, boolean shouldExplode, float explosionPower, boolean explosionFire, boolean explosionDestruction)
     {
-        super(worldIn, owner,
-        manualPosX, manualPosY, manualPosZ, 
+        super(worldIn, x, y, z,
+        owner,
         maxLifetime, speedX, speedY, speedZ,
         accelerationRate, gravitySpeed, 
         hitCheckSize, projectileStopsAtEntity, projectileStopsAtBlock, projectileHitDamage,  

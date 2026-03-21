@@ -160,7 +160,7 @@ public final class BlockUtil
 
 
         float hardness = block.getBlockHardness(state, worldAt, destroyPos);
-        if (hardness > maxHardness || block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
+        if (hardness > maxHardness || hardness < 0.0F) //|| block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
         {
             return;
         }

@@ -46,7 +46,9 @@ public final class EntityUtil
 //Make entity block at origin
                 EntityThrownBlock thrownBlock = new EntityThrownBlock
                 (
-                    searchOrigin.world, owner, blockOrigin, blockOrigin.getX() + 0.5D, blockOrigin.getY() + 0.5D, blockOrigin.getZ() + 0.5D, 1.0F
+                    searchOrigin.world, blockOrigin.getX() + 0.5D, blockOrigin.getY() + 0.5D, blockOrigin.getZ() + 0.5D, 
+                    owner, searchOrigin.world.getBlockState(blockOrigin), 
+                    false, true, true, 1.0F
                 );
 
 

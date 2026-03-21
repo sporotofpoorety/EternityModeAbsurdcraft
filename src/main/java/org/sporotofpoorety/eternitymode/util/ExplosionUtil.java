@@ -22,6 +22,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import org.sporotofpoorety.eternitymode.client.ExplosiveHandler;
 import org.sporotofpoorety.eternitymode.util.BlockUtil;
 
 
@@ -32,7 +33,7 @@ public final class ExplosionUtil
 
     public static void performOptimizedExplosion(World world, EntityLivingBase caster, double atX, double atY, double atZ,
     double radius, boolean dealsDamage, float damage, boolean hasPush, double pushForce, boolean breakBlocks, float breakHardness, boolean setsFire, 
-    boolean hasParticles, boolean hasSound)
+    boolean hasParticles, int particleType, boolean hasSound)
     {
 
         if(caster != null)
@@ -124,13 +125,22 @@ public final class ExplosionUtil
 
         if(hasParticles)
         {
-            if (radius >= 2.0D)
+            if(particleType <= 0)
             {
-                world.spawnParticle(EnumParticleTypes.EXPLOSION_HUGE, atX, atY, atZ, 1.0D, 0.0D, 0.0D);
+                if (radius >= 2.0D)
+                {
+                    world.spawnParticle(EnumParticleTypes.EXPLOSION_HUGE, atX, atY, atZ, 1.0D, 0.0D, 0.0D);
+                }
+                else
+                {
+                    world.spawnParticle(EnumParticleTypes.EXPLOSION_LARGE, atX, atY, atZ, 1.0D, 0.0D, 0.0D);
+                }
             }
-            else
+
+            if(particleType == 1)
             {
-                world.spawnParticle(EnumParticleTypes.EXPLOSION_LARGE, atX, atY, atZ, 1.0D, 0.0D, 0.0D);
+                ExplosiveHandler.spawnParticles(world, atX, atY, atZ,
+                (float) radius, false, breakBlocks);
             }
         }
 

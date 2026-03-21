@@ -181,8 +181,8 @@ public final class ProjectileUtil {
             Vec3d currentDirection = spreadDirections.get(projectileAt);
 
 //Make new entity
-            EntityFlameShotLinear entitySplit = new EntityFlameShotLinear(aimerEntity.world, ownerEntity,
-            aimerEntity.posX, aimerEntity.posY, aimerEntity.posZ,
+            EntityFlameShotLinear entitySplit = new EntityFlameShotLinear(aimerEntity.world, aimerEntity.posX, aimerEntity.posY, aimerEntity.posZ,
+            ownerEntity,
             100, 
             currentDirection.x * shotSpeed, currentDirection.y * shotSpeed, currentDirection.z * shotSpeed,
             shotAcceleration, 0.0D,
@@ -203,14 +203,14 @@ public final class ProjectileUtil {
 
 
 //Shoot coord-origin-based shotgun
-    public static void shootAimedFireballSpreadCoord(EntityLivingBase ownerEntity, Entity aimerEntity, Entity targetEntity,
-    double manualX, double manualY, double manualZ, 
+    public static void shootAimedFireballSpreadCoord(double x, double y, double z, 
+    EntityLivingBase ownerEntity, Entity aimerEntity, Entity targetEntity,
     int projectileCount, double coneRadians, int aimMode, 
     float shotDamage, double shotSpeed, double shotAcceleration, 
     boolean shotExplodes, float shotExplosionPower, boolean shotFire, boolean shotDestruction)
     {
 //Get shotgun vectors
-        ArrayList<Vec3d> spreadDirections = flexibleFibonnaciShotgunCoord(manualX, manualY, manualZ, aimerEntity, targetEntity, projectileCount, coneRadians, aimMode, shotSpeed);
+        ArrayList<Vec3d> spreadDirections = flexibleFibonnaciShotgunCoord(x, y, z, aimerEntity, targetEntity, projectileCount, coneRadians, aimMode, shotSpeed);
 
 
 //Now for each projectile vector generated
@@ -220,8 +220,8 @@ public final class ProjectileUtil {
             Vec3d currentDirection = spreadDirections.get(projectileAt);
 
 //Make new entity
-            EntityFlameShotLinear entitySplit = new EntityFlameShotLinear(aimerEntity.world, ownerEntity,
-            manualX, manualY, manualZ,
+            EntityFlameShotLinear entitySplit = new EntityFlameShotLinear(aimerEntity.world, x, y, z,
+            ownerEntity,
             100,
             currentDirection.x * shotSpeed, currentDirection.y * shotSpeed, currentDirection.z * shotSpeed,
             shotAcceleration, 0.0D,
@@ -232,7 +232,7 @@ public final class ProjectileUtil {
 //(Bugfix) should spawn at aimer entity now
             if(aimerEntity != null)
             {
-                entitySplit.setPosition(manualX, manualY, manualZ);
+                entitySplit.setPosition(x, y, z);
             }
 
 //Spawn it

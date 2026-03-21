@@ -55,13 +55,14 @@ public class EntityParticleSpiral extends EntityWithOwner
         this.textureIndex = 48;
     }
 
-    public EntityParticleSpiral(World world, double x, double y, double z, 
+    public EntityParticleSpiral(World world, double x, double y, double z,
+    EntityLivingBase owner, 
     int lifetimeTicks, int timeToArm,
     boolean doesDamage, int damageInterval, float damageAmount, double damageRadius, double damageHeight, 
     int particleLifetime, double visualRadius, double riseSpeed, int textureIndex) 
     {
-        this(world);
-        setPosition(x, y, z);
+        super(world, x, y, z, owner);
+        setSize(0.5F, 0.5F);
 
         this.lifetimeTicks = lifetimeTicks;
         this.timeToArm = timeToArm;
@@ -135,17 +136,17 @@ public class EntityParticleSpiral extends EntityWithOwner
         }
 
 
-        this.performBasicMovement();
-
-
         if(this.ticksExisted <= timeToArm)
         {
             this.preArmLogic();   
         }
         else
         {
-
+            this.postArmLogic();
         }
+
+
+        this.performBasicMovement();
     }
 
 
@@ -162,10 +163,11 @@ public class EntityParticleSpiral extends EntityWithOwner
 
 //Offset from the spiral center
                 double particlePositionX = this.posX + (double) particleOffsetX;
+                double particlePositionY = this.posY + (this.rand.nextDouble() * this.damageHeight); 
                 double particlePositionZ = this.posZ + (double) particleOffsetZ;
 
 //Lava particles
-                this.world.spawnParticle(EnumParticleTypes.LAVA, particlePositionX, this.posY + 0.5D, particlePositionZ, 0.0D, 0.0D, 0.0D);
+                this.world.spawnParticle(EnumParticleTypes.LAVA, particlePositionX, particlePositionY, particlePositionZ, 0.0D, 0.0D, 0.0D);
             }
     }
 

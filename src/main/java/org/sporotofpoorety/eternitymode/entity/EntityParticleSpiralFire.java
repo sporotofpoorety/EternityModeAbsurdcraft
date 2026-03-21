@@ -67,7 +67,8 @@ public class EntityParticleSpiralFire extends EntityParticleSpiral
         this.fireballFireDuration = fireballFireDuration;
     }
 
-    public EntityParticleSpiralFire(World world, double x, double y, double z, 
+    public EntityParticleSpiralFire(World world, double x, double y, double z,
+    EntityLivingBase owner, 
     int lifetimeTicks, int timeToArm,
     boolean doesDamage, int damageInterval, float damageAmount, double damageRadius, double damageHeight, 
     int particleLifetime, double visualRadius, double riseSpeed, int textureIndex,
@@ -78,7 +79,8 @@ public class EntityParticleSpiralFire extends EntityParticleSpiral
     double fireballHitCheckSize, boolean fireballProjectileStopsAtEntity, boolean fireballProjectileStopsAtBlock, float fireballProjectileHitDamage,
     int fireballFireDuration) 
     {
-        super(world, x, y, z, 
+        super(world, x, y, z,
+        owner, 
         lifetimeTicks, timeToArm, 
         doesDamage, damageInterval, damageAmount, damageRadius, damageHeight,
         particleLifetime, visualRadius, riseSpeed, textureIndex);

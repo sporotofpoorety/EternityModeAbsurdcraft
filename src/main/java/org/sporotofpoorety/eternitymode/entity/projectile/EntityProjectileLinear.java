@@ -18,15 +18,15 @@ public class EntityProjectileLinear extends EntityProjectileRaytrace {
         this.setSize(0.5F, 0.5F);
     }
 
-    public EntityProjectileLinear(World worldIn, EntityLivingBase owner,
-    double manualPosX, double manualPosY, double manualPosZ, 
+    public EntityProjectileLinear(World worldIn, double x, double y, double z, 
+    EntityLivingBase owner,
     int maxLifetime, double speedX, double speedY, double speedZ, 
     double accelerationRate, double gravitySpeed, 
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage, 
     int particleLifetime, int particleDensity, double particleVelocity) 
     {
-        super(worldIn, owner,
-        manualPosX, manualPosY, manualPosZ, 
+        super(worldIn, x, y, z,
+        owner,
         maxLifetime, speedX, speedY, speedZ,
         accelerationRate, gravitySpeed, 
         hitCheckSize, projectileStopsAtEntity, projectileStopsAtBlock, projectileHitDamage,  

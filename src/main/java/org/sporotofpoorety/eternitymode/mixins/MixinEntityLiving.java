@@ -12,10 +12,16 @@ import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
+import java.util.ArrayDeque;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+
 import javax.annotation.Nullable;
 
 
 import org.sporotofpoorety.eternitymode.interfacemixins.IMixinEntityLiving;
+import org.sporotofpoorety.eternitymode.util.QueuedActionAtPos;
 
 
 import net.minecraft.client.Minecraft;
@@ -23,6 +29,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
@@ -41,10 +48,12 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
 //Named this way for compatibility
     @Unique
     private static final DataParameter<Boolean> IS_ABSURDCRAFT_STUNNED = EntityDataManager.<Boolean>createKey(EntityLiving.class, DataSerializers.BOOLEAN);
-
-
 //Named this way for compatibility
     @Unique private int absurdcraftStunnedTimer;
+
+//Common architecture for scheduled actions
+    @Unique
+    private static final ConcurrentLinkedQueue<QueuedActionAtPos> queuedActionsAtPos = new ConcurrentLinkedQueue<>();
 
 
 
@@ -79,6 +88,81 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
             }
         }
     }
+
+
+    @Inject
+    (
+        method = "onUpdate",
+        at = @At("TAIL")
+    )
+//Queued action processing logic
+    private void updateQueuedActions(CallbackInfo callInfo)
+    {
+//If action queue has actions
+        if (!this.queuedActionsAtPos.isEmpty())
+        {
+//Iterate over them
+            this.queuedActionsIterate();
+        }
+//If action queue is empty
+        else
+        {
+//Empty queue logic
+            this.queuedActionsEmptyLogic();
+        }
+    }
+
+
+    public void queuedActionsIterate()
+    {
+        Entity selfEntity = (Entity) (Object) this; 
+
+//Iterator for them
+        Iterator<QueuedActionAtPos> iter = this.queuedActionsAtPos.iterator();
+
+
+//While still having queued actions
+        while (iter.hasNext()) 
+        {
+//Get next queued action and increment iterator there
+            QueuedActionAtPos queuedAction = iter.next();
+
+//If action time reached
+            if(selfEntity.world.getTotalWorldTime() >= queuedAction.actionTick) 
+            {
+//Execute action
+                this.queuedActionExecute(queuedAction);
+//Then remove it from queue
+                iter.remove();
+            }
+
+//If time not reached
+            else
+            {
+//Before action time logic
+                this.queuedActionBefore(queuedAction);
+            }
+        }
+    }
+
+    
+    public void queuedActionBefore(QueuedActionAtPos queuedAction)
+    {
+
+    }
+
+
+    public void queuedActionExecute(QueuedActionAtPos queuedAction)
+    {
+
+    }
+
+
+    public void queuedActionsEmptyLogic()
+    {
+
+    }
+
 
 
 
@@ -118,9 +202,7 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
 
     @Inject
     (
-//Inject in this method
         method = "entityInit",
-//At tail
         at = @At("TAIL")
     )
 //On entity init
@@ -135,21 +217,24 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
     @Inject
     (
         method = "writeEntityToNBT",
-        at = @At("TAIL")
+        at = @At("TAIL"),
+        require = 1
     )
     private void writeNewNBT(NBTTagCompound compound, CallbackInfo callInfo)
     {
 //New NBT below
         compound.setBoolean("AbsurdcraftStunned", this.getAbsurdcraftStunned());
-
         compound.setInteger("AbsurdcraftStunnedTimer", this.getAbsurdcraftStunnedTimer());
+
+        this.nbtWriteQueuedActions(compound);
     }
 
 
     @Inject
     (
         method = "readEntityFromNBT",
-        at = @At("TAIL")
+        at = @At("TAIL"),
+        require = 1
     )
     private void readNewNBT(NBTTagCompound compound, CallbackInfo callInfo)
     {
@@ -157,9 +242,71 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
         if (compound.hasKey("AbsurdcraftStunned")) {
             this.setAbsurdcraftStunned(compound.getBoolean("AbsurdcraftStunned"));
         }
-
         if (compound.hasKey("AbsurdcraftStunnedTimer")) {
             this.setAbsurdcraftStunnedTimer(compound.getInteger("AbsurdcraftStunnedTimer"));
+        }
+
+        this.nbtReadQueuedActions(compound);
+    }
+
+
+
+
+//Write queued actions to NBT
+    public void nbtWriteQueuedActions(NBTTagCompound compound)
+    {
+//Action array to store
+        NBTTagList actionListToStore = new NBTTagList();
+
+//For each queued action   
+        for (QueuedActionAtPos queuedAction : this.queuedActionsAtPos) 
+        {
+//Make action map
+            NBTTagCompound actionToStore = new NBTTagCompound();
+                actionToStore.setDouble("QueuedActionX", queuedAction.actionX);
+                actionToStore.setDouble("QueuedActionY", queuedAction.actionY);
+                actionToStore.setDouble("QueuedActionZ", queuedAction.actionZ);
+                actionToStore.setLong("QueuedActionTick", queuedAction.actionTick);
+                actionToStore.setInteger("QueuedActionType", queuedAction.actionType);
+//Append it to action array
+            actionListToStore.appendTag(actionToStore);
+        }
+        
+        compound.setTag("QueuedActionArray", actionListToStore);   
+    }
+
+
+//Read queued actions from NBT
+    public void nbtReadQueuedActions(NBTTagCompound compound)
+    {
+//First clear action queue
+        this.queuedActionsAtPos.clear();
+
+//Check for action array
+        if (compound.hasKey("QueuedActionArray")) 
+        {
+//It's an array of maps specifically
+            NBTTagList storedActionList = compound.getTagList("QueuedActionArray", 10);
+            
+//For each stored action
+            for (int i = 0; i < storedActionList.tagCount(); i++) 
+            {
+//Fetch it as compound
+                NBTTagCompound storedAction = storedActionList.getCompoundTagAt(i);
+
+//Make corresponding queued action
+                QueuedActionAtPos action = new QueuedActionAtPos
+                (
+                    storedAction.getDouble("QueuedActionX"),
+                    storedAction.getDouble("QueuedActionY"),
+                    storedAction.getDouble("QueuedActionZ"),
+                    storedAction.getLong("QueuedActionTick"),
+                    storedAction.getInteger("QueuedActionType")
+                );
+
+//Store in the action queue
+                this.queuedActionsAtPos.add(action);
+            }
         }
     }
 
@@ -181,6 +328,12 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
         return this.absurdcraftStunnedTimer;
     }
 
+//Get queued actions
+    public ConcurrentLinkedQueue<QueuedActionAtPos> getQueuedActions()
+    {
+        return this.queuedActionsAtPos;
+    }
+
 
 //New setters
 
@@ -194,6 +347,12 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
     public void setAbsurdcraftStunnedTimer(int time)
     {
         this.absurdcraftStunnedTimer = time;
+    }
+
+//Add queued action
+    public void addQueuedAction(QueuedActionAtPos queuedAction)
+    {
+        this.queuedActionsAtPos.add(queuedAction);
     }
 
 }

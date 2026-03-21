@@ -13,6 +13,7 @@ import net.minecraft.world.World;
 import org.sporotofpoorety.eternitymode.entity.projectile.EntityFlameShotLinear;
 import org.sporotofpoorety.eternitymode.entity.projectile.EntityProjectileHoming;
 import org.sporotofpoorety.eternitymode.util.AbsurdcraftMathUtils;
+import org.sporotofpoorety.eternitymode.util.ExplosionUtil;
 import org.sporotofpoorety.eternitymode.util.ProjectileUtil;
 
 
@@ -54,8 +55,8 @@ public class EntityFlameShotHoming extends EntityProjectileHoming {
         this.splitDestruction = false;
     }
 
-    public EntityFlameShotHoming(World worldIn, EntityLivingBase owner,
-    double manualPosX, double manualPosY, double manualPosZ, 
+    public EntityFlameShotHoming(World worldIn, double x, double y, double z, 
+    EntityLivingBase owner,
     int maxLifetime, double speedX, double speedY, double speedZ, 
     double accelerationRate, double gravitySpeed, 
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage,
@@ -63,8 +64,8 @@ public class EntityFlameShotHoming extends EntityProjectileHoming {
     int timePreHomingMax, boolean homingTimeHasMax, int homingTimeMax, double homingSpeed, int homingMode, 
     int fireDuration, boolean shouldExplode, float explosionPower, boolean explosionFire, boolean explosionDestruction)
     {
-        super(worldIn, owner,
-        manualPosX, manualPosY, manualPosZ, 
+        super(worldIn, x, y, z,
+        owner,
         maxLifetime, speedX, speedY, speedZ,
         accelerationRate, gravitySpeed, 
         hitCheckSize, projectileStopsAtEntity, projectileStopsAtBlock, projectileHitDamage,
@@ -87,8 +88,8 @@ public class EntityFlameShotHoming extends EntityProjectileHoming {
         this.splitDestruction = false;
     }
 
-    public EntityFlameShotHoming(World worldIn, EntityLivingBase owner,
-    double manualPosX, double manualPosY, double manualPosZ, 
+    public EntityFlameShotHoming(World worldIn, double x, double y, double z, 
+    EntityLivingBase owner,
     int maxLifetime, double speedX, double speedY, double speedZ, 
     double accelerationRate, double gravitySpeed, 
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage,
@@ -99,8 +100,8 @@ public class EntityFlameShotHoming extends EntityProjectileHoming {
     int fireDuration, boolean shouldExplode, float explosionPower, boolean explosionFire, boolean explosionDestruction,
     boolean shouldSplit, boolean splitExplodes, float splitExplosionPower, boolean splitFire, boolean splitDestruction)
     {
-        super(worldIn, owner,
-        manualPosX, manualPosY, manualPosZ, 
+        super(worldIn, x, y, z,
+        owner, 
         maxLifetime, speedX, speedY, speedZ,
         accelerationRate, gravitySpeed, 
         hitCheckSize, projectileStopsAtEntity, projectileStopsAtBlock, projectileHitDamage,
@@ -162,7 +163,9 @@ public class EntityFlameShotHoming extends EntityProjectileHoming {
 
         if(this.shouldExplode)
         {
-            this.world.newExplosion(this, this.posX, this.posY + (0.5F / 5.0F), this.posZ, this.explosionPower, this.explosionFire, this.explosionDestruction);
+            ExplosionUtil.performOptimizedExplosion(this.world, this.owner, this.posX, this.posY + (0.5F / 5.0F), this.posZ,
+                this.explosionPower, true, 1.0F, true, 3.0D, this.explosionDestruction, 9999999.0F, this.explosionFire, 
+                true, 1, true);
         }
     }
 
@@ -173,22 +176,18 @@ public class EntityFlameShotHoming extends EntityProjectileHoming {
     {
         if(this.owner == null || !(this.owner instanceof EntityLiving)) 
         {
-            ProjectileUtil.shootAimedFireballSpreadCoord(null, this, null,
-            this.posX, this.posY, this.posZ, 
+//          ProjectileUtil.shootAimedFireballSpreadCoord(this.posX, this.posY, this.posZ, 
+            ProjectileUtil.shootAimedFireballSpreadCoord(this.prevPosX, this.prevPosY, this.prevPosZ, 
+            null, this, null,
             this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
             this.splitDamage, this.splitSpeed, this.splitAcceleration,
             this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);  
         }
         else 
         {
-/*
-            ProjectileUtil.shootAimedFireballSpreadEntity(this.owner, this, ((EntityLiving) this.owner).getAttackTarget(), 
-            this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
-            this.splitDamage, this.splitSpeed, this.splitAcceleration,
-            this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);
-*/
-            ProjectileUtil.shootAimedFireballSpreadCoord(this.owner, this, ((EntityLiving) this.owner).getAttackTarget(),
-            this.posX, this.posY + 0.5D, this.posZ, 
+//          ProjectileUtil.shootAimedFireballSpreadCoord(this.posX, this.posY + 0.5D, this.posZ, 
+            ProjectileUtil.shootAimedFireballSpreadCoord(this.prevPosX, this.prevPosY, this.prevPosZ, 
+            this.owner, this, ((EntityLiving) this.owner).getAttackTarget(),
             this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
             this.splitDamage, this.splitSpeed, this.splitAcceleration,
             this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);      

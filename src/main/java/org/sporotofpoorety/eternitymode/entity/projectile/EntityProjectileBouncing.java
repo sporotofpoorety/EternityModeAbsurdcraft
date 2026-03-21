@@ -36,16 +36,16 @@ public class EntityProjectileBouncing extends EntityProjectileLinear {
         this.bounceExtraEffectCooldown = 0;
     }
 
-    public EntityProjectileBouncing(World worldIn, EntityLivingBase owner,
-    double manualPosX, double manualPosY, double manualPosZ, 
+    public EntityProjectileBouncing(World worldIn, double x, double y, double z, 
+    EntityLivingBase owner,
     int maxLifetime, double speedX, double speedY, double speedZ, 
     double accelerationRate, double gravitySpeed, 
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage, 
     int particleLifetime, int particleDensity, double particleVelocity,
     boolean acceleratesVertically, boolean bounceUpExtra, double bounceUpForce)
     {
-        super(worldIn, owner,
-        manualPosX, manualPosY, manualPosZ, 
+        super(worldIn, x, y, z, 
+        owner,
         maxLifetime, speedX, speedY, speedZ,
         accelerationRate, gravitySpeed, 
         hitCheckSize, projectileStopsAtEntity, projectileStopsAtBlock, projectileHitDamage,  
@@ -60,8 +60,8 @@ public class EntityProjectileBouncing extends EntityProjectileLinear {
         this.bounceExtraEffectCooldown = 0;
     }
 
-    public EntityProjectileBouncing(World worldIn, EntityLivingBase owner,
-    double manualPosX, double manualPosY, double manualPosZ, 
+    public EntityProjectileBouncing(World worldIn, double x, double y, double z, 
+    EntityLivingBase owner,
     int maxLifetime, double speedX, double speedY, double speedZ, 
     double accelerationRate, double gravitySpeed, 
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage, 
@@ -69,8 +69,8 @@ public class EntityProjectileBouncing extends EntityProjectileLinear {
     boolean projectileTransitionShould, int projectileTransitionLength,
     boolean acceleratesVertically, boolean bounceUpExtra, double bounceUpForce)
     {
-        super(worldIn, owner,
-        manualPosX, manualPosY, manualPosZ, 
+        super(worldIn, x, y, z, 
+        owner,
         maxLifetime, speedX, speedY, speedZ,
         accelerationRate, gravitySpeed, 
         hitCheckSize, projectileStopsAtEntity, projectileStopsAtBlock, projectileHitDamage,  

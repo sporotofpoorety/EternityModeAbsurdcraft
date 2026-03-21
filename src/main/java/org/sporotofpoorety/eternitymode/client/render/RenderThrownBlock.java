@@ -6,28 +6,28 @@ import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+
 
 import org.sporotofpoorety.eternitymode.entity.EntityThrownBlock;
 
 
-@SideOnly(Side.CLIENT)
-public class RenderThrownBlock extends Render<EntityThrownBlock> {
 
+
+public class RenderThrownBlock extends Render<EntityThrownBlock>
+{
     public RenderThrownBlock(RenderManager renderManagerIn)
     {
         super(renderManagerIn);
-        this.shadowSize = (float) 0.25F;
+        this.shadowSize = 0.5F;
     }
 
     /**
@@ -35,13 +35,14 @@ public class RenderThrownBlock extends Render<EntityThrownBlock> {
      */
     public void doRender(EntityThrownBlock entity, double x, double y, double z, float entityYaw, float partialTicks)
     {
-        if (entity.getOrigin() != null)
+        if (entity.getBlock() != null)
         {
-            World world = entity.getWorldObj();
-            IBlockState iblockstate = entity.getWorldObj().getBlockState(entity.getOrigin());
+            IBlockState iblockstate = entity.getBlock();
 
             if (iblockstate.getRenderType() == EnumBlockRenderType.MODEL)
             {
+                World world = entity.world;
+
                 if (iblockstate != world.getBlockState(new BlockPos(entity)) && iblockstate.getRenderType() != EnumBlockRenderType.INVISIBLE)
                 {
                     this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
@@ -68,10 +69,9 @@ public class RenderThrownBlock extends Render<EntityThrownBlock> {
                         GlStateManager.disableOutlineMode();
                         GlStateManager.disableColorMaterial();
                     }
-                    
+
                     GlStateManager.enableLighting();
                     GlStateManager.popMatrix();
-                    
                     super.doRender(entity, x, y, z, entityYaw, partialTicks);
                 }
             }

@@ -43,16 +43,16 @@ public class EntityProjectileHoming extends EntityProjectileRaytrace {
         this.isPostHoming = false;
     }
 
-    public EntityProjectileHoming(World worldIn, EntityLivingBase owner,
-    double manualPosX, double manualPosY, double manualPosZ, 
+    public EntityProjectileHoming(World worldIn, double x, double y, double z, 
+    EntityLivingBase owner,
     int maxLifetime, double speedX, double speedY, double speedZ,
     double accelerationRate, double gravitySpeed, 
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage,
     int particleLifetime, int particleDensity, double particleVelocity,
     int timePreHomingMax, boolean homingTimeHasMax, int homingTimeMax, double homingSpeed, int homingMode) 
     {
-        super(worldIn, owner, 
-        manualPosX, manualPosY, manualPosZ, 
+        super(worldIn, x, y, z,
+        owner, 
         maxLifetime, speedX, speedY, speedZ,
         accelerationRate, gravitySpeed, 
         hitCheckSize, projectileStopsAtEntity, projectileStopsAtBlock, projectileHitDamage,

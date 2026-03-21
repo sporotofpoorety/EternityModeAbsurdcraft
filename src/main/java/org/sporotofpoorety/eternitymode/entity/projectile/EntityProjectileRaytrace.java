@@ -88,49 +88,16 @@ public class EntityProjectileRaytrace extends EntityWithOwner
         this.particleVelocity = 0.06D;
     }
 
-    public EntityProjectileRaytrace(World worldIn, EntityLivingBase owner)
-    {
-        super(worldIn, owner);
-
-        this.setNoGravity(true);
-
-        this.owner = owner;
-        if(this.owner != null) { this.setPosition(owner.posX, owner.posY + (double) owner.getEyeHeight() - 0.10000000149011612D, owner.posZ); }
-        else { this.setPosition(0.0D, 0.0D, 0.0D); }
-
-        this.maxLifetime = 200;
-        this.firstBeenShot = false;
-
-        this.speedX = 0.0D;
-        this.speedY = 0.0D;
-        this.speedZ = 0.0D;
-        this.accelerationRate = 1.0D;
-        this.accelerationCurrent = 1.0D;
-        this.gravitySpeed = 0.08D;
-
-        this.hitCheckSize = 0.3D;
-        this.projectileStopsAtEntity = true;
-        this.projectileStopsAtBlock = true;
-        this.projectileHitDamage = 5.0F;
-
-        this.particleLifetime = 10;
-        this.particleDensity = 5;
-        this.particleVelocity = 0.06D;
-    }
-
-    public EntityProjectileRaytrace(World worldIn, EntityLivingBase owner,
-    double manualPosX, double manualPosY, double manualPosZ, 
+    public EntityProjectileRaytrace(World worldIn, double x, double y, double z, 
+    EntityLivingBase owner,
     int maxLifetime, double speedX, double speedY, double speedZ,
     double accelerationRate, double gravitySpeed,
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage,
     int particleLifetime, int particleDensity, double particleVelocity)
     {
-        super(worldIn, owner);
+        super(worldIn, x, y, z, owner);
 
         this.setNoGravity(true);
-
-        if(this.owner != null) { this.setPosition(owner.posX, owner.posY + (double) owner.getEyeHeight() - 0.10000000149011612D, owner.posZ); }
-        else { this.setPosition(manualPosX, manualPosY, manualPosZ); }
 
         this.maxLifetime = maxLifetime;
         this.firstBeenShot = false;

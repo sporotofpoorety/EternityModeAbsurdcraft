@@ -13,12 +13,13 @@ import electroblob.wizardry.util.ParticleBuilder;
 import electroblob.wizardry.util.ParticleBuilder.Type;
 
 
+import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
 import org.sporotofpoorety.eternitymode.util.ExplosionUtil;
 
 
 
 
-public class EntityExplosiveShockwave extends Entity 
+public class EntityExplosiveShockwave extends EntityWithOwner 
 {
 
     EntityLivingBase owner;
@@ -43,6 +44,8 @@ public class EntityExplosiveShockwave extends Entity
     boolean explosionPush;
     double explosionPushForce;
     boolean explosionFire;
+    int explosionParticleType;
+
     int specialExplosionCounter;
     int specialExplosionThreshold;
 
@@ -64,26 +67,25 @@ public class EntityExplosiveShockwave extends Entity
         setSize(0.5F, 0.5F);
     }
 
-    public EntityExplosiveShockwave(World world, EntityLivingBase owner, double x, double y, double z, 
+    public EntityExplosiveShockwave(World worldIn, double x, double y, double z, 
+    EntityLivingBase owner,
     int lifetimeTicks, boolean hasGravity, float shockwaveStepHeight, double speedX, double speedY, double speedZ, double accelerationRate,
     boolean oscillationEnabled, double oscillationDistance, int oscillationOrientationDuration,
     int explosionTimer, double explosionRadius, float explosionDamage, 
-    boolean explosionPush, double explosionPushForce, boolean explosionFire, int specialExplosionThreshold, 
-    boolean subshockwavesEnabled,
-    double subshockwavesSpeedX, double subshockwavesSpeedY, double subshockwavesSpeedZ, double subshockwavesAccelerationRate,
-    int subshockwavesExplosionTimer, double subshockwavesExplosionRadius) 
+    boolean explosionPush, double explosionPushForce, boolean explosionFire, int explosionParticleType, int specialExplosionThreshold) 
     {
-        this(world);
-        this.owner = owner;
-        setPosition(x, y, z);
+        super(worldIn, x, y, z, owner);
+        setSize(0.5F, 0.5F);
+
         this.lifetimeTicks = lifetimeTicks;
+
         this.setNoGravity(!hasGravity);
         this.stepHeight = shockwaveStepHeight;
         this.speedX = speedX;
         this.speedY = speedY;
         this.speedZ = speedZ;
         this.accelerationRate = accelerationRate;
-        this.accelerationCurrent = accelerationRate;
+        this.accelerationCurrent = 1.0D;
 
 //Oscillation enabled
         this.oscillationEnabled = oscillationEnabled;
@@ -109,7 +111,13 @@ public class EntityExplosiveShockwave extends Entity
         this.explosionPush = explosionPush;
         this.explosionPushForce = explosionPushForce;
         this.explosionFire = explosionFire;
+        this.explosionParticleType = explosionParticleType;
+	}
 
+    public void setSubshockwaves(boolean subshockwavesEnabled,
+    double subshockwavesSpeedX, double subshockwavesSpeedY, double subshockwavesSpeedZ, double subshockwavesAccelerationRate,
+    int subshockwavesExplosionTimer, double subshockwavesExplosionRadius)
+    {
         this.subshockwavesEnabled = subshockwavesEnabled;
         this.subshockwavesSpeedX = subshockwavesSpeedX;
         this.subshockwavesSpeedY = subshockwavesSpeedY;
@@ -118,11 +126,14 @@ public class EntityExplosiveShockwave extends Entity
      
         this.subshockwavesExplosionTimer = subshockwavesExplosionTimer;
         this.subshockwavesExplosionRadius = subshockwavesExplosionRadius;
-	}
+    }
 
 
     @Override
     protected void entityInit() {}
+
+
+
 
     @Override
     public void onUpdate() 
@@ -151,7 +162,7 @@ public class EntityExplosiveShockwave extends Entity
 //              this.world.newExplosion(entityResponsible, this.posX, this.posY + (this.explosionRadius / 1.5F), this.posZ, this.explosionRadius, false, false);
                 ExplosionUtil.performOptimizedExplosion(this.world, this.owner, this.posX, this.posY + (this.explosionRadius / 1.5D), this.posZ,
                 this.explosionRadius, true, this.explosionDamage, this.explosionPush, this.explosionPushForce, false, 9999.0F, this.explosionFire, 
-                true, false);
+                true, this.explosionParticleType, false);
 
 //Increment explosion counter
                 ++this.specialExplosionCounter;
@@ -170,14 +181,12 @@ public class EntityExplosiveShockwave extends Entity
                     {
                         if(this.owner != null)
                         {
-                            EntityExplosiveShockwave splitShockwave = new EntityExplosiveShockwave(this.world, this.owner, this.posX, this.posY, this.posZ, 
+                            EntityExplosiveShockwave splitShockwave = new EntityExplosiveShockwave(this.world, this.posX, this.posY, this.posZ,
+                            this.owner,  
                             50, false, 3.0F, this.subshockwavesSpeedX, this.subshockwavesSpeedY, this.subshockwavesSpeedZ, this.subshockwavesAccelerationRate,
                             false, 3.0D, 9,
                             this.subshockwavesExplosionTimer, this.subshockwavesExplosionRadius, this.explosionDamage, 
-                            this.explosionPush, this.explosionPushForce, false, 69420,
-                            false,
-                            0.0D, 0.0D, 0.0D, 1.0D,
-                            10, 3.0F);
+                            this.explosionPush, this.explosionPushForce, false, this.explosionParticleType, 69420);
 
 		                    splitShockwave.setLocationAndAngles(this.posX, this.posY, this.posZ, this.rotationYaw, 0.0F);
 
@@ -286,6 +295,8 @@ public class EntityExplosiveShockwave extends Entity
         compound.setBoolean("ExplosionPush", this.explosionPush);
         compound.setDouble("ExplosionPushForce", this.explosionPushForce);
         compound.setBoolean("ExplosionFire", this.explosionFire);
+        compound.setInteger("ExplosionParticleType", this.explosionParticleType);
+
         compound.setInteger("SpecialExplosionCounter", this.specialExplosionCounter);
         compound.setInteger("SpecialExplosionThreshold", this.specialExplosionThreshold);
 
@@ -327,6 +338,8 @@ public class EntityExplosiveShockwave extends Entity
         if (compound.hasKey("ExplosionPush")) { this.explosionPush = compound.getBoolean("ExplosionPush"); }
         if (compound.hasKey("ExplosionPushForce")) { this.explosionPushForce = compound.getDouble("ExplosionPushForce"); }
         if (compound.hasKey("ExplosionFire")) { this.explosionFire = compound.getBoolean("ExplosionFire"); }
+        if (compound.hasKey("ExplosionParticleType")) { this.explosionParticleType = compound.getInteger("ExplosionParticleType"); }
+
         if (compound.hasKey("SpecialExplosionCounter")) { this.specialExplosionCounter = compound.getInteger("SpecialExplosionCounter"); }
         if (compound.hasKey("SpecialExplosionThreshold")) { this.specialExplosionThreshold = compound.getInteger("SpecialExplosionThreshold"); }
 

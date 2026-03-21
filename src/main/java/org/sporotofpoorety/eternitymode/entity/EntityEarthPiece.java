@@ -16,9 +16,10 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-import org.sporotofpoorety.eternitymode.client.particles.ParticleSpiral;
+import org.sporotofpoorety.eternitymode.entity.EntityThrownBlock;
 import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
 import org.sporotofpoorety.eternitymode.util.BlockUtil;
+import org.sporotofpoorety.eternitymode.util.PuppetEntity;
 
 
 
@@ -27,41 +28,37 @@ public class EntityEarthPiece extends EntityWithOwner
 {
 
     public BlockPos searchBasis = new BlockPos(0, 0, 0);
-    public String phaseAt;
 
-    public ArrayList<EntityThrownBlock> controlledBlocks = new ArrayList<>();
+    public String phaseAt;
 
     public String pieceType = "spin";
     public String pieceShape = "cube";
     public int pieceSize;
 
-    public int gatherCountdown;
-    public int gatherCountdownMax;
 
-    public int liftCountdown;
-    public int liftCountdownMax;
+    public int gatherTimer;
+    public boolean gatherStarted;
+
+    public int liftTimer;
     public double liftSpeed;
 
-    public boolean startedPositioning;
-    public int positionTime;
+    public int positionTimer;
     public double positionAbove;
+    public boolean startedPositioning;
     public Vec3d ownerInitialVec = new Vec3d(0.0D, 0.0D, 0.0D);
     public double ownerGlueDistance;
 
-    public int homeTime;
-    public int homeTimemax;
+    public int homeTimer;
     public double homeSpeed;
     
+    public int flingTimer;
     public double flingSpeed;
     public double blockOutSpeed;
     public double blockOutGravity;
-
-    public int lingerTime;
    
 
 //Spin piece specific
-    public int spinTime;
-    public int spinTimemax;
+    public int spinTimer;
     public double spinDistance;
     public double spinRadian;
     public double spinRadianStep;
@@ -79,15 +76,16 @@ public class EntityEarthPiece extends EntityWithOwner
         this.noClip = true;
     }
 
-    public EntityEarthPiece(World world, EntityLivingBase owner, double x, double y, double z, 
+    public EntityEarthPiece(World world, double x, double y, double z, 
+    EntityLivingBase owner,
     String pieceType, String pieceShape, int pieceSize,
-    int gatherCountdownMax, int liftCountdownMax, double liftSpeed,
-    int positionTime, double positionAbove,
-    int homeTimemax, double homeSpeed,
-    double flingSpeed, double blockOutSpeed, double blockOutGravity,
-    int lingerTime)
+    int gatherTimer, 
+    int liftTimer, double liftSpeed,
+    int positionTimer, double positionAbove,
+    int homeTimer, double homeSpeed,
+    int flingTimer, double flingSpeed, double blockOutSpeed, double blockOutGravity)
     {
-        super(world, owner);
+        super(world, x, y, z, owner);
         setSize(0.5F, 0.5F);
 
         this.gravitySpeed = 0.1D;
@@ -101,7 +99,7 @@ public class EntityEarthPiece extends EntityWithOwner
 //a bit above owner's feet, then take it and use solid block nearby
         BlockPos attemptedStartPos = BlockUtil.findFirstSolidBlock(this, 8.0F, 32, 2);
 
-//Parameters serve as a fallback position
+//Pos parameters serve as a fallback position
         if(attemptedStartPos == null) { setPosition(x, y, z); } 
         else { setPosition(((double) attemptedStartPos.getX()) + 0.5D, ((double) attemptedStartPos.getY()) + 0.5D, ((double) attemptedStartPos.getZ()) + 0.5D); }
 
@@ -115,46 +113,29 @@ public class EntityEarthPiece extends EntityWithOwner
         this.pieceShape = pieceShape;
         this.pieceSize = pieceSize;
 
-        this.gatherCountdown = gatherCountdownMax;
-        this.gatherCountdownMax = gatherCountdownMax;
 
-        this.liftCountdown = liftCountdownMax;
-        this.liftCountdownMax = liftCountdownMax;
+        this.gatherTimer = gatherTimer;
+
+        this.liftTimer = liftTimer;
         this.liftSpeed = liftSpeed;
 
-        this.startedPositioning = false;
-        this.positionTime = positionTime;
+        this.positionTimer = positionTimer;
         this.positionAbove = positionAbove;
+        this.startedPositioning = false;
 
-        this.homeTime = homeTimemax;
-        this.homeTimemax = homeTimemax;
+        this.homeTimer = homeTimer;
         this.homeSpeed = homeSpeed;
 
+        this.flingTimer = flingTimer;
         this.flingSpeed = flingSpeed;
         this.blockOutSpeed = blockOutSpeed;
         this.blockOutGravity = blockOutGravity;
-
-        this.lingerTime = lingerTime;
-
-/*
-        System.out.println("Constructed earth piece");
-        System.out.println("After constructor, owner is: " + (this.owner == null ? "NULL" : this.owner.getName()));
-        if(this.owner == null)
-        {
-            System.out.println("posX is " + this.posX + ", posY is " + this.posY + ", posZ is " + this.posZ);
-        }
-        else
-        {
-            System.out.println("(OWNER RELATIVE) posX is " + (this.owner.posX - this.posX) + ", posY is " + this.posY + ", posZ is " + this.posZ);
-        }
-*/
     }
 
 //Spin piece specific
-    public void setPieceSpin(int spinTimemax, double spinDistance, double spinRadian, double spinRadianStep)
+    public void setPieceSpin(int spinTimer, double spinDistance, double spinRadian, double spinRadianStep)
     {
-        this.spinTime = spinTimemax;
-        this.spinTimemax = spinTimemax;
+        this.spinTimer = spinTimer;
         this.spinDistance = spinDistance;
         this.spinRadian = spinRadian;
         this.spinRadianStep = spinRadianStep;
@@ -169,22 +150,23 @@ public class EntityEarthPiece extends EntityWithOwner
 		compound.setInteger("SearchPosX", this.searchBasis.getX());
 		compound.setInteger("SearchPosY", this.searchBasis.getY());
 		compound.setInteger("SearchPosZ", this.searchBasis.getZ());
+
         compound.setString("PhaseAt", this.phaseAt);
 
         compound.setString("PieceType", this.pieceType);
         compound.setString("PieceShape", this.pieceShape);
         compound.setInteger("PieceSize", this.pieceSize);
 
-        compound.setInteger("GatherCountdown", this.gatherCountdown);
-        compound.setInteger("GatherCountdownMax", this.gatherCountdownMax);
 
-        compound.setInteger("LiftCountdown", this.liftCountdown);
-        compound.setInteger("LiftCountdownMax", this.liftCountdownMax);
+        compound.setInteger("GatherTimer", this.gatherTimer);
+        compound.setBoolean("GatherStarted", this.gatherStarted);
+
+        compound.setInteger("LiftTimer", this.liftTimer);
         compound.setDouble("LiftSpeed", this.liftSpeed);
 
-        compound.setBoolean("StartedPositioning", this.startedPositioning);
-        compound.setInteger("PositionTime", this.positionTime);
+        compound.setInteger("PositionTimer", this.positionTimer);
         compound.setDouble("PositionAbove", this.positionAbove);
+        compound.setBoolean("StartedPositioning", this.startedPositioning);
         if(this.ownerInitialVec != null)
         {
             compound.setDouble("OwnerInitialVecX", this.ownerInitialVec.x);
@@ -193,19 +175,16 @@ public class EntityEarthPiece extends EntityWithOwner
         }
         compound.setDouble("OwnerGlueDistance", this.ownerGlueDistance);
 
-        compound.setInteger("HomeTime", this.homeTime);
-        compound.setInteger("HomeTimemax", this.homeTimemax);
+        compound.setInteger("HomeTimer", this.homeTimer);
         compound.setDouble("HomeSpeed", this.homeSpeed);
 
+        compound.setInteger("FlingTimer", this.flingTimer);
         compound.setDouble("FlingSpeed", this.flingSpeed);
         compound.setDouble("BlockOutSpeed", this.blockOutSpeed);
         compound.setDouble("BlockOutGravity", this.blockOutGravity);
 
-        compound.setInteger("LingerTime", this.lingerTime);
 
-
-        compound.setInteger("SpinTime", this.spinTime);
-        compound.setInteger("SpinTimemax", this.spinTimemax);
+        compound.setInteger("SpinTimer", this.spinTimer);
         compound.setDouble("SpinDistance", this.spinDistance);
         compound.setDouble("SpinRadian", this.spinRadian);
         compound.setDouble("SpinRadianStep", this.spinRadianStep);
@@ -229,41 +208,39 @@ public class EntityEarthPiece extends EntityWithOwner
 
             this.searchBasis = new BlockPos((int) X, (int) Y, (int) Z);
         } else { this.searchBasis = new BlockPos(0, 0, 0); }
+
         if (compound.hasKey("PhaseAt")) { this.phaseAt = compound.getString("PhaseAt"); }
 
         if (compound.hasKey("PieceType")) { this.pieceType = compound.getString("PieceType"); }
         if (compound.hasKey("PieceShape")) { this.pieceShape = compound.getString("PieceShape"); }
         if (compound.hasKey("PieceSize")) { this.pieceSize = compound.getInteger("PieceSize"); }
 
-        if (compound.hasKey("GatherCountdown")) { this.gatherCountdown = compound.getInteger("GatherCountdown"); }
-        if (compound.hasKey("GatherCountdownMax")) { this.gatherCountdownMax = compound.getInteger("GatherCountdownMax"); }
 
-        if (compound.hasKey("LiftCountdown")) { this.liftCountdown = compound.getInteger("LiftCountdown"); }
-        if (compound.hasKey("LiftCountdownMax")) { this.liftCountdownMax = compound.getInteger("LiftCountdownMax"); }
+        if (compound.hasKey("GatherTimer")) { this.gatherTimer = compound.getInteger("GatherTimer"); }
+        if (compound.hasKey("GatherStarted")) { this.gatherStarted = compound.getBoolean("GatherStarted"); }
+
+        if (compound.hasKey("LiftTimer")) { this.liftTimer = compound.getInteger("LiftTimer"); }
         if (compound.hasKey("LiftSpeed")) { this.liftSpeed = compound.getDouble("LiftSpeed"); }
 
-        if (compound.hasKey("StartedPositioning")) { this.startedPositioning = compound.getBoolean("StartedPositioning"); }
-        if (compound.hasKey("PositionTime")) { this.positionTime = compound.getInteger("PositionTime"); }
+        if (compound.hasKey("PositionTimer")) { this.positionTimer = compound.getInteger("PositionTimer"); }
         if (compound.hasKey("PositionAbove")) { this.positionAbove = compound.getDouble("PositionAbove"); }
+        if (compound.hasKey("StartedPositioning")) { this.startedPositioning = compound.getBoolean("StartedPositioning"); }
         if (compound.hasKey("OwnerInitialVecX") 
         && compound.hasKey("OwnerInitialVecY") && compound.hasKey("OwnerInitialVecZ")) 
             { this.ownerInitialVec = new Vec3d(compound.getDouble("OwnerInitialVecX"), 
             compound.getDouble("OwnerInitialVecY"), compound.getDouble("OwnerInitialVecZ")); }
         if (compound.hasKey("OwnerGlueDistance")) { this.ownerGlueDistance = compound.getDouble("OwnerGlueDistance"); }
 
-        if (compound.hasKey("HomeTime")) { this.homeTime = compound.getInteger("HomeTime"); }
-        if (compound.hasKey("HomeTimemax")) { this.homeTimemax = compound.getInteger("HomeTimemax"); }
+        if (compound.hasKey("HomeTimer")) { this.homeTimer = compound.getInteger("HomeTimer"); }
         if (compound.hasKey("HomeSpeed")) { this.homeSpeed = compound.getDouble("HomeSpeed"); }
 
+        if (compound.hasKey("FlingTimer")) { this.flingTimer = compound.getInteger("FlingTimer"); }
         if (compound.hasKey("FlingSpeed")) { this.flingSpeed = compound.getDouble("FlingSpeed"); }
         if (compound.hasKey("BlockOutSpeed")) { this.blockOutSpeed = compound.getDouble("BlockOutSpeed"); }
         if (compound.hasKey("BlockOutGravity")) { this.blockOutGravity = compound.getDouble("BlockOutGravity"); }
 
-        if (compound.hasKey("LingerTime")) { this.lingerTime = compound.getInteger("LingerTime"); }
 
-
-        if (compound.hasKey("SpinTime")) { this.spinTime = compound.getInteger("SpinTime"); }
-        if (compound.hasKey("SpinTimemax")) { this.spinTimemax = compound.getInteger("SpinTimemax"); }
+        if (compound.hasKey("SpinTimer")) { this.spinTimer = compound.getInteger("SpinTimer"); }
         if (compound.hasKey("SpinDistance")) { this.spinDistance = compound.getDouble("SpinDistance"); }
         if (compound.hasKey("SpinRadian")) { this.spinRadian = compound.getDouble("SpinRadian"); }
         if (compound.hasKey("SpinRadianStep")) { this.spinRadianStep = compound.getDouble("SpinRadianStep"); }
@@ -274,25 +251,6 @@ public class EntityEarthPiece extends EntityWithOwner
     protected void entityInit() {}
 
 
-    public void cleanDeadBlocks()
-    {
-//Iterator of thrown blocks
-        Iterator<EntityThrownBlock> iterBlocks = this.controlledBlocks.iterator();
-
-//While iterator has next block
-        while(iterBlocks.hasNext())
-        {
-//Get next block
-            EntityThrownBlock block = iterBlocks.next();
-
-//If null or dead
-            if(block == null || block.isDead)
-            {
-//Remove it (thread-safe)
-                iterBlocks.remove();
-            }
-        }
-    }
 
 
     @Override
@@ -303,14 +261,12 @@ public class EntityEarthPiece extends EntityWithOwner
         if(this.world.isRemote) { return; }
 
 
-//Before anything else, clean dead blocks
-        this.cleanDeadBlocks();
 
 
-//Also, if no owner
+//If no owner
         if (this.owner == null) 
         {
-            System.out.println("Premature expel at " + this.ticksExisted);
+//          System.out.println("Piece at premature expel");
 //Premature expel
             this.phaseAt = "expel";
         }
@@ -319,7 +275,7 @@ public class EntityEarthPiece extends EntityWithOwner
 //If not searched for blocks yet
         else if(this.phaseAt.equals("search"))
         {
-            System.out.println("Checking for block search");
+//          System.out.println("Piece at search");
 //Perform search
             this.blockSearch();
 //And move to gather
@@ -330,6 +286,7 @@ public class EntityEarthPiece extends EntityWithOwner
 //Wait for blocks to gather
         else if(this.phaseAt.equals("gather"))
         {
+//          System.out.println("Piece at gather");
             this.updateGatherPhase();
         }
 
@@ -337,83 +294,64 @@ public class EntityEarthPiece extends EntityWithOwner
 //Lift up
         else if(this.phaseAt.equals("lift"))
         {
+//          System.out.println("Piece at lift");
             this.updateLiftPhase();
-
-//Make blocks follow
-            for(EntityThrownBlock block : this.controlledBlocks)
-            {
-                block.setPosition(this.posX + block.stickX, this.posY + block.stickY, this.posZ + block.stickZ);
-            } 
         }
 
 
 //Set into position
         else if(this.phaseAt.equals("position"))
         {
+//          System.out.println("Piece at position");
             if(this.pieceType.equals("spin"))
             {
                 this.positionIntoSpin();
             }
 
-//Make blocks follow
-            for(EntityThrownBlock block : this.controlledBlocks)
+//If has been positioning too long
+            if(--this.positionTimer <= -10)
             {
-                block.setPosition(this.posX + block.stickX, this.posY + block.stickY, this.posZ + block.stickZ);
-            } 
+//Failsafe expel
+                this.phaseAt = "expel";                
+            }
         }
 
 
         else if(this.phaseAt.equals("active"))
         {
+//          System.out.println("Piece at active");
 //If this is a spinning piece
             if(this.pieceType.equals("spin"))
             {
 //Active spin
                 this.activeSpin();
             }
-
-//Make blocks follow
-            for(EntityThrownBlock block : this.controlledBlocks)
-            {
-                block.setPosition(this.posX + block.stickX, this.posY + block.stickY, this.posZ + block.stickZ);
-            } 
         }
 
         else if(this.phaseAt.equals("homing"))
         {
+//          System.out.println("Piece at homing");
             this.updateHomingPhase();
-
-//Make blocks follow
-            for(EntityThrownBlock block : this.controlledBlocks)
-            {
-                block.setPosition(this.posX + block.stickX, this.posY + block.stickY, this.posZ + block.stickZ);
-            } 
         }
 
         else if(this.phaseAt.equals("flung"))
         {
-//Make blocks follow
-            for(EntityThrownBlock block : this.controlledBlocks)
+//          System.out.println("Piece at flung");
+            if(this.collided)
             {
-                block.setPosition(this.posX + block.stickX, this.posY + block.stickY, this.posZ + block.stickZ);
+                this.phaseAt = "expel";
+            }
 
-//If any block collides this enters expel
-                if(block.collided)
-                {
-                    this.phaseAt = "expel";
-                }
-            } 
+            this.performBasicMovementWithPuppets();
         }
 
         else if(this.phaseAt.equals("expel"))
         {
-                this.expelBlocks();
-                this.setDead(); 
-                return;  
+//          System.out.println("Piece at expel");
+            this.expelBlocks();
+            this.setDead(); 
+            return;  
         }
-
-    
-        this.performBasicMovement();    
     }
 
 
@@ -434,15 +372,13 @@ public class EntityEarthPiece extends EntityWithOwner
 //Search cube
     public void blockSearchCube()
     {
-        System.out.println("Reached block search");
-
         for(int atX = (-1 * this.pieceSize); atX <= this.pieceSize; atX++)
         {
             for(int atY = (-1 * this.pieceSize); atY <= this.pieceSize; atY++)
             {
                 for(int atZ = (-1 * this.pieceSize); atZ <= this.pieceSize; atZ++)
                 {
-//Iterative cube origins
+//Iterative cube origin
                     BlockPos blockOrigin = BlockUtil.findFirstSolidBlock(this.world, 
                         this.searchBasis.getX() + atX, this.searchBasis.getY() + atY, this.searchBasis.getZ() + atZ, 16.0F, 16, 2);
 
@@ -452,27 +388,34 @@ public class EntityEarthPiece extends EntityWithOwner
 //Make entity block at origin
                         EntityThrownBlock thrownBlock = new EntityThrownBlock
                         (
-                            this.world, this.owner, blockOrigin, blockOrigin.getX() + 0.5D, blockOrigin.getY() + 0.5D, blockOrigin.getZ() + 0.5D, 1.0F
+                            this.world, blockOrigin.getX() + 0.5D, blockOrigin.getY() + 0.5D, blockOrigin.getZ() + 0.5D, 
+                            this.owner, this.world.getBlockState(blockOrigin), 
+                            false, true, true, 1.0F
                         );
 
-//Give block owner and UUID
-                        thrownBlock.owner = this.owner;
-                        thrownBlock.ownerUUID = this.owner.getUniqueID();
-
+//Give block controller and UUID
                         thrownBlock.controller = this;
                         thrownBlock.controllerUUID = this.getUniqueID();
 
-//Set block no clip and no gravity for now
-                        thrownBlock.setBlockNormal(false);
+//Set block not solid for now
+                        thrownBlock.setBlockSolid(false);
 
 
-//And set block earth piece params
-                        thrownBlock.setBlockPiece((double) atX, (double) atY, (double) atZ);
+//New puppet entity
+                        PuppetEntity puppetBlock = new PuppetEntity(thrownBlock, 
+                        (double) atX, (double) atY, (double) atZ, 0, 0);
+//Grant UUID separately
+                        puppetBlock.puppetUUID = thrownBlock.getUniqueID();
 
-//Add block to this list
-                        this.controlledBlocks.add(thrownBlock);
-//Spawn block
-                        if (!this.world.isRemote) { this.getEntityWorld().spawnEntity(thrownBlock); }
+//Add block to puppet list
+                        this.puppetEntities.add(puppetBlock);
+
+//Spawn block, not solid yet
+                        if (!this.world.isRemote) 
+                        {
+                            thrownBlock.setBlockSolid(false); 
+                            this.getEntityWorld().spawnEntity(thrownBlock); 
+                        }
                     }
                 }
             }
@@ -489,87 +432,71 @@ public class EntityEarthPiece extends EntityWithOwner
         this.gatherBlocksTowardsPosition();
 
 
-//If still in gather time
-        if(this.gatherCountdown > 0)
-        {
-//Decrement gather timer
-            --this.gatherCountdown;
-        }
-
 //If gather time over
-        else
+        if(--this.gatherTimer <= 0)
         {
-//If all blocks reached position
-            if(this.allBlocksReachedGatherPosition())
-            {
+/*
+//Disown blocks that didn't reach correct position
+            this.disownMisalignedBlocks())
+*/
 //Move onto lift
-                this.phaseAt = "lift";                
-            }
-//Else wait a bit and try again
-            else
-            {
-                this.gatherCountdown = 5; 
-            }
+            this.phaseAt = "lift";                
         }
     }
 
-//Gather done check
-    public boolean allBlocksReachedGatherPosition()
+/*
+//Check if gather done
+    public void disownMisalignedBlocks()
     {
-        for(EntityThrownBlock block : this.controlledBlocks)
+        for(PuppetEntity puppet : this.puppetEntities)
         {
-            if(!block.controllerReached)
-            {
-                return false;
-            }
+
         }
 
-        return true;
     }
+*/
 
 //Block gather logic
     public void gatherBlocksTowardsPosition()
     {
-//For each block
-        for(EntityThrownBlock block : this.controlledBlocks)
+//If first tick of gather
+        if(!this.gatherStarted)
         {
-//If this first tick of gathering
-            if(this.gatherCountdown == this.gatherCountdownMax)
+//Get each puppet
+            for(PuppetEntity puppet : this.puppetEntities)
             { 
-//Set block vec to point to this + offset
-                block.controllerInitialVec
+//Set puppet vec to point to this + offset
+                puppet.storedVec
                     = new Vec3d(
-                    (this.posX + block.stickX) - block.posX, 
-                    (this.posY + block.stickY) - block.posY, 
-                    (this.posZ + block.stickZ) - block.posZ)
-                    .scale(1.25D / ((double) this.gatherCountdownMax));
-//Set block glue distance
-                block.controllerGlueDistance 
-                = 1.5D * block.controllerInitialVec.length();
-//Set block "not normal"
-                block.setBlockNormal(false);
+                    (this.posX + puppet.offsetX) - puppet.entity.posX, 
+                    (this.posY + puppet.offsetY) - puppet.entity.posY, 
+                    (this.posZ + puppet.offsetZ) - puppet.entity.posZ)
+                    .scale(1.25D / ((double) this.gatherTimer));
+//Set puppet glue distance
+                puppet.storedDistance 
+                    = 1.5D * puppet.storedVec.length();
             }
 
+//Set gather started
+            this.gatherStarted = true;
+        }
 
-//In any case, pull block
-//in a fraction of gather countdown
-            block.motionX = (block.controllerInitialVec.x + this.motionX);
-            block.motionY = (block.controllerInitialVec.y + this.motionY);
-            block.motionZ = (block.controllerInitialVec.z + this.motionZ);
+
+//Get each puppet
+        for(PuppetEntity puppet : this.puppetEntities)
+        {
+//Pull each in a fraction of gather timer
+            puppet.entity.move(MoverType.SELF, puppet.storedVec.x, puppet.storedVec.y, puppet.storedVec.z);
 
 
 //Check if block close enough to self to glue
-            if(block.getDistance
-            (this.posX + block.stickX, this.posY + block.stickY, this.posZ + block.stickZ) <= block.controllerGlueDistance)
+            if(puppet.entity.getDistance
+            (this.posX + puppet.offsetX, this.posY + puppet.offsetY, this.posZ + puppet.offsetZ) <= puppet.storedDistance)
             {
 //If so set glued
-                block.controllerReached = true;
+                puppet.controlState = 1;
 //Follow this (at offset)
-                block.setPosition(this.posX + block.stickX, this.posY + block.stickY, this.posZ + block.stickZ);
-//No motion for block
-                block.motionX = 0.0D;
-                block.motionY = 0.0D;
-                block.motionZ = 0.0D;
+                puppet.entity.setPosition(this.posX + puppet.offsetX, this.posY + puppet.offsetY, this.posZ + puppet.offsetZ);
             }
         }  
     }
@@ -579,25 +506,19 @@ public class EntityEarthPiece extends EntityWithOwner
 
     public void updateLiftPhase()
     {
-//If still lift left
-        if(this.liftCountdown > 0)
+//If still has lift left
+        if(this.liftTimer > 0)
         {
 //Lift
-            this.motionY = this.liftSpeed;
-//Control blocks
-            for(EntityThrownBlock block : this.controlledBlocks)
-            {
-                block.setPosition(this.posX + block.stickX, this.posY + block.stickY, this.posZ + block.stickZ);
-            }
+            this.moveWithPuppets(0.0D, this.liftSpeed, 0.0D);
 //Lift timer
-            --this.liftCountdown;
+            --this.liftTimer;
         }
 
 //If no lift time left
         else
         {
 //Stop lifting and move to positioning
-            this.motionY = 0.0D;
             this.phaseAt = "position";
         }
     }
@@ -612,16 +533,13 @@ public class EntityEarthPiece extends EntityWithOwner
 //If first tick of positioning
         if(!this.startedPositioning)
         {
-            System.out.println("Reached first tick of position into spin");
-
- 
 //Set initial vec to owner and offset
             this.ownerInitialVec
                 = new Vec3d(
                 (this.owner.posX + (Math.cos(this.spinRadian) * this.spinDistance)) - this.posX, 
                 (this.owner.posY + this.positionAbove) - this.posY, 
                 (this.owner.posZ + (Math.sin(this.spinRadian) * this.spinDistance)) - this.posZ) 
-                .scale(1.25D / ((double) positionTime));
+                .scale(1.25D / ((double) positionTimer));
 
 //Set glue distance
             this.ownerGlueDistance 
@@ -634,9 +552,7 @@ public class EntityEarthPiece extends EntityWithOwner
 
 //In any case, move to owner,
 //in a fraction of positioning time + using owner motion
-        this.motionX = ownerInitialVec.x + this.owner.motionX; 
-        this.motionY = ownerInitialVec.y + this.owner.motionY;  
-        this.motionZ = ownerInitialVec.z + this.owner.motionZ;
+        this.moveWithPuppets(ownerInitialVec.x + this.owner.motionX, ownerInitialVec.y + this.owner.motionY, ownerInitialVec.z + this.owner.motionZ);
 
 
 //Check if close enough to owner to glue
@@ -649,10 +565,19 @@ public class EntityEarthPiece extends EntityWithOwner
             this.phaseAt = "active";
 //And attach to owner (at offset)
             this.setPosition
-            (this.owner.posX + (Math.cos(this.spinRadian) * this.spinDistance), 
-            this.owner.posY + this.positionAbove, this.owner.posZ + (Math.sin(this.spinRadian) * this.spinDistance));
-//Increment spin radian
-            this.spinRadian += this.spinRadianStep;
+                (this.owner.posX + (Math.cos(this.spinRadian) * this.spinDistance), 
+                this.owner.posY + this.positionAbove, 
+                this.owner.posZ + (Math.sin(this.spinRadian) * this.spinDistance));
+//Attach blocks too
+            for(PuppetEntity puppet : this.puppetEntities)
+            {
+                puppet.entity.setPosition
+                (
+                    puppet.offsetX + this.owner.posX + (Math.cos(this.spinRadian) * this.spinDistance), 
+                    puppet.offsetY + this.owner.posY + this.positionAbove, 
+                    puppet.offsetZ + this.owner.posZ + (Math.sin(this.spinRadian) * this.spinDistance)
+                );
+            }
         }                  
     }
 
@@ -663,21 +588,26 @@ public class EntityEarthPiece extends EntityWithOwner
 //Active spin
     public void activeSpin()
     {
-        if(this.spinTime > 0)
+        if(this.spinTimer > 0)
         {
 //Spin around owner (at offset)
-            this.setPosition
-            (this.owner.posX + (Math.cos(this.spinRadian) * this.spinDistance), 
-            this.owner.posY + this.positionAbove, this.owner.posZ + (Math.sin(this.spinRadian) * this.spinDistance));
+            this.moveWithPuppets
+            (
+                (this.owner.posX + (Math.cos(this.spinRadian) * this.spinDistance)) - (this.posX), 
+                (this.owner.posY + this.positionAbove) - (this.posY), 
+                (this.owner.posZ + (Math.sin(this.spinRadian) * this.spinDistance)) - (this.posZ)
+            );
+
+
 //Increment spin radian
             this.spinRadian += this.spinRadianStep;
 //Decrement spin time
-            --this.spinTime;
+            --this.spinTimer;
         }
+//If spin over
         else
         {
-            System.out.println("Reached last tick of active spin");
-
+//Start homing
             this.phaseAt = "homing";
         }
     }
@@ -689,12 +619,12 @@ public class EntityEarthPiece extends EntityWithOwner
     public void updateHomingPhase()
     {
 //If homing time left
-        if(this.homeTime > 0)
+        if(this.homeTimer > 0)
         {
 //Homing
             this.performHoming();
 //Homing timer
-            --this.homeTime;
+            --this.homeTimer;
         }
 
 //If homing over
@@ -713,11 +643,9 @@ public class EntityEarthPiece extends EntityWithOwner
 
             if(ownerTarget != null)
             {
-                Vec3d targetDir = new Vec3d(ownerTarget.posX - this.posX, ownerTarget.posY - this.posY, ownerTarget.posZ - this.posZ).normalize();
+                Vec3d targetDir = new Vec3d(ownerTarget.posX - this.posX, (ownerTarget.posY + ownerTarget.height) - this.posY, ownerTarget.posZ - this.posZ).normalize();
 
-                this.motionX = targetDir.x * this.homeSpeed; 
-                this.motionY = targetDir.y * this.homeSpeed; 
-                this.motionZ = targetDir.z * this.homeSpeed;
+                this.moveWithPuppets(targetDir.x * this.homeSpeed, targetDir.y * this.homeSpeed, targetDir.z * this.homeSpeed); 
             }
         }
     }
@@ -725,17 +653,21 @@ public class EntityEarthPiece extends EntityWithOwner
 //Homing to fling
     public void homingToFling()
     {
-//Set flung and has gravity
+//Set flung 
         this.phaseAt = "flung";
+//Set collision
+        this.noClip = false;
+        this.setSize((float) (1 + (2 * this.pieceSize)), (float) (1 + (2 * this.pieceSize)));
 
-//Fling at either target or straight up
+
+//Fling at either target or straight up (failsafe)
         if(this.owner instanceof EntityLiving)
         {
             EntityLivingBase ownerTarget = ((EntityLiving) this.owner).getAttackTarget();
 
             if(ownerTarget != null)
             {
-                Vec3d targetDir = new Vec3d(ownerTarget.posX - this.posX, ownerTarget.posY - this.posY, ownerTarget.posZ - this.posZ).normalize();
+                Vec3d targetDir = new Vec3d(ownerTarget.posX - this.posX, (ownerTarget.posY + ownerTarget.height) - this.posY, ownerTarget.posZ - this.posZ).normalize();
 
                 this.motionX = targetDir.x * this.flingSpeed; 
                 this.motionY = targetDir.y * this.flingSpeed; 
@@ -758,20 +690,18 @@ public class EntityEarthPiece extends EntityWithOwner
 //Expel branch
     public void expelBlocks()
     {
-        for(EntityThrownBlock block : this.controlledBlocks)
+        for(PuppetEntity puppet : this.puppetEntities)
         {
-//Set block expelled
-            block.blockExpelled = true;
-
 //Aim direction based on offset
-            Vec3d aimDirection = new Vec3d(block.stickX, block.stickY, block.stickZ).normalize();
+            Vec3d aimDirection = new Vec3d(puppet.offsetX, puppet.offsetY, puppet.offsetZ).normalize();
 
 //Shoot out block
-            block.setMovement(aimDirection.x * this.blockOutSpeed, aimDirection.y * this.blockOutSpeed, aimDirection.z * this.blockOutSpeed,
+            ((EntityWithOwner) puppet.entity).setMovement(aimDirection.x * this.blockOutSpeed, aimDirection.y * this.blockOutSpeed, aimDirection.z * this.blockOutSpeed,
 //Flat-ish gravity and quick horizontal deceleration 
             this.blockOutGravity, false, 1.0D);
 //Restore block normal behavior
-            block.setBlockNormal(true);
+            ((EntityThrownBlock) puppet.entity).setBlockSolid(true);
         } 
     }
+
 }

@@ -1,30 +1,35 @@
 package org.sporotofpoorety.eternitymode.entity;
 
-import java.util.List;
-import java.util.UUID;
 
 import com.google.common.collect.Lists;
-
+import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockFalling;
+import net.minecraft.block.ITileEntityProvider;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityFallingBlock;
+import net.minecraft.entity.MoverType;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
-import org.sporotofpoorety.srpabsurdcraft.entity.EntityOrbVoidCustom;
 
 import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
 
@@ -33,9 +38,19 @@ import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
 
 public class EntityThrownBlock extends EntityWithOwner
 {
-    private IBlockState fallTile;
+
+    protected static final DataParameter<BlockPos> ORIGIN = EntityDataManager.<BlockPos>createKey(EntityThrownBlock.class, DataSerializers.BLOCK_POS);
+    public IBlockState basisState;
+
+
     public NBTTagCompound tileEntityData;
-    protected static final DataParameter<BlockPos> ORIGIN = EntityDataManager.<BlockPos>createKey(EntityFallingBlock.class, DataSerializers.BLOCK_POS);
+
+
+    public int fallTime;
+
+
+    public boolean dontPlaceBlock;
+    public boolean shouldDropItem;
 
 
     public boolean dealsDamage;
@@ -44,93 +59,52 @@ public class EntityThrownBlock extends EntityWithOwner
 
 
 
-//Controller logic specific
-    public String controlMode = "none";
-    public String controllerReleaseMode = "none";
-
-    public double expelRadians;
-    public double expelForceHorizontal;
-    public double expelForceVertical;
-    public double expelGravity;
-    public double expelAcceleration;
-
-    public Vec3d controllerInitialVec = new Vec3d(0.0D, 0.0D, 0.0D);
-    public double controllerGlueDistance;
-    public boolean controllerReached;
-    public boolean blockExpelled;
-
-    public double stickX;
-    public double stickY;
-    public double stickZ;
-    
-    
-
-
     public EntityThrownBlock(World worldIn)
     {
         super(worldIn);
-        this.preventEntitySpawning = true;
-        this.setSize(1.0F, 1.0F);
+
+        this.basisState = Blocks.STONE.getDefaultState();
     }
 
-    public EntityThrownBlock(World worldIn, EntityLivingBase owner, BlockPos blockPos, double x, double y, double z, float thrownBlockDamage)
+    public EntityThrownBlock(World worldIn, double x, double y, double z, 
+    EntityLivingBase owner, IBlockState fallingBlockState, 
+    boolean dontPlaceBlock, boolean shouldDropItem, boolean dealsDamage, float thrownBlockDamage)
     {
-        super(worldIn, owner);
+        super(worldIn, x, y, z, owner);
         this.preventEntitySpawning = true;
-        this.setSize(1.0F, 1.0F);
+        this.setSize(0.98F, 0.98F);
 
 
-        this.setOrigin(blockPos);
+        this.basisState = fallingBlockState;
 
 
-        this.setPosition(x, y, z); 
+        this.setOrigin(new BlockPos(this));
 
-        
-        this.dealsDamage = true;
-        this.thrownBlockDamage = thrownBlockDamage;
+
+        this.dontPlaceBlock = dontPlaceBlock; 
+        this.shouldDropItem = shouldDropItem; 
+
+        this.dealsDamage = dealsDamage; 
+        this.thrownBlockDamage = thrownBlockDamage; 
     }
 
-    public void setDead()
+
+    public void setBlockSolid(boolean solid)
     {
-        super.setDead();
-        System.out.println("Block died at " + this.ticksExisted);
+//Set gravity
+        this.setNoGravity(!solid);
+//Set clip
+        this.noClip = !solid;
+//Set deals damage
+        this.dealsDamage = solid;
     }
+
 
     protected void entityInit()
     {
         this.dataManager.register(ORIGIN, BlockPos.ORIGIN);
     }
 
-    public void setBlockNormal(boolean normal)
-    {
-//Set gravity
-        this.setNoGravity(!normal);
-//Set clip
-        this.noClip = !normal;
-//Set deals damage
-        this.dealsDamage = normal;
-    }
-
-    public void setBlockShower(String controlMode, String controllerReleaseMode,
-    double expelForceHorizontal, double expelForceVertical,
-    double expelGravity, double expelAcceleration)
-    {
-        this.controlMode = controlMode;
-        this.controllerReleaseMode = controllerReleaseMode;
-
-        this.expelForceHorizontal = expelForceHorizontal;
-        this.expelForceVertical = expelForceVertical;
-        this.expelGravity = expelGravity;
-        this.expelAcceleration = expelAcceleration;
-    }
-
-    public void setBlockPiece(double stickX, double stickY, double stickZ)
-    {
-        this.stickX = stickX;
-        this.stickY = stickY;
-        this.stickZ = stickZ;
-    }
-   
 
     /**
      * (abstract) Protected helper method to write subclass entity data to NBT.
@@ -140,37 +114,30 @@ public class EntityThrownBlock extends EntityWithOwner
         super.writeEntityToNBT(compound);
 
 
-		compound.setInteger("BlockPosX", this.getOrigin().getX());
-		compound.setInteger("BlockPosY", this.getOrigin().getY());
-		compound.setInteger("BlockPosZ", this.getOrigin().getZ());
+//Get basis block (air as failsafe)
+        Block basisBlock = this.basisState == null ? Blocks.AIR : this.basisState.getBlock();
+//Set block metadata
+        compound.setByte("Data", (byte)basisBlock.getMetaFromState(this.basisState));
+
+//Get basis block name
+        ResourceLocation resourcelocation = Block.REGISTRY.getNameForObject(basisBlock);
+//Save basis block name
+        compound.setString("Block", resourcelocation == null ? "" : resourcelocation.toString());
+
+
+//Save tile entity data
+        if (this.tileEntityData != null) { compound.setTag("TileEntityData", this.tileEntityData); }
+
+
+        compound.setInteger("FallTime", this.fallTime);
+
+
+        compound.setBoolean("DontPlaceBlock", this.dontPlaceBlock);
+        compound.setBoolean("DropItem", this.shouldDropItem);
+
 
         compound.setBoolean("DealsDamage", this.dealsDamage);
         compound.setFloat("ThrownBlockDamage", this.thrownBlockDamage);
-
-
-		compound.setString("ControlMode", this.controlMode);
-		compound.setString("ControllerReleaseMode", this.controllerReleaseMode);
-
-
-        compound.setDouble("ExpelRadians", this.expelRadians);
-        compound.setDouble("ExpelForceHorizontal", this.expelForceHorizontal);
-        compound.setDouble("ExpelForceVertical", this.expelForceVertical);
-        compound.setDouble("ExpelGravity", this.expelGravity);
-        compound.setDouble("ExpelAcceleration", this.expelAcceleration);
-
-        if(this.controllerInitialVec != null)
-        {
-            compound.setDouble("ControllerInitialVecX", this.controllerInitialVec.x);
-            compound.setDouble("ControllerInitialVecY", this.controllerInitialVec.y);
-            compound.setDouble("ControllerInitialVecZ", this.controllerInitialVec.z);
-        }
-        compound.setDouble("ControllerGlueDistance", this.controllerGlueDistance);
-        compound.setBoolean("ControllerReached", this.controllerReached);
-        compound.setBoolean("BlockExpelled", this.blockExpelled);
-
-        compound.setDouble("StickX", this.stickX);
-        compound.setDouble("StickY", this.stickY);
-        compound.setDouble("StickZ", this.stickZ);
     }
 
 
@@ -182,49 +149,38 @@ public class EntityThrownBlock extends EntityWithOwner
         super.readEntityFromNBT(compound);
 
 
-        if (compound.hasKey("BlockPosX") && compound.hasKey("BlockPosY") && compound.hasKey("BlockPosZ"))
-        {
-            int X = 0;
-            int Y = 0;
-            int Z = 0;
+//Get block metadata
+        int i = compound.getByte("Data") & 255;
 
-	        X = compound.getInteger("BlockPosX");
-	        Y = compound.getInteger("BlockPosY");
-	        Z = compound.getInteger("BlockPosZ");
 
-    	    this.setOrigin(new BlockPos(X,Y,Z));
-        } else { this.setOrigin(new BlockPos(0, 0, 0)); }
+//Get block basis from name, 
+//then get state basis from metadata
+        if (compound.hasKey("Block", 8)) 
+            { this.basisState = Block.getBlockFromName(compound.getString("Block")).getStateFromMeta(i); }
+
+//If block basis air or null
+        Block basisBlock = this.basisState.getBlock();
+        if (basisBlock == null || basisBlock.getDefaultState().getMaterial() == Material.AIR)
+//Sand as failsafe
+            { this.basisState = Blocks.SAND.getDefaultState(); }
+
+
+//Get tile entity data
+        if (compound.hasKey("TileEntityData")) { this.tileEntityData = compound.getCompoundTag("TileEntityData"); }
+
+
+        if (compound.hasKey("FallTime")) { this.fallTime = compound.getInteger("FallTime"); }
+
+
+        if (compound.hasKey("DontPlaceBlock")) { this.dontPlaceBlock = compound.getBoolean("DontPlaceBlock"); }
+        if (compound.hasKey("DropItem")) { this.shouldDropItem = compound.getBoolean("DropItem"); }
+
 
         if (compound.hasKey("DealsDamage")) { this.dealsDamage = compound.getBoolean("DealsDamage"); }
         if (compound.hasKey("ThrownBlockDamage")) { this.thrownBlockDamage = compound.getFloat("ThrownBlockDamage"); }
-
-
-        if (compound.hasKey("ControlMode")) { this.controlMode = compound.getString("ControlMode"); }
-        if (compound.hasKey("ControllerReleaseMode")) { this.controllerReleaseMode = compound.getString("ControllerReleaseMode"); }
-
-
-        if (compound.hasKey("ExpelRadians")) { this.expelRadians = compound.getDouble("ExpelRadians"); }
-        if (compound.hasKey("ExpelForceHorizontal")) { this.expelForceHorizontal = compound.getDouble("ExpelForceHorizontal"); }
-        if (compound.hasKey("ExpelForceVertical")) { this.expelForceVertical = compound.getDouble("ExpelForceVertical"); }
-        if (compound.hasKey("ExpelGravity")) { this.expelGravity = compound.getDouble("ExpelGravity"); }
-        if (compound.hasKey("ExpelAcceleration")) { this.expelAcceleration = compound.getDouble("ExpelAcceleration"); }
-
-        if (compound.hasKey("ControllerInitialVecX") 
-        && compound.hasKey("ControllerInitialVecY") && compound.hasKey("ControllerInitialVecZ")) 
-            { this.controllerInitialVec = new Vec3d(compound.getDouble("ControllerInitialVecX"), 
-            compound.getDouble("ControllerInitialVecY"), compound.getDouble("ControllerInitialVecZ")); }
-        if (compound.hasKey("ControllerGlueDistance")) { this.controllerGlueDistance = compound.getDouble("ControllerGlueDistance"); }
-        if (compound.hasKey("ControllerReached")) { this.controllerReached = compound.getBoolean("ControllerReached"); }
-        if (compound.hasKey("BlockExpelled")) { this.blockExpelled = compound.getBoolean("BlockExpelled"); }
-
-        if (compound.hasKey("StickX")) { this.stickX = compound.getDouble("StickX"); }
-        if (compound.hasKey("StickY")) { this.stickY = compound.getDouble("StickY"); }
-        if (compound.hasKey("StickZ")) { this.stickZ = compound.getDouble("StickZ"); }
     }
 
 
-    
-  
 
 
     /**
@@ -232,36 +188,56 @@ public class EntityThrownBlock extends EntityWithOwner
      */
     public void onUpdate()
     {
-//Block restored to normal if no owner
+//      if(this.owner == null) { System.out.println("Owner not"); } else { System.out.println("Owner yes"); }
+//      if(this.controller == null) { System.out.println("Controller not"); } else { System.out.println("Controller yes"); }
+
+//Get basis block
+        Block basisBlock = this.basisState == null ? Blocks.AIR : this.basisState.getBlock();
+
+
+//If state is invalid, set dead
+        if (this.basisState == null || this.basisState.getMaterial() == Material.AIR)
+        {
+            this.setDead();
+            return;
+        }
+
+
+//Basic owned entity update
         super.onUpdate();
 
 
-//If being controlled 
-        if(this.controller != null) 
+
+
+//If first spawned
+        if (this.fallTime++ == 0)
         {
-//If not already expelled
-            if(!this.blockExpelled)
-            {
-//Control by orb
-                if(this.controller instanceof EntityOrbVoidCustom) { this.controlByOrb(); }
-            }
+            BlockPos blockPosAt = new BlockPos(this);
+
+//If initial blockpos 
+//corresponds to saved block
+            if (this.world.getBlockState(blockPosAt).getBlock() == basisBlock)
+//Break that blockpos
+                { this.world.setBlockToAir(blockPosAt); }
+
+//If it doesn't, kill this entity, as it's invalid
+            else if (!this.world.isRemote)
+                { this.setDead(); return; }
         }
 
 
 
 
-//Simple AoE damage, testing if it has any issues
-        if(this.dealsDamage)
+//If should do damage
+        if (this.dealsDamage)
         {
-            List<Entity> list = Lists.newArrayList(this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox().expand(1.25, 1.25, 1.25)));
+//Get entities within AABB
+            List<Entity> list = Lists.newArrayList(this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox()));
 
+//For each one, damage
             for (Entity entity : list)
             {
-                if(entity == this.owner)
-                {
-                    continue;
-                }
-                else
+                if(entity != this.owner)
                 {
                 	if(this.owner == null)
                 	{
@@ -271,267 +247,191 @@ public class EntityThrownBlock extends EntityWithOwner
                 	{
                 		entity.attackEntityFrom(DamageSource.causeThrownDamage(this, this.owner), this.thrownBlockDamage);
                 	}
-                }   
+                }
             }
         }
 
 
+
+
+//Basic movement
         this.performBasicMovement();
 
 
-        if (this.onGround && this.dealsDamage)
-        {
-            this.motionX *= 0.699999988079071D;
-            this.motionZ *= 0.699999988079071D;
-            this.motionY *= -0.5D;
 
-//Spawns particles within a randomized range
-//specified number of times, will be useful for future reference
-            for(int particleAt = 0; particleAt < 36; particleAt++)
+
+        if (!this.world.isRemote)
+        {
+//Get block pos this is at
+            BlockPos blockPosAt = new BlockPos(this);
+
+
+//If this is on ground and is solid
+            if (this.onGround && !this.noClip)
             {
-                this.getEntityWorld().spawnParticle(EnumParticleTypes.BLOCK_CRACK, this.posX + (rand.nextFloat() - rand.nextFloat()), this.posY + 0.5D, this.posZ + (rand.nextFloat() - rand.nextFloat()), (rand.nextFloat() - rand.nextFloat()), 1.0D, (rand.nextFloat() - rand.nextFloat()), Block.getIdFromBlock(this.world.getBlockState(this.getOrigin()).getBlock()));
-            }
-            
-            this.setDead();
-        }
-    }
-
-
-
-
-//Restore block to normal if no controller
-    public void performControllerValidation()
-    {
-        if(!this.validateController()) { this.setBlockNormal(true); }
-    }
-
-
-
-
-    public void controlByOrb()
-    {
-        if(this.controlMode.equals("shower"))
-        {
-            this.controlByOrbShower();
-        }
-    }
-
-    
-    public void controlByOrbShower()
-    {
-        EntityOrbVoidCustom controllerOrb = (EntityOrbVoidCustom) this.controller;
-
-
-//If at orb center
-        if(this.controllerReached)
-        {
-//And orb hasn't started to deflate
-            if(controllerOrb.getTimerDDD() <= controllerOrb.orbDeflatesWhen)
-            {
-//Follow orb
-                this.setPosition(controllerOrb.posX, controllerOrb.posY, controllerOrb.posZ);
-//No motion
-                this.motionX = 0.0D;
-                this.motionY = 0.0D;
-                this.motionZ = 0.0D;
+//Hit ground logic
+                this.onHitGround();
             }
 
-
-//If orb started deflating
-            else if(controllerOrb.getTimerDDD() > controllerOrb.orbDeflatesWhen)
-            {
-//Expel
-                this.expelByOrbShower();
-            }
-        }
-
-
-//If not reached orb center yet
-        else
-        {
-//If orb growing and not active yet
-            if(controllerOrb.ticksExisted >= controllerOrb.getStartState() && controllerOrb.getTimerDDD() <= 0)
-            {
-//And first tick of orb growth
-                if(controllerOrb.getTimeSinceIgnited() == 1)
-                { 
-//Set initial vec to orb
-                    this.controllerInitialVec
-                        = new Vec3d(controllerOrb.posX - this.posX, controllerOrb.posY - this.posY, controllerOrb.posZ - this.posZ)
-                        .scale(1.25D / controllerOrb.getFuseState());
-//Set glue distance
-                    this.controllerGlueDistance 
-                    = 1.5D * controllerInitialVec.length();
-//Set block "not normal"
-                    this.setBlockNormal(false);
-                }
-
-
-//In any case, move to orb,
-//in a fraction of growth time + using orb motion
-                this.motionX = (controllerInitialVec.x + controllerOrb.motionX);
-                this.motionY = (controllerInitialVec.y + controllerOrb.motionY);
-                this.motionZ = (controllerInitialVec.z + controllerOrb.motionZ);
-
-
-//Check if close enough to orb to glue
-                if(this.getDistance(controllerOrb) <= this.controllerGlueDistance)
-                {
-//If so set glued
-                    this.controllerReached = true;
-//Follow orb
-                    this.setPosition(controllerOrb.posX, controllerOrb.posY, controllerOrb.posZ);
-//No motion
-                    this.motionX = 0.0D;
-                    this.motionY = 0.0D;
-                    this.motionZ = 0.0D;
-                }                 
-            }    
-        }
-    }
-
-
-
-
-    public void expelByOrbShower()
-    {
-//Set block expelled
-        this.blockExpelled = true;
-
-
-//Get block expel mode
-
-//If random release (radians provided by controller)
-        if(controllerReleaseMode.equals("scatter"))
-        {
-//Random force
-            double actualForce = this.expelForceHorizontal * rand.nextDouble();              
-//Shoot out block
-            this.setMovement(Math.cos(this.expelRadians) * actualForce, this.expelForceVertical, Math.sin(this.expelRadians) * actualForce,
-//Flat-ish gravity and quick horizontal deceleration 
-            this.expelGravity, false, this.expelAcceleration);
-//Restore block normal behavior
-            this.setBlockNormal(true);          
-        }
-
-
-//If aimed release (radians calculated at expel time)
-        if(controllerReleaseMode.equals("aimed"))
-        {
-//If owner valid
-            if(this.owner != null && (this.owner instanceof EntityLiving) && ((EntityLiving) this.owner).getAttackTarget() != null) 
-            {
-//Get owner target
-                EntityLivingBase ownerTarget = ((EntityLiving) this.owner).getAttackTarget();
-//Get radians to owner target 
-                this.expelRadians = Math.atan2(ownerTarget.posZ - this.posZ, ownerTarget.posX - this.posX);
-//Randomize radians
-                this.expelRadians += (0.5D * Math.PI) * (rand.nextDouble() - rand.nextDouble());
-            }
-//If no valid owner target pick random direction
+//If this not on ground
             else
             {
-                this.expelRadians = (2.0D * Math.PI) * rand.nextDouble();
+//But fell out of bounds or for too long
+                if (this.fallTime > 100 && !this.world.isRemote && (blockPosAt.getY() < 1 || blockPosAt.getY() > 256) || this.fallTime > 600)
+                {
+//Check for drop item
+                    if (this.shouldDropItem && this.world.getGameRules().getBoolean("doEntityDrops"))
+                    {
+                        this.entityDropItem(new ItemStack(basisBlock, 1, basisBlock.damageDropped(this.basisState)), 0.0F);
+                    }
+//Then set dead
+                    this.setDead();
+                }
             }
+        }
+    }
 
-//Random force
-            double actualForce = this.expelForceHorizontal * rand.nextDouble();              
-//Shoot out block
-            this.setMovement(Math.cos(this.expelRadians) * actualForce, this.expelForceVertical, Math.sin(this.expelRadians) * actualForce,
-//Flat-ish gravity and quick horizontal deceleration 
-            this.expelGravity, false, this.expelAcceleration);
-//Restore block normal behavior
-            this.setBlockNormal(true);          
+
+//Controller validate failsafe
+    @Override
+    public void performControllerValidation()
+    {
+//If no controller
+        if(!this.validateController())
+        {
+//Restore solidity
+            this.setBlockSolid(true);
         }
     }
 
 
 
 
+    public void onHitGround()
+    {
+        Block basisBlock = this.basisState.getBlock();
+        BlockPos blockPosAt = new BlockPos(this);
+        IBlockState blockStateAt = this.world.getBlockState(blockPosAt);
+
+        boolean isPowder = this.basisState.getBlock() == Blocks.CONCRETE_POWDER;
+        boolean isPowderInWater = isPowder && this.world.getBlockState(blockPosAt).getMaterial() == Material.WATER;
+
+
+//If not powder in water
+        if (!isPowderInWater 
+//And this can fall through block under
+        && BlockFalling.canFallThrough(this.world.getBlockState(new BlockPos(this.posX, this.posY - 0.1D, this.posZ))))
+        {
+//Don't hit ground yet
+            this.onGround = false;
+            return;
+        }
+
+
+//Bounce vfx
+        this.motionX *= 0.7D;
+        this.motionZ *= 0.7D;
+        this.motionY *= -0.5D;
+
+
+
+
+
+//Don't do placement logic on pistons (complex/buggy)
+        if (blockStateAt.getBlock() == Blocks.PISTON_EXTENSION)
+        {
+            return;
+        }
+
+
+//Set dead
+        this.setDead();
+
+
+//Check if should place block
+        if (!this.dontPlaceBlock)
+        {
+
+//If allowed to place at pos
+            if (this.world.mayPlace(basisBlock, blockPosAt, true, EnumFacing.UP, (Entity)null)
+//And block can't keep falling
+            && (!BlockFalling.canFallThrough(this.world.getBlockState(blockPosAt.down())) || isPowderInWater)
+//Place saved block state 
+            && this.world.setBlockState(blockPosAt, this.basisState, 3))
+            {
+
+//Run custom logic for
+//blocks like sand and gravel
+                if (basisBlock instanceof BlockFalling)
+                {
+                    ((BlockFalling)basisBlock).onEndFalling(this.world, blockPosAt, this.basisState, blockStateAt);
+                }
+
+
+//Read tile entity data
+                if (this.tileEntityData != null && basisBlock instanceof ITileEntityProvider)
+                {
+                    TileEntity tileentity = this.world.getTileEntity(blockPosAt);
+
+                    if (tileentity != null)
+                    {
+                        NBTTagCompound nbttagcompound = tileentity.writeToNBT(new NBTTagCompound());
+
+                        for (String s : this.tileEntityData.getKeySet())
+                        {
+                            NBTBase nbtbase = this.tileEntityData.getTag(s);
+
+                            if (!"x".equals(s) && !"y".equals(s) && !"z".equals(s))
+                            {
+                                nbttagcompound.setTag(s, nbtbase.copy());
+                            }
+                        }
+
+                        tileentity.readFromNBT(nbttagcompound);
+                        tileentity.markDirty();
+                    }
+                }
+            }
+
+
+//If not allowed to place block, drop it instead
+            else if (this.shouldDropItem && this.world.getGameRules().getBoolean("doEntityDrops"))
+            {
+                this.entityDropItem(new ItemStack(basisBlock, 1, basisBlock.damageDropped(this.basisState)), 0.0F);
+            }
+        }
+
+
+//If shouldn't place block, but is falling block
+        else if (basisBlock instanceof BlockFalling)
+        {
+//Run on broken logic
+            ((BlockFalling)basisBlock).onBroken(this.world, blockPosAt);
+        }
+    }
+
+
+
+
+//When this falls
     public void fall(float distance, float damageMultiplier)
     {
-        if(this.dealsDamage)
-        {
-            List<Entity> list = Lists.newArrayList(this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox().expand(1.25, 1.25, 1.25)));
 
-            for (Entity entity : list)
-            {
-                if(entity == this.owner)
-                {
-                    continue;
-                }
-                else
-                {
-                	if(this.owner == null)
-                	{
-                		entity.attackEntityFrom(DamageSource.causeThrownDamage(this, this), this.thrownBlockDamage);
-                	}
-                	else
-                	{
-                		entity.attackEntityFrom(DamageSource.causeThrownDamage(this, this.owner), this.thrownBlockDamage);
-                	}   
-                }
-            }
-        }
     }
 
 
 
-    public void setOrigin(BlockPos p_184530_1_)
-    {
-        this.dataManager.set(ORIGIN, p_184530_1_);
-    }
 
-
-    public BlockPos getOrigin()
-    {
-        return (BlockPos)this.dataManager.get(ORIGIN);
-    }
+//Misc flags and behavior
 
 
     /**
-     * returns null or the entityliving it was placed or ignited by
+     * Returns true if other Entities should be prevented from moving through this Entity.
      */
-    public EntityLivingBase getOwner()
-    {
-        return this.owner;
-    }
-
-
-    private void explode()
-    {
-    	boolean flag = true;
-    	
-
-       // this.getEntityWorld().createExplosion(this, this.posX, this.posY + (double)(this.height / 16.0F), this.posZ, 1, flag);
-    }
-
-
-
-
-
-
-    public float getEyeHeight()
-    {
-        return 0.0F;
-    }
-    
-    /**
-     * Return whether this entity should be rendered as on fire.
-     */
-    @SideOnly(Side.CLIENT)
-    public boolean canRenderOnFire()
+    public boolean canBeCollidedWith()
     {
         return false;
     }
-    
-
-    @SideOnly(Side.CLIENT)
-    public World getWorldObj()
-    {
-        return this.world;
-    }
-
 
     /**
      * returns if this entity triggers Block.onEntityWalking on the blocks they walk on. used for spiders and wolves to
@@ -542,23 +442,50 @@ public class EntityThrownBlock extends EntityWithOwner
         return false;
     }
 
-
     /**
-     * Returns true if other Entities should be prevented from moving through this Entity.
+     * Return whether this entity should be rendered as on fire.
      */
-    public boolean canBeCollidedWith()
-    {
-        return !this.isDead;
-    }
-
-
-    /**
-     * Returns true if it's possible to attack this entity with an item.
-     */
-    public boolean canBeAttackedWithItem()
+    public boolean canRenderOnFire()
     {
         return false;
     }
-    
-}
 
+    public boolean ignoreItemEntityData()
+    {
+        return true;
+    }
+
+
+
+
+//Getters
+
+
+    public BlockPos getOrigin()
+    {
+        return (BlockPos)this.dataManager.get(ORIGIN);
+    }
+
+    @Nullable
+    public IBlockState getBlock()
+    {
+        return this.basisState;
+    }
+
+
+
+
+//Setters
+
+
+    public void setOrigin(BlockPos origin)
+    {
+        this.dataManager.set(ORIGIN, origin);
+    }
+
+    public void setDealsDamage(boolean dealsDamage)
+    {
+        this.dealsDamage = dealsDamage;
+    }
+
+}

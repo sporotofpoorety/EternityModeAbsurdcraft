@@ -1,14 +1,19 @@
 package org.sporotofpoorety.eternitymode.entity;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
+import org.sporotofpoorety.eternitymode.util.PuppetEntity;
 
 
 
@@ -26,6 +31,8 @@ public abstract class EntityWithOwner extends Entity
     public int controllerCheckCooldown;
     public int controllerCheckCooldownMax;
 
+    public List<PuppetEntity> puppetEntities = new ArrayList<>();
+
     public double gravitySpeed;
     public boolean acceleratesVertically;
     public double accelerationVal;
@@ -39,9 +46,16 @@ public abstract class EntityWithOwner extends Entity
     }
 
 
-    public EntityWithOwner(World worldIn, EntityLivingBase owner)
+    public EntityWithOwner(World worldIn, double x, double y, double z, EntityLivingBase owner)
     {
         super(worldIn);
+        this.setPosition(x, y, z);
+        this.prevPosX = x;
+        this.prevPosY = y;
+        this.prevPosZ = z;
+        this.motionX = 0.0D;
+        this.motionY = 0.0D;
+        this.motionZ = 0.0D;
 
 //Just safeguarding defaults
         this.owner = owner;
@@ -55,10 +69,7 @@ public abstract class EntityWithOwner extends Entity
         this.controllerCheckCooldown = 0;
         this.controllerCheckCooldownMax = 20;
 
-        this.motionX = 0.0D;
-        this.motionY = 0.0D;
-        this.motionZ = 0.0D;
-
+//Defaults for entities that won't explicitly set this
         this.gravitySpeed = 0.08D;
         this.acceleratesVertically = true;
         this.accelerationVal = 1.0D;
@@ -90,6 +101,8 @@ public abstract class EntityWithOwner extends Entity
         compound.setInteger("ControllerCheckCooldown", this.controllerCheckCooldown);
         compound.setInteger("ControllerCheckCooldownMax", this.controllerCheckCooldownMax);
 
+        this.nbtWritePuppetList(compound);
+
         compound.setDouble("GravitySpeed", this.gravitySpeed);
         compound.setBoolean("AcceleratesVertically", this.acceleratesVertically);
         compound.setDouble("AccelerationVal", this.accelerationVal);
@@ -109,9 +122,73 @@ public abstract class EntityWithOwner extends Entity
         if (compound.hasKey("ControllerCheckCooldown")) { this.controllerCheckCooldown = compound.getInteger("ControllerCheckCooldown"); }
         if (compound.hasKey("ControllerCheckCooldownMax")) { this.controllerCheckCooldownMax = compound.getInteger("ControllerCheckCooldownMax"); }
 
+        this.nbtReadPuppetList(compound);
+
         if (compound.hasKey("GravitySpeed")) { this.gravitySpeed = compound.getDouble("GravitySpeed"); }
         if (compound.hasKey("AcceleratesVertically")) { this.acceleratesVertically = compound.getBoolean("AcceleratesVertically"); }
         if (compound.hasKey("AccelerationVal")) { this.accelerationVal = compound.getDouble("AccelerationVal"); }
+    }
+
+
+//Write puppet entities to NBT
+    public void nbtWritePuppetList(NBTTagCompound compound)
+    {
+//Puppet array to store
+        NBTTagList puppetListToStore = new NBTTagList();
+
+//For each puppet entity  
+        for (PuppetEntity puppetEntity : this.puppetEntities) 
+        {
+//Make puppet map
+            NBTTagCompound puppetToStore = new NBTTagCompound();
+                puppetToStore.setDouble("PuppetOffsetX", puppetEntity.offsetX);
+                puppetToStore.setDouble("PuppetOffsetY", puppetEntity.offsetY);
+                puppetToStore.setDouble("PuppetOffsetZ", puppetEntity.offsetZ);
+                puppetToStore.setInteger("PuppetTime", puppetEntity.controlTime);
+                puppetToStore.setInteger("PuppetState", puppetEntity.controlState);
+                puppetToStore.setUniqueId("PuppetUUID", puppetEntity.puppetUUID);
+//Append it to puppet array
+            puppetListToStore.appendTag(puppetToStore);
+        }
+        
+        compound.setTag("PuppetEntityArray", puppetListToStore);   
+    }
+
+
+//Read puppet list from NBT
+    public void nbtReadPuppetList(NBTTagCompound compound)
+    {
+//First clear puppet list
+        this.puppetEntities.clear();
+
+//Check for puppet list
+        if (compound.hasKey("PuppetEntityArray")) 
+        {
+//It's an array of maps specifically
+            NBTTagList storedPuppetList = compound.getTagList("PuppetEntityArray", 10);
+            
+//For each stored puppet
+            for (int i = 0; i < storedPuppetList.tagCount(); i++) 
+            {
+//Fetch it as compound
+                NBTTagCompound storedPuppet = storedPuppetList.getCompoundTagAt(i);
+
+//Make corresponding puppet entity
+                PuppetEntity puppet = new PuppetEntity
+                (
+                    null,
+                    storedPuppet.getDouble("PuppetOffsetX"),
+                    storedPuppet.getDouble("PuppetOffsetY"),
+                    storedPuppet.getDouble("PuppetOffsetZ"),
+                    storedPuppet.getInteger("PuppetTime"),
+                    storedPuppet.getInteger("PuppetState")
+                );
+                puppet.puppetUUID = storedPuppet.getUniqueId("PuppetUUID");
+
+//Store in the puppet list
+                this.puppetEntities.add(puppet);
+            }
+        }
     }
 
 
@@ -120,6 +197,12 @@ public abstract class EntityWithOwner extends Entity
     public void onUpdate()
     {
         super.onUpdate();
+
+
+//Testing if this is the right place to put it
+        this.prevPosX = this.posX;
+        this.prevPosY = this.posY;
+        this.prevPosZ = this.posZ;
 
 
 //Server side
@@ -155,28 +238,30 @@ public abstract class EntityWithOwner extends Entity
                 --this.controllerCheckCooldown;
             }
 
+
+//If this has puppet entities
+            if(!this.puppetEntities.isEmpty())
+            {
+//Validate, restore, and clean
+                this.performPuppetsValidation();
+            }
         }    
     }
 
     public void performBasicMovement()
     {
-        this.prevPosX = this.posX;
-        this.prevPosY = this.posY;
-        this.prevPosZ = this.posZ;
-
-
         this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
+
+
+        this.motionX *= this.accelerationVal;
+        if(this.acceleratesVertically) { this.motionY *= this.accelerationVal; }
+        this.motionZ *= this.accelerationVal;
 
 
         if (!this.hasNoGravity())
         {
             this.motionY -= this.gravitySpeed;
         }
-
-
-        this.motionX *= this.accelerationVal;
-        if(this.acceleratesVertically) { this.motionY *= this.accelerationVal; }
-        this.motionZ *= this.accelerationVal;
     }
 
 
@@ -222,16 +307,6 @@ public abstract class EntityWithOwner extends Entity
 
     }
 
-    public boolean ownerValidConditions(Entity toValidate)
-    {
-        return (toValidate instanceof EntityLivingBase);
-    }
-
-    public void performOwnerValidation()
-    {
-        this.validateOwner();
-    }
-
 
 
 
@@ -275,6 +350,103 @@ public abstract class EntityWithOwner extends Entity
 
     }
 
+
+
+
+//Validate puppet entities
+    public void validatePuppets()
+    {
+//Iterator for them
+        Iterator<PuppetEntity> iter = this.puppetEntities.iterator();
+
+
+//While still having puppets
+        while (iter.hasNext()) 
+        {
+//Get next puppet and increment iterator there
+            PuppetEntity puppet = iter.next();
+
+//If puppet invalid
+            if(!validatePuppet(puppet)) 
+            {
+//Remove puppet
+                iter.remove();
+            }
+        }
+    }
+
+    public boolean validatePuppet(PuppetEntity puppet)
+    {
+//If puppet entity not null
+        if (puppet.entity != null) 
+        {
+//Return whether it's alive
+            return !puppet.entity.isDead;
+        }
+        
+
+//If puppet has actual UUID
+        if (puppet.puppetUUID != null) 
+        {
+//Search for corresponding entity
+            Entity foundEntity = ((WorldServer) this.world).getEntityFromUuid(puppet.puppetUUID);
+
+//If found any
+            if (foundEntity != null) 
+            {
+//Restore puppet entity
+                puppet.entity = foundEntity;
+//Test successful
+                return true;
+            }
+        }
+     
+   
+//If all tests failed, false
+        return false;
+    }
+
+    
+    public void moveWithPuppets(double x, double y, double z)
+    {
+        this.move(MoverType.SELF, x, y, z);
+
+        for(PuppetEntity puppet : this.puppetEntities)
+        {
+            puppet.entity.move(MoverType.SELF, x, y, z);
+        }
+    }
+
+    public void performBasicMovementWithPuppets()
+    {
+        this.moveWithPuppets(this.motionX, this.motionY, this.motionZ);
+
+
+        this.motionX *= this.accelerationVal;
+        if(this.acceleratesVertically) { this.motionY *= this.accelerationVal; }
+        this.motionZ *= this.accelerationVal;
+
+
+        if (!this.hasNoGravity())
+        {
+            this.motionY -= this.gravitySpeed;
+        }
+    }
+
+
+
+
+    public boolean ownerValidConditions(Entity toValidate)
+    {
+        return (toValidate instanceof EntityLivingBase);
+    }
+
+    public void performOwnerValidation()
+    {
+        this.validateOwner();
+    }
+
+
     public boolean controllerValidConditions(Entity toValidate)
     {
         return true;
@@ -284,4 +456,16 @@ public abstract class EntityWithOwner extends Entity
     {
         this.validateController();
     }
+
+
+    public boolean puppetValidConditions(Entity toValidate)
+    {
+        return true;
+    } 
+
+    public void performPuppetsValidation()
+    {
+        this.validatePuppets();
+    }
+
 }
