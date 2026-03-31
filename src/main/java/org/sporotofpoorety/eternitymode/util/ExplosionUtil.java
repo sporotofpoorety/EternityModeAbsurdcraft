@@ -45,26 +45,27 @@ public final class ExplosionUtil
 
                 List<Entity> affectedEntities = world.getEntitiesWithinAABBExcludingEntity(caster, explosionAABB);
 
-//Hit entity if living, 
-//not same team as caster, not immune to explosions
+//Hit entity if not same team as caster, not immune to explosions
                 for(Entity affectedEntity : affectedEntities)
                 {
-                    if(affectedEntity instanceof EntityLivingBase
-                    && !affectedEntity.isOnSameTeam(caster) && !affectedEntity.isImmuneToExplosions())
+                    if(affectedEntity instanceof EntityLivingBase)
                     {
-                        affectedEntity.attackEntityFrom(DamageSource.causeExplosionDamage(caster), damage);
+                        if(!affectedEntity.isImmuneToExplosions())
+                        {
+                            affectedEntity.attackEntityFrom(DamageSource.causeExplosionDamage(caster), damage);
 
 //If has push, push entity
-                        if(hasPush)
-                        {
-                            double entityDist = caster.getDistance(affectedEntity);
+                            if(hasPush)
+                            {
+                                double entityDist = Math.sqrt
+                                (Math.pow(affectedEntity.posX - atX, 2) + Math.pow(affectedEntity.posY - atY, 2) + Math.pow(affectedEntity.posZ - atZ, 2));
 
-                            affectedEntity.motionX += ((affectedEntity.posX - atX) * pushForce / entityDist);
-                            affectedEntity.motionY += ((affectedEntity.posY - atY) * pushForce / entityDist);
-                            affectedEntity.motionZ += ((affectedEntity.posZ - atZ) * pushForce / entityDist);
+                                affectedEntity.motionX += ((affectedEntity.posX - atX) * pushForce / entityDist);
+                                affectedEntity.motionY += ((affectedEntity.posY - atY) * pushForce / entityDist);
+                                affectedEntity.motionZ += ((affectedEntity.posZ - atZ) * pushForce / entityDist);
+                            }
                         }
                     }
-
                 }
             }
         }

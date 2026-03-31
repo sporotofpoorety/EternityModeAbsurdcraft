@@ -20,7 +20,6 @@ import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
 public class EntityParticleSpiral extends EntityWithOwner 
 {
 
-    protected int lifetimeTicks;
     protected int timeToArm;
 
     protected boolean doesDamage;
@@ -40,7 +39,7 @@ public class EntityParticleSpiral extends EntityWithOwner
         super(world);
         setSize(0.5F, 0.5F);
 
-        this.lifetimeTicks = 200;
+        this.lifetimeMax = 200;
         this.timeToArm = 40;
 
         this.doesDamage = true;
@@ -57,14 +56,14 @@ public class EntityParticleSpiral extends EntityWithOwner
 
     public EntityParticleSpiral(World world, double x, double y, double z,
     EntityLivingBase owner, 
-    int lifetimeTicks, int timeToArm,
+    int lifetimeMax, int timeToArm,
     boolean doesDamage, int damageInterval, float damageAmount, double damageRadius, double damageHeight, 
     int particleLifetime, double visualRadius, double riseSpeed, int textureIndex) 
     {
         super(world, x, y, z, owner);
         setSize(0.5F, 0.5F);
 
-        this.lifetimeTicks = lifetimeTicks;
+        this.lifetimeMax = lifetimeMax;
         this.timeToArm = timeToArm;
 
         this.doesDamage = doesDamage;
@@ -84,7 +83,6 @@ public class EntityParticleSpiral extends EntityWithOwner
     {
         super.writeEntityToNBT(compound);
 
-        compound.setInteger("Lifetime", lifetimeTicks);
         compound.setInteger("TimeToArm", timeToArm);
 
         compound.setBoolean("DoesDamage", doesDamage);
@@ -104,7 +102,6 @@ public class EntityParticleSpiral extends EntityWithOwner
     {
         super.readEntityFromNBT(compound);
 
-        if (compound.hasKey("Lifetime")) { lifetimeTicks = compound.getInteger("Lifetime"); }
         if (compound.hasKey("TimeToArm")) { timeToArm = compound.getInteger("TimeToArm"); }
 
         if (compound.hasKey("DoesDamage")) { doesDamage = compound.getBoolean("DoesDamage"); }
@@ -129,14 +126,8 @@ public class EntityParticleSpiral extends EntityWithOwner
     {
         super.onUpdate();
 
-        if (!world.isRemote && this.ticksExisted > lifetimeTicks) 
-        {
-            setDead();
-            return;
-        }
 
-
-        if(this.ticksExisted <= timeToArm)
+        if(this.realTicksExisted <= timeToArm)
         {
             this.preArmLogic();   
         }
@@ -176,7 +167,7 @@ public class EntityParticleSpiral extends EntityWithOwner
     {
         if (!world.isRemote) 
         {
-            if(doesDamage && (this.ticksExisted % this.damageInterval == 0))
+            if(doesDamage && (this.realTicksExisted % this.damageInterval == 0))
             {
                 this.spiralDamageLogic();
             }

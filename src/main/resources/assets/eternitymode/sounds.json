@@ -1,0 +1,248 @@
+{
+    "entity.dizzy":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/dizzy"
+        ]
+    },
+    "entity.gaussnuke":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/gaussnuke"
+        ]
+    },
+    "entity.tacticalnuke":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/tacticalnuke"
+        ]
+    },
+    "entity.brainslime.slimecharge":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/brainslime/slimecharge"
+        ]
+    },
+    "entity.creeper.annoyed":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/creeper/annoyed"
+        ]
+    },
+    "entity.creeper.buffattempt":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/creeper/buffattempt"
+        ]
+    },
+    "entity.creeper.buffexecute":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/creeper/buffexecute"
+        ]
+    },
+    "entity.creeper.itembox":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/creeper/itembox"
+        ]
+    },
+    "entity.creeper.nuke":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/creeper/nuke"
+        ]
+    },
+    "entity.creeper.party":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/creeper/party"
+        ]
+    },
+	"entity.flamespewer.idle":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/flamespewer/idle"
+        ]
+    },
+    "entity.grovesprite.angry":
+    {
+        "category": "neutral",
+        "sounds":
+        [
+            "eternitymode:entity/grovesprite/angry1"
+        ]
+    },
+    "entity.grovesprite.death":
+    {
+        "category": "neutral",
+        "sounds":
+        [
+            "eternitymode:entity/grovesprite/death1",
+            "eternitymode:entity/grovesprite/death2"
+        ]
+    },
+    "entity.grovesprite.friend":
+    {
+        "category": "neutral",
+        "sounds":
+        [
+            "eternitymode:entity/grovesprite/friend1",
+            "eternitymode:entity/grovesprite/friend2"
+        ]
+    },
+    "entity.grovesprite.hurt": {
+        "category": "neutral",
+        "sounds": [
+            "eternitymode:entity/grovesprite/hurt1",
+            "eternitymode:entity/grovesprite/hurt2",
+            "eternitymode:entity/grovesprite/hurt3"
+        ]
+    },
+    "entity.grovesprite.idle":
+    {
+        "category": "neutral",
+        "sounds":
+         [
+            "eternitymode:entity/grovesprite/idle1",
+            "eternitymode:entity/grovesprite/idle2",
+            "eternitymode:entity/grovesprite/idle3"
+		] 
+    },
+    "entity.grovesprite.thanks":
+    {
+        "category": "neutral",
+        "sounds":
+        [
+            "eternitymode:entity/grovesprite/thanks1",
+            "eternitymode:entity/grovesprite/thanks2",
+            "eternitymode:entity/grovesprite/thanks3"
+        ]
+    },
+	"entity.harpy.hurt":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/harpy/hurt"
+        ]
+    },
+	"entity.harpy.idle":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/harpy/idle"
+        ]
+    },
+	"entity.motherspider.spiderscreech":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/motherspider/spiderscreech"
+        ]
+    },
+    "entity.quazar.landingexplosion":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/quazar/landingexplosion"
+        ]
+    },
+    "entity.quazar.leapwhoosh":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/quazar/leapwhoosh"
+        ]
+    },
+    "entity.quazar.nukealarm":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/quazar/nukealarm"
+        ]
+    },
+    "entity.trollager.attack":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/trollager/attack"
+        ]
+    },
+	"entity.trollager.death":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/trollager/death"
+        ]
+    },
+	"entity.trollager.hit":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/trollager/hit"
+        ]
+    },
+	"entity.trollager.idle":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/trollager/idle"
+        ]
+    },
+	"entity.voideye.idle":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/voideye/idle"
+        ]
+    },
+    "dig.squish":
+    {
+        "category": "neutral",
+        "sounds":
+        [
+            "eternitymode:block/squish"
+        ]
+    },
+    "step.squish":
+    {
+        "category": "neutral",
+        "sounds":
+        [
+            "eternitymode:block/squish"
+        ]
+    }
+}

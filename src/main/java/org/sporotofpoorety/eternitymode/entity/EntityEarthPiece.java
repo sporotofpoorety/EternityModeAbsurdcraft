@@ -69,11 +69,7 @@ public class EntityEarthPiece extends EntityWithOwner
     public EntityEarthPiece(World world) 
     {
         super(world);
-        setSize(0.5F, 0.5F);
-
-        this.gravitySpeed = 0.1D;
-        this.setNoGravity(true);
-        this.noClip = true;
+        this.setInvisible(true);
     }
 
     public EntityEarthPiece(World world, double x, double y, double z, 
@@ -86,7 +82,18 @@ public class EntityEarthPiece extends EntityWithOwner
     int flingTimer, double flingSpeed, double blockOutSpeed, double blockOutGravity)
     {
         super(world, x, y, z, owner);
-        setSize(0.5F, 0.5F);
+//Trying to fix collision size
+        float actualSize = 1.0F + ((float) pieceSize * 2.0F);
+        this.setSize(actualSize, actualSize);
+        this.setEntityBoundingBox
+        (
+            new AxisAlignedBB
+            (
+                this.posX - actualSize / 2.0D, this.posY - actualSize / 2.0D, this.posZ - actualSize / 2.0D,
+                this.posX + actualSize / 2.0D, this.posY + actualSize / 2.0D, this.posZ + actualSize / 2.0D
+            )
+        );
+        this.setInvisible(true);
 
         this.gravitySpeed = 0.1D;
         this.setNoGravity(true);
@@ -130,6 +137,9 @@ public class EntityEarthPiece extends EntityWithOwner
         this.flingSpeed = flingSpeed;
         this.blockOutSpeed = blockOutSpeed;
         this.blockOutGravity = blockOutGravity;
+
+
+        this.lifetimeMax = 5 + gatherTimer + liftTimer + positionTimer + homeTimer + flingTimer;
     }
 
 //Spin piece specific
@@ -139,6 +149,9 @@ public class EntityEarthPiece extends EntityWithOwner
         this.spinDistance = spinDistance;
         this.spinRadian = spinRadian;
         this.spinRadianStep = spinRadianStep;
+
+
+        this.lifetimeMax += this.spinTimer;
     }
 
     @Override
@@ -337,7 +350,7 @@ public class EntityEarthPiece extends EntityWithOwner
         else if(this.phaseAt.equals("flung"))
         {
 //          System.out.println("Piece at flung");
-            if(this.collided)
+            if(this.collided || this.flingTimer-- <= 0)
             {
                 this.phaseAt = "expel";
             }
@@ -403,7 +416,7 @@ public class EntityEarthPiece extends EntityWithOwner
 
 //New puppet entity
                         PuppetEntity puppetBlock = new PuppetEntity(thrownBlock, 
-                        (double) atX, (double) atY, (double) atZ, 0, 0);
+                        (double) atX * 1.05D, (double) atY * 1.05D, (double) atZ * 1.05D, 0, 0);
 //Grant UUID separately
                         puppetBlock.puppetUUID = thrownBlock.getUniqueID();
 
@@ -485,18 +498,21 @@ public class EntityEarthPiece extends EntityWithOwner
 //Get each puppet
         for(PuppetEntity puppet : this.puppetEntities)
         {
+//If puppet not already glued
+            if(puppet.controlState != 1)
+            {
 //Pull each in a fraction of gather timer
-            puppet.entity.move(MoverType.SELF, puppet.storedVec.x, puppet.storedVec.y, puppet.storedVec.z);
-
+                puppet.entity.move(MoverType.SELF, puppet.storedVec.x, puppet.storedVec.y, puppet.storedVec.z);
 
 //Check if block close enough to self to glue
-            if(puppet.entity.getDistance
-            (this.posX + puppet.offsetX, this.posY + puppet.offsetY, this.posZ + puppet.offsetZ) <= puppet.storedDistance)
-            {
+                if(puppet.entity.getDistance
+                (this.posX + puppet.offsetX, this.posY + puppet.offsetY, this.posZ + puppet.offsetZ) <= puppet.storedDistance)
+                {
 //If so set glued
-                puppet.controlState = 1;
+                    puppet.controlState = 1;
 //Follow this (at offset)
-                puppet.entity.setPosition(this.posX + puppet.offsetX, this.posY + puppet.offsetY, this.posZ + puppet.offsetZ);
+                    puppet.entity.setPosition(this.posX + puppet.offsetX, this.posY + puppet.offsetY, this.posZ + puppet.offsetZ);
+                }
             }
         }  
     }
@@ -702,6 +718,22 @@ public class EntityEarthPiece extends EntityWithOwner
 //Restore block normal behavior
             ((EntityThrownBlock) puppet.entity).setBlockSolid(true);
         } 
+    }
+
+
+
+
+    @Override
+    public boolean shouldRenderInPass(int pass) 
+    {
+        return false;
+    }
+
+
+    @Override
+    public boolean canRenderOnFire() 
+    {
+        return false;
     }
 
 }

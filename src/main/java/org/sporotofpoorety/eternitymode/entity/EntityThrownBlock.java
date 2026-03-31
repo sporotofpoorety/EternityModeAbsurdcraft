@@ -46,15 +46,16 @@ public class EntityThrownBlock extends EntityWithOwner
     public NBTTagCompound tileEntityData;
 
 
-    public int fallTime;
-
-
     public boolean dontPlaceBlock;
     public boolean shouldDropItem;
 
 
     public boolean dealsDamage;
     public float thrownBlockDamage;
+
+
+    public boolean hasManualOrigin;
+    public boolean dontBreakInitialPos;
 
 
 
@@ -73,6 +74,8 @@ public class EntityThrownBlock extends EntityWithOwner
         super(worldIn, x, y, z, owner);
         this.preventEntitySpawning = true;
         this.setSize(0.98F, 0.98F);
+//Default lifetime
+        this.lifetimeMax = 600;
 
 
         this.basisState = fallingBlockState;
@@ -129,15 +132,16 @@ public class EntityThrownBlock extends EntityWithOwner
         if (this.tileEntityData != null) { compound.setTag("TileEntityData", this.tileEntityData); }
 
 
-        compound.setInteger("FallTime", this.fallTime);
-
-
         compound.setBoolean("DontPlaceBlock", this.dontPlaceBlock);
         compound.setBoolean("DropItem", this.shouldDropItem);
 
 
         compound.setBoolean("DealsDamage", this.dealsDamage);
         compound.setFloat("ThrownBlockDamage", this.thrownBlockDamage);
+
+
+        compound.setBoolean("HasManualOrigin", this.hasManualOrigin);
+        compound.setBoolean("DontBreakInitialPos", this.dontBreakInitialPos);
     }
 
 
@@ -161,15 +165,12 @@ public class EntityThrownBlock extends EntityWithOwner
 //If block basis air or null
         Block basisBlock = this.basisState.getBlock();
         if (basisBlock == null || basisBlock.getDefaultState().getMaterial() == Material.AIR)
-//Sand as failsafe
-            { this.basisState = Blocks.SAND.getDefaultState(); }
+//Stone as failsafe
+            { this.basisState = Blocks.STONE.getDefaultState(); }
 
 
 //Get tile entity data
         if (compound.hasKey("TileEntityData")) { this.tileEntityData = compound.getCompoundTag("TileEntityData"); }
-
-
-        if (compound.hasKey("FallTime")) { this.fallTime = compound.getInteger("FallTime"); }
 
 
         if (compound.hasKey("DontPlaceBlock")) { this.dontPlaceBlock = compound.getBoolean("DontPlaceBlock"); }
@@ -178,6 +179,10 @@ public class EntityThrownBlock extends EntityWithOwner
 
         if (compound.hasKey("DealsDamage")) { this.dealsDamage = compound.getBoolean("DealsDamage"); }
         if (compound.hasKey("ThrownBlockDamage")) { this.thrownBlockDamage = compound.getFloat("ThrownBlockDamage"); }
+
+
+        if (compound.hasKey("HasManualOrigin")) { this.hasManualOrigin = compound.getBoolean("HasManualOrigin"); }
+        if (compound.hasKey("DontBreakInitialPos")) { this.dontBreakInitialPos = compound.getBoolean("DontBreakInitialPos"); }
     }
 
 
@@ -210,19 +215,32 @@ public class EntityThrownBlock extends EntityWithOwner
 
 
 //If first spawned
-        if (this.fallTime++ == 0)
+        if (this.realTicksExisted == 1)
         {
+//Get blockpos this is at
             BlockPos blockPosAt = new BlockPos(this);
 
-//If initial blockpos 
-//corresponds to saved block
-            if (this.world.getBlockState(blockPosAt).getBlock() == basisBlock)
-//Break that blockpos
-                { this.world.setBlockToAir(blockPosAt); }
 
-//If it doesn't, kill this entity, as it's invalid
-            else if (!this.world.isRemote)
-                { this.setDead(); return; }
+//If not manual origin
+            if(!this.hasManualOrigin)
+            {
+//And initial blockpos 
+//doesn't correspond to saved block
+                if (this.world.getBlockState(blockPosAt).getBlock() != basisBlock
+//And this is server side 
+                && !this.world.isRemote)
+                {
+//Kill this entity, as it's invalid
+                    this.setDead(); return;
+                }
+            }
+
+//If should destroy initial pos
+            if(!this.dontBreakInitialPos)
+            {
+//Break that blockpos
+                this.world.setBlockToAir(blockPosAt); 
+            }
         }
 
 
@@ -276,19 +294,32 @@ public class EntityThrownBlock extends EntityWithOwner
 //If this not on ground
             else
             {
-//But fell out of bounds or for too long
-                if (this.fallTime > 100 && !this.world.isRemote && (blockPosAt.getY() < 1 || blockPosAt.getY() > 256) || this.fallTime > 600)
+//But fell out of bounds
+                if (!this.world.isRemote && (blockPosAt.getY() < 1))
                 {
-//Check for drop item
-                    if (this.shouldDropItem && this.world.getGameRules().getBoolean("doEntityDrops"))
-                    {
-                        this.entityDropItem(new ItemStack(basisBlock, 1, basisBlock.damageDropped(this.basisState)), 0.0F);
-                    }
 //Then set dead
                     this.setDead();
                 }
             }
         }
+    }
+
+
+//On lifetime expire
+    public void onLifetimeExpire()
+    {
+//Drop item if should
+        Block basisBlock = this.basisState.getBlock();
+
+        if(basisBlock != null)
+        {
+            if (this.shouldDropItem && this.world.getGameRules().getBoolean("doEntityDrops"))
+            {
+                this.entityDropItem(new ItemStack(basisBlock, 1, basisBlock.damageDropped(this.basisState)), 0.0F);
+            }
+        }
+
+        this.setDead();
     }
 
 

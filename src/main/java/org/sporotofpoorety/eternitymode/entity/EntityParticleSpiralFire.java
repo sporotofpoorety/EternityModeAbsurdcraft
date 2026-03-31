@@ -25,7 +25,7 @@ public class EntityParticleSpiralFire extends EntityParticleSpiral
     boolean fireballEnabled;
     int fireballAmount;
     
-    int fireballMaxLifetime;
+    int fireballLifetimeMax;
 
     double fireballSpeedHorizontal; 
     double fireballSpeedVertical;
@@ -45,43 +45,23 @@ public class EntityParticleSpiralFire extends EntityParticleSpiral
     public EntityParticleSpiralFire(World world) 
     {
         super(world);
-        setSize(0.5F, 0.5F);
-
-        this.setsFireLength = 20;
-
-        this.fireballEnabled = fireballEnabled;
-        this.fireballAmount = fireballAmount;
-
-        this.fireballMaxLifetime = fireballMaxLifetime;
-
-        this.fireballSpeedHorizontal = fireballSpeedHorizontal; 
-        this.fireballSpeedVertical = fireballSpeedVertical;
-        this.fireballAccelerationRate = fireballAccelerationRate;
-        this.fireballGravitySpeed = fireballGravitySpeed;
-
-        this.fireballHitCheckSize = fireballHitCheckSize; 
-        this.fireballProjectileStopsAtEntity = fireballProjectileStopsAtEntity; 
-        this.fireballProjectileStopsAtBlock = fireballProjectileStopsAtBlock;
-        this.fireballProjectileHitDamage = fireballProjectileHitDamage;
-
-        this.fireballFireDuration = fireballFireDuration;
     }
 
     public EntityParticleSpiralFire(World world, double x, double y, double z,
     EntityLivingBase owner, 
-    int lifetimeTicks, int timeToArm,
+    int lifetimeMax, int timeToArm,
     boolean doesDamage, int damageInterval, float damageAmount, double damageRadius, double damageHeight, 
     int particleLifetime, double visualRadius, double riseSpeed, int textureIndex,
     int setsFireLength, 
     boolean fireballEnabled, int fireballAmount,
-    int fireballMaxLifetime, double fireballSpeedHorizontal, double fireballSpeedVertical,
+    int fireballLifetimeMax, double fireballSpeedHorizontal, double fireballSpeedVertical,
     double fireballAccelerationRate, double fireballGravitySpeed,  
     double fireballHitCheckSize, boolean fireballProjectileStopsAtEntity, boolean fireballProjectileStopsAtBlock, float fireballProjectileHitDamage,
     int fireballFireDuration) 
     {
         super(world, x, y, z,
         owner, 
-        lifetimeTicks, timeToArm, 
+        lifetimeMax, timeToArm, 
         doesDamage, damageInterval, damageAmount, damageRadius, damageHeight,
         particleLifetime, visualRadius, riseSpeed, textureIndex);
 
@@ -90,7 +70,7 @@ public class EntityParticleSpiralFire extends EntityParticleSpiral
         this.fireballEnabled = fireballEnabled;
         this.fireballAmount = fireballAmount;
 
-        this.fireballMaxLifetime = fireballMaxLifetime;
+        this.fireballLifetimeMax = fireballLifetimeMax;
 
         this.fireballSpeedHorizontal = fireballSpeedHorizontal; 
         this.fireballSpeedVertical = fireballSpeedVertical;
@@ -115,7 +95,7 @@ public class EntityParticleSpiralFire extends EntityParticleSpiral
         compound.setBoolean("FireballEnabled", this.fireballEnabled);
         compound.setInteger("FireballAmount", this.fireballAmount);
 
-        compound.setInteger("FireballMaxLifetime", this.fireballMaxLifetime);
+        compound.setInteger("FireballLifetimeMax", this.fireballLifetimeMax);
 
         compound.setDouble("FireballSpeedHorizontal", this.fireballSpeedHorizontal);
         compound.setDouble("FireballSpeedVertical", this.fireballSpeedVertical);
@@ -140,7 +120,7 @@ public class EntityParticleSpiralFire extends EntityParticleSpiral
         if (compound.hasKey("FireballEnabled")) { this.fireballEnabled = compound.getBoolean("FireballEnabled"); }
         if (compound.hasKey("FireballAmount")) { this.fireballAmount = compound.getInteger("FireballAmount"); }
 
-        if (compound.hasKey("FireballMaxLifetime")) { this.fireballMaxLifetime = compound.getInteger("FireballMaxLifetime"); }
+        if (compound.hasKey("FireballLifetimeMax")) { this.fireballLifetimeMax = compound.getInteger("FireballLifetimeMax"); }
 
         if (compound.hasKey("FireballSpeedHorizontal")) { this.fireballSpeedHorizontal = compound.getDouble("FireballSpeedHorizontal"); }
         if (compound.hasKey("FireballSpeedVertical")) { this.fireballSpeedVertical = compound.getDouble("FireballSpeedVertical"); }

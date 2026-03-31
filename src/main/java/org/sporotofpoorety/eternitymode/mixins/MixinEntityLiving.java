@@ -239,12 +239,8 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
     private void readNewNBT(NBTTagCompound compound, CallbackInfo callInfo)
     {
 //New NBT below
-        if (compound.hasKey("AbsurdcraftStunned")) {
-            this.setAbsurdcraftStunned(compound.getBoolean("AbsurdcraftStunned"));
-        }
-        if (compound.hasKey("AbsurdcraftStunnedTimer")) {
-            this.setAbsurdcraftStunnedTimer(compound.getInteger("AbsurdcraftStunnedTimer"));
-        }
+        if (compound.hasKey("AbsurdcraftStunned")) { this.setAbsurdcraftStunned(compound.getBoolean("AbsurdcraftStunned"));}
+        if (compound.hasKey("AbsurdcraftStunnedTimer")) { this.setAbsurdcraftStunnedTimer(compound.getInteger("AbsurdcraftStunnedTimer")); }
 
         this.nbtReadQueuedActions(compound);
     }

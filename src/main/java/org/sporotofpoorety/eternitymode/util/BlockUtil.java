@@ -37,14 +37,14 @@ public final class BlockUtil
         {
             for (int depthAt = 0; depthAt < maxDepth; depthAt++)
             {
-                pos.setY(pos.getY() - 1);
-
                 IBlockState blockState = world.getBlockState(pos);
 
                 if (blockState.getBlock().isFullBlock(blockState))
                 {
                     return pos.toImmutable();
                 }
+
+                pos.setY(pos.getY() - 1);
             }
         }
 //Search above and below
@@ -98,14 +98,14 @@ public final class BlockUtil
         {
             for (int depthAt = 0; depthAt < maxDepth; depthAt++)
             {
-                pos.setY(pos.getY() - 1);
-
                 IBlockState blockState = world.getBlockState(pos);
 
                 if (blockState.getBlock().isFullBlock(blockState))
                 {
                     return pos.toImmutable();
                 }
+
+                pos.setY(pos.getY() - 1);
             }
         }
 //Search above and below
@@ -159,8 +159,8 @@ public final class BlockUtil
         }
 
 
-        float hardness = block.getBlockHardness(state, worldAt, destroyPos);
-        if (hardness > maxHardness || hardness < 0.0F) //|| block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
+        float hardness = state.getBlockHardness(worldAt, destroyPos);
+        if (hardness > maxHardness || hardness <= 0.0F) //|| block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
         {
             return;
         }
@@ -185,7 +185,7 @@ public final class BlockUtil
 
 
         float hardness = block.getBlockHardness(state, worldAt, destroyPos);
-        if (hardness > maxHardness || block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
+        if (hardness > maxHardness || hardness < 0.0F) //|| block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
         {
             return;
         }

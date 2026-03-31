@@ -24,19 +24,11 @@ public class EntityFlameShotLinear extends EntityProjectileLinear {
     public EntityFlameShotLinear(World worldIn) 
     {
         super(worldIn);
-
-        this.setSize(0.5F, 0.5F);
-
-        this.fireDuration = 20;
-        this.shouldExplode = false;
-        this.explosionPower = 0.5F;
-        this.explosionFire = false;
-        this.explosionDestruction = false;
     }
 
     public EntityFlameShotLinear(World worldIn, double x, double y, double z, 
     EntityLivingBase owner,
-    int maxLifetime, double speedX, double speedY, double speedZ, 
+    int lifetimeMax, double speedX, double speedY, double speedZ, 
     double accelerationRate, double gravitySpeed, 
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage, 
     int particleLifetime, int particleDensity, double particleVelocity,
@@ -44,7 +36,7 @@ public class EntityFlameShotLinear extends EntityProjectileLinear {
     {
         super(worldIn, x, y, z,
         owner,
-        maxLifetime, speedX, speedY, speedZ,
+        lifetimeMax, speedX, speedY, speedZ,
         accelerationRate, gravitySpeed, 
         hitCheckSize, projectileStopsAtEntity, projectileStopsAtBlock, projectileHitDamage,  
         particleLifetime, particleDensity, particleVelocity);

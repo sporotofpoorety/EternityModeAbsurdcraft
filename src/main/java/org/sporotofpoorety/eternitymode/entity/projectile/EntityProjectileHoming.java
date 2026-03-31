@@ -28,24 +28,11 @@ public class EntityProjectileHoming extends EntityProjectileRaytrace {
     public EntityProjectileHoming(World worldIn) 
     {
         super(worldIn);
-
-        this.setSize(0.5F, 0.5F);
-
-        this.isPreHoming = false;
-        this.timePreHoming = 0;
-        this.timePreHomingMax = 0;
-        this.isHoming = false;
-        this.homingTime = 0;
-        this.homingTimeHasMax = false;
-        this.homingTimeMax = 200;
-        this.homingSpeed = 0.1D;
-        this.homingMode = 0;
-        this.isPostHoming = false;
     }
 
     public EntityProjectileHoming(World worldIn, double x, double y, double z, 
     EntityLivingBase owner,
-    int maxLifetime, double speedX, double speedY, double speedZ,
+    int lifetimeMax, double speedX, double speedY, double speedZ,
     double accelerationRate, double gravitySpeed, 
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage,
     int particleLifetime, int particleDensity, double particleVelocity,
@@ -53,7 +40,7 @@ public class EntityProjectileHoming extends EntityProjectileRaytrace {
     {
         super(worldIn, x, y, z,
         owner, 
-        maxLifetime, speedX, speedY, speedZ,
+        lifetimeMax, speedX, speedY, speedZ,
         accelerationRate, gravitySpeed, 
         hitCheckSize, projectileStopsAtEntity, projectileStopsAtBlock, projectileHitDamage,
         particleLifetime, particleDensity, particleVelocity);

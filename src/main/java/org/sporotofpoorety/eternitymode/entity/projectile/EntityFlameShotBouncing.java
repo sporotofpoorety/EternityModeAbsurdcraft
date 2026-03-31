@@ -37,7 +37,7 @@ public class EntityFlameShotBouncing extends EntityProjectileBouncing {
 
     public EntityFlameShotBouncing(World worldIn, double x, double y, double z, 
     EntityLivingBase owner,
-    int maxLifetime, double speedX, double speedY, double speedZ, 
+    int lifetimeMax, double speedX, double speedY, double speedZ, 
     double accelerationRate, double gravitySpeed, 
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage, 
     int particleLifetime, int particleDensity, double particleVelocity,
@@ -46,7 +46,7 @@ public class EntityFlameShotBouncing extends EntityProjectileBouncing {
     {
         super(worldIn, x, y, z,
         owner,
-        maxLifetime, speedX, speedY, speedZ,
+        lifetimeMax, speedX, speedY, speedZ,
         accelerationRate, gravitySpeed, 
         hitCheckSize, projectileStopsAtEntity, projectileStopsAtBlock, projectileHitDamage,  
         particleLifetime, particleDensity, particleVelocity,
@@ -63,7 +63,7 @@ public class EntityFlameShotBouncing extends EntityProjectileBouncing {
 
     public EntityFlameShotBouncing(World worldIn, double x, double y, double z, 
     EntityLivingBase owner,
-    int maxLifetime, double speedX, double speedY, double speedZ, 
+    int lifetimeMax, double speedX, double speedY, double speedZ, 
     double accelerationRate, double gravitySpeed, 
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage, 
     int particleLifetime, int particleDensity, double particleVelocity,
@@ -73,7 +73,7 @@ public class EntityFlameShotBouncing extends EntityProjectileBouncing {
     {
         super(worldIn, x, y, z,
         owner,
-        maxLifetime, speedX, speedY, speedZ,
+        lifetimeMax, speedX, speedY, speedZ,
         accelerationRate, gravitySpeed, 
         hitCheckSize, projectileStopsAtEntity, projectileStopsAtBlock, projectileHitDamage,  
         particleLifetime, particleDensity, particleVelocity,

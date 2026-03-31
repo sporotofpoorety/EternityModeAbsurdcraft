@@ -21,6 +21,9 @@ import org.sporotofpoorety.eternitymode.util.PuppetEntity;
 public abstract class EntityWithOwner extends Entity
 {
 
+    public int realTicksExisted = 0;
+    public int lifetimeMax = -1;
+
     public EntityLivingBase owner;
     public UUID ownerUUID;
     public int ownerCheckCooldown;
@@ -93,6 +96,9 @@ public abstract class EntityWithOwner extends Entity
      */
     protected void writeEntityToNBT(NBTTagCompound compound)
     {
+        compound.setInteger("RealTicksExisted", this.realTicksExisted);
+        compound.setInteger("LifetimeMax", this.lifetimeMax);
+
         if(this.ownerUUID != null) { compound.setUniqueId("OwnerUUID", this.ownerUUID); }
         compound.setInteger("OwnerCheckCooldown", this.ownerCheckCooldown);
         compound.setInteger("OwnerCheckCooldownMax", this.ownerCheckCooldownMax);
@@ -114,6 +120,9 @@ public abstract class EntityWithOwner extends Entity
      */
     protected void readEntityFromNBT(NBTTagCompound compound)
     {
+        if (compound.hasKey("RealTicksExisted")) { this.realTicksExisted = compound.getInteger("RealTicksExisted"); }
+        if (compound.hasKey("LifetimeMax")) { this.lifetimeMax = compound.getInteger("LifetimeMax"); }
+
         if (compound.hasKey("OwnerUUID")) { this.ownerUUID = compound.getUniqueId("OwnerUUID"); }
         if (compound.hasKey("OwnerCheckCooldown")) { this.ownerCheckCooldown = compound.getInteger("OwnerCheckCooldown"); }
         if (compound.hasKey("OwnerCheckCooldownMax")) { this.ownerCheckCooldownMax = compound.getInteger("OwnerCheckCooldownMax"); }
@@ -199,16 +208,22 @@ public abstract class EntityWithOwner extends Entity
         super.onUpdate();
 
 
+/*
 //Testing if this is the right place to put it
         this.prevPosX = this.posX;
         this.prevPosY = this.posY;
         this.prevPosZ = this.posZ;
+*/
+
+
+//Universalized lifetime
+            ++this.realTicksExisted;
+            if(this.realTicksExisted >= this.lifetimeMax) { this.onLifetimeExpire(); return; }
 
 
 //Server side
         if(!this.world.isRemote)
         {
-
 //If no owner check cooldown
             if(this.ownerCheckCooldown <= 0)
             {
@@ -246,6 +261,11 @@ public abstract class EntityWithOwner extends Entity
                 this.performPuppetsValidation();
             }
         }    
+    }
+
+    public void onLifetimeExpire()
+    {
+        this.setDead();
     }
 
     public void performBasicMovement()

@@ -26,7 +26,6 @@ import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
 public class EntityProjectileRaytrace extends EntityWithOwner
 {
 
-    public int maxLifetime;
     public boolean firstBeenShot;
 
     public double speedX;
@@ -66,23 +65,6 @@ public class EntityProjectileRaytrace extends EntityWithOwner
     {
         super(worldIn);
 
-        this.setNoGravity(true);
-
-        this.maxLifetime = 200;
-        this.firstBeenShot = false;
-
-        this.speedX = 0.0D;
-        this.speedY = 0.0D;
-        this.speedZ = 0.0D;
-        this.accelerationRate = 1.0D;
-        this.accelerationCurrent = 1.0D;
-        this.gravitySpeed = 0.08D;
-
-        this.hitCheckSize = 0.3D;
-        this.projectileStopsAtEntity = true;
-        this.projectileStopsAtBlock = true;
-        this.projectileHitDamage = 5.0F;
-
         this.particleLifetime = 10;
         this.particleDensity = 5;
         this.particleVelocity = 0.06D;
@@ -90,7 +72,7 @@ public class EntityProjectileRaytrace extends EntityWithOwner
 
     public EntityProjectileRaytrace(World worldIn, double x, double y, double z, 
     EntityLivingBase owner,
-    int maxLifetime, double speedX, double speedY, double speedZ,
+    int lifetimeMax, double speedX, double speedY, double speedZ,
     double accelerationRate, double gravitySpeed,
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage,
     int particleLifetime, int particleDensity, double particleVelocity)
@@ -99,7 +81,7 @@ public class EntityProjectileRaytrace extends EntityWithOwner
 
         this.setNoGravity(true);
 
-        this.maxLifetime = maxLifetime;
+        this.lifetimeMax = lifetimeMax;
         this.firstBeenShot = false;
 
         this.speedX = speedX;
@@ -133,21 +115,12 @@ public class EntityProjectileRaytrace extends EntityWithOwner
         super.onUpdate();
 
 
-//Implemented lifetime
-        if (!world.isRemote && this.ticksExisted > this.maxLifetime) 
-        {
-            this.onTrueSetDead();
-            this.setDead();
-        }
-
-
-
-
+/*
 //Yes, this has to be set manually
         this.lastTickPosX = this.posX;
         this.lastTickPosY = this.posY;
         this.lastTickPosZ = this.posZ;
-
+*/
 
 
 
@@ -315,6 +288,13 @@ public class EntityProjectileRaytrace extends EntityWithOwner
         this.setPosition(this.posX, this.posY, this.posZ);
     }
 
+    @Override
+    public void onLifetimeExpire()
+    {
+        this.onTrueSetDead();
+        this.setDead();
+    }
+
 
 
 
@@ -459,9 +439,12 @@ public class EntityProjectileRaytrace extends EntityWithOwner
 
 
 
+    @Override
     protected void writeEntityToNBT(NBTTagCompound compound)
     {
-        compound.setInteger("MaxLifetime", this.maxLifetime);
+        super.writeEntityToNBT(compound);
+
+
         compound.setBoolean("FirstBeenShot", this.firstBeenShot);
 
         compound.setDouble("SpeedX", this.speedX);
@@ -496,9 +479,12 @@ public class EntityProjectileRaytrace extends EntityWithOwner
     }
 
 
+    @Override
     protected void readEntityFromNBT(NBTTagCompound compound)
     {
-        if (compound.hasKey("MaxLifetime")) { this.maxLifetime = compound.getInteger("MaxLifetime"); }
+        super.readEntityFromNBT(compound);
+
+
         if (compound.hasKey("FirstBeenShot")) { this.firstBeenShot = compound.getBoolean("FirstBeenShot"); }
 
         if (compound.hasKey("SpeedX")) { this.speedX = compound.getDouble("SpeedX"); }
