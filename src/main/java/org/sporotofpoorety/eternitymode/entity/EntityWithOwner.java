@@ -208,22 +208,25 @@ public abstract class EntityWithOwner extends Entity
         super.onUpdate();
 
 
-/*
+
 //Testing if this is the right place to put it
         this.prevPosX = this.posX;
         this.prevPosY = this.posY;
         this.prevPosZ = this.posZ;
-*/
 
 
-//Universalized lifetime
-            ++this.realTicksExisted;
-            if(this.realTicksExisted >= this.lifetimeMax) { this.onLifetimeExpire(); return; }
+
+//Reliable ticks existed
+        ++this.realTicksExisted;
 
 
 //Server side
         if(!this.world.isRemote)
         {
+//Universalized lifetime
+            if(this.realTicksExisted >= this.lifetimeMax) { this.onLifetimeExpire(); return; }
+
+
 //If no owner check cooldown
             if(this.ownerCheckCooldown <= 0)
             {

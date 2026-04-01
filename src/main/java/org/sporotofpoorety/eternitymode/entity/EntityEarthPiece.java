@@ -69,6 +69,11 @@ public class EntityEarthPiece extends EntityWithOwner
     public EntityEarthPiece(World world) 
     {
         super(world);
+        setSize(0.5F, 0.5F);
+
+        this.gravitySpeed = 0.1D;
+        this.setNoGravity(true);
+        this.noClip = true;
         this.setInvisible(true);
     }
 
@@ -83,16 +88,7 @@ public class EntityEarthPiece extends EntityWithOwner
     {
         super(world, x, y, z, owner);
 //Trying to fix collision size
-        float actualSize = 1.0F + ((float) pieceSize * 2.0F);
-        this.setSize(actualSize, actualSize);
-        this.setEntityBoundingBox
-        (
-            new AxisAlignedBB
-            (
-                this.posX - actualSize / 2.0D, this.posY - actualSize / 2.0D, this.posZ - actualSize / 2.0D,
-                this.posX + actualSize / 2.0D, this.posY + actualSize / 2.0D, this.posZ + actualSize / 2.0D
-            )
-        );
+        this.setSize(0.5F, 0.5F);
         this.setInvisible(true);
 
         this.gravitySpeed = 0.1D;
@@ -498,21 +494,17 @@ public class EntityEarthPiece extends EntityWithOwner
 //Get each puppet
         for(PuppetEntity puppet : this.puppetEntities)
         {
-//If puppet not already glued
-            if(puppet.controlState != 1)
-            {
 //Pull each in a fraction of gather timer
-                puppet.entity.move(MoverType.SELF, puppet.storedVec.x, puppet.storedVec.y, puppet.storedVec.z);
+            puppet.entity.move(MoverType.SELF, puppet.storedVec.x, puppet.storedVec.y, puppet.storedVec.z);
 
 //Check if block close enough to self to glue
-                if(puppet.entity.getDistance
-                (this.posX + puppet.offsetX, this.posY + puppet.offsetY, this.posZ + puppet.offsetZ) <= puppet.storedDistance)
-                {
+            if(puppet.entity.getDistance
+            (this.posX + puppet.offsetX, this.posY + puppet.offsetY, this.posZ + puppet.offsetZ) <= puppet.storedDistance)
+            {
 //If so set glued
-                    puppet.controlState = 1;
+                puppet.controlState = 1;
 //Follow this (at offset)
-                    puppet.entity.setPosition(this.posX + puppet.offsetX, this.posY + puppet.offsetY, this.posZ + puppet.offsetZ);
-                }
+                puppet.entity.setPosition(this.posX + puppet.offsetX, this.posY + puppet.offsetY, this.posZ + puppet.offsetZ);
             }
         }  
     }

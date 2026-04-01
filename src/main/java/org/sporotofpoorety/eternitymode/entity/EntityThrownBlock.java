@@ -215,7 +215,7 @@ public class EntityThrownBlock extends EntityWithOwner
 
 
 //If first spawned
-        if (this.realTicksExisted == 1)
+        if (this.realTicksExisted == 1 && !this.world.isRemote)
         {
 //Get blockpos this is at
             BlockPos blockPosAt = new BlockPos(this);
@@ -226,9 +226,7 @@ public class EntityThrownBlock extends EntityWithOwner
             {
 //And initial blockpos 
 //doesn't correspond to saved block
-                if (this.world.getBlockState(blockPosAt).getBlock() != basisBlock
-//And this is server side 
-                && !this.world.isRemote)
+                if (this.world.getBlockState(blockPosAt).getBlock() != basisBlock)
                 {
 //Kill this entity, as it's invalid
                     this.setDead(); return;
