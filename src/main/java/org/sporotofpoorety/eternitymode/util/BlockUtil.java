@@ -160,7 +160,8 @@ public final class BlockUtil
 
 
         float hardness = state.getBlockHardness(worldAt, destroyPos);
-        if (hardness > maxHardness || hardness <= 0.0F) //|| block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
+//      if (hardness > maxHardness || hardness <= 0.0F) //|| block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
+        if (hardness > maxHardness || block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
         {
             return;
         }
@@ -168,10 +169,9 @@ public final class BlockUtil
         worldAt.setBlockToAir(destroyPos);
     }
 
+
     public static void destroyBlockPos(BlockPos destroyPos, World worldAt, float maxHardness, boolean allowNonSolids, boolean dropBlocks, int destroyMode)
     {
-        worldAt.setBlockToAir(destroyPos);
-
 //Get blockstate of blockpos
         IBlockState state = worldAt.getBlockState(destroyPos);
 //Get block of that blockstate
@@ -185,7 +185,8 @@ public final class BlockUtil
 
 
         float hardness = state.getBlockHardness(worldAt, destroyPos);
-        if (hardness > maxHardness || hardness <= 0.0F) //|| block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
+//      if (hardness > maxHardness || hardness <= 0.0F) //|| block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
+        if (hardness > maxHardness || block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) 
         {
             return;
         }

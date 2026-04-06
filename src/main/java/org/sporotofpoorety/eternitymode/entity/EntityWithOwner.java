@@ -40,6 +40,8 @@ public abstract class EntityWithOwner extends Entity
     public boolean acceleratesVertically;
     public double accelerationVal;
 
+    public boolean dontMove;
+
 
 
 
@@ -112,6 +114,8 @@ public abstract class EntityWithOwner extends Entity
         compound.setDouble("GravitySpeed", this.gravitySpeed);
         compound.setBoolean("AcceleratesVertically", this.acceleratesVertically);
         compound.setDouble("AccelerationVal", this.accelerationVal);
+
+        compound.setBoolean("DontMove", this.dontMove);
     }
 
 
@@ -136,6 +140,8 @@ public abstract class EntityWithOwner extends Entity
         if (compound.hasKey("GravitySpeed")) { this.gravitySpeed = compound.getDouble("GravitySpeed"); }
         if (compound.hasKey("AcceleratesVertically")) { this.acceleratesVertically = compound.getBoolean("AcceleratesVertically"); }
         if (compound.hasKey("AccelerationVal")) { this.accelerationVal = compound.getDouble("AccelerationVal"); }
+
+        if (compound.hasKey("DontMove")) { this.dontMove = compound.getBoolean("DontMove"); }
     }
 
 
@@ -182,7 +188,7 @@ public abstract class EntityWithOwner extends Entity
 //Fetch it as compound
                 NBTTagCompound storedPuppet = storedPuppetList.getCompoundTagAt(i);
 
-//Make corresponding puppet entity
+//Make corresponding puppet entity (but null)
                 PuppetEntity puppet = new PuppetEntity
                 (
                     null,
@@ -198,6 +204,10 @@ public abstract class EntityWithOwner extends Entity
                 this.puppetEntities.add(puppet);
             }
         }
+
+
+//Try to retrieve puppets
+        this.validatePuppets();
     }
 
 

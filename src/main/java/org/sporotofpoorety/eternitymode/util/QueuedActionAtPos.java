@@ -9,7 +9,7 @@ public class QueuedActionAtPos
     public final double actionX, actionY, actionZ;
     public final long actionTick;
     public final int actionType;
-
+    public double actionScale;
 
     public QueuedActionAtPos(double actionX, double actionY, double actionZ, long actionTick, int actionType) 
     {

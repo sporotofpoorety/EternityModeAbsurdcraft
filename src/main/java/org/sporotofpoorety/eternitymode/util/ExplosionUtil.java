@@ -41,29 +41,28 @@ public final class ExplosionUtil
 //Simple AABB damage and knockback check
             if(dealsDamage)
             {
+//AABB and entities
                 AxisAlignedBB explosionAABB = new AxisAlignedBB(atX - radius, atY - radius, atZ - radius, atX + radius, atY + radius, atZ + radius);
-
                 List<Entity> affectedEntities = world.getEntitiesWithinAABBExcludingEntity(caster, explosionAABB);
 
-//Hit entity if not same team as caster, not immune to explosions
+
+//Hit entity if living, not same team as caster, not immune to explosions
                 for(Entity affectedEntity : affectedEntities)
                 {
-                    if(affectedEntity instanceof EntityLivingBase)
+                    if(affectedEntity instanceof EntityLivingBase && !affectedEntity.isOnSameTeam(caster)
+                    && !affectedEntity.isImmuneToExplosions())
                     {
-                        if(!affectedEntity.isImmuneToExplosions())
-                        {
-                            affectedEntity.attackEntityFrom(DamageSource.causeExplosionDamage(caster), damage);
+                        affectedEntity.attackEntityFrom(DamageSource.causeExplosionDamage(caster), damage);
 
 //If has push, push entity
-                            if(hasPush)
-                            {
-                                double entityDist = Math.sqrt
-                                (Math.pow(affectedEntity.posX - atX, 2) + Math.pow(affectedEntity.posY - atY, 2) + Math.pow(affectedEntity.posZ - atZ, 2));
+                        if(hasPush)
+                        {
+                            double entityDist = Math.sqrt
+                            (Math.pow(affectedEntity.posX - atX, 2) + Math.pow(affectedEntity.posY - atY, 2) + Math.pow(affectedEntity.posZ - atZ, 2));
 
-                                affectedEntity.motionX += ((affectedEntity.posX - atX) * pushForce / entityDist);
-                                affectedEntity.motionY += ((affectedEntity.posY - atY) * pushForce / entityDist);
-                                affectedEntity.motionZ += ((affectedEntity.posZ - atZ) * pushForce / entityDist);
-                            }
+                            affectedEntity.motionX += ((affectedEntity.posX - atX) * pushForce / Math.max(1.0D, entityDist));
+                            affectedEntity.motionY += ((affectedEntity.posY - atY) * pushForce / Math.max(1.0D, entityDist));
+                            affectedEntity.motionZ += ((affectedEntity.posZ - atZ) * pushForce / Math.max(1.0D, entityDist));
                         }
                     }
                 }

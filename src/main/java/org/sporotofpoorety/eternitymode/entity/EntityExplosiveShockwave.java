@@ -22,38 +22,41 @@ import org.sporotofpoorety.eternitymode.util.ExplosionUtil;
 public class EntityExplosiveShockwave extends EntityWithOwner 
 {
 
-    EntityLivingBase owner;
-    double speedX;
-    double speedY;
-    double speedZ;
+    public double speedX;
+    public double speedY;
+    public double speedZ;
 
-    boolean oscillationEnabled;
-    double oscillationDistance;
-    double oscillationX;
-    double oscillationZ;
-    int oscillationOrientationDuration;
-    int oscillationOrientationProgress;
-    boolean oscillationOrientationCurrentlyPositive;
+    public boolean oscillationEnabled;
+    public double oscillationDistance;
+    public double oscillationX;
+    public double oscillationZ;
+    public int oscillationOrientationDuration;
+    public int oscillationOrientationProgress;
+    public boolean oscillationOrientationCurrentlyPositive;
  
-    int explosionTimer;
-    double explosionRadius;
-    float explosionDamage;
-    boolean explosionPush;
-    double explosionPushForce;
-    boolean explosionFire;
-    int explosionParticleType;
+    public int explosionTimer;
+    public double explosionRadius;
+    public float explosionDamage;
+    public boolean explosionPush;
+    public double explosionPushForce;
+    public boolean explosionFire;
+    public int explosionParticleType;
 
-    int specialExplosionCounter;
-    int specialExplosionThreshold;
+    public boolean harmlessSwitch;
 
-    boolean subshockwavesEnabled;
-    double subshockwavesSpeedX;
-    double subshockwavesSpeedY;
-    double subshockwavesSpeedZ;
-    double subshockwavesAccelerationVal;
+    public int specialExplosionCounter;
+    public int specialExplosionThreshold;
+
+    public boolean subshockwavesEnabled;
+    public int subshockwavesLifetime;
+
+    public double subshockwavesSpeedX;
+    public double subshockwavesSpeedY;
+    public double subshockwavesSpeedZ;
+    public double subshockwavesAccelerationVal;
  
-    int subshockwavesExplosionTimer;
-    double subshockwavesExplosionRadius;
+    public int subshockwavesExplosionTimer;
+    public double subshockwavesExplosionRadius;
 
 
 
@@ -62,6 +65,8 @@ public class EntityExplosiveShockwave extends EntityWithOwner
     {
         super(world);
         setSize(0.5F, 0.5F);
+//Should noclip by default ig
+        this.noClip = true;
     }
 
     public EntityExplosiveShockwave(World worldIn, double x, double y, double z, 
@@ -73,6 +78,8 @@ public class EntityExplosiveShockwave extends EntityWithOwner
     {
         super(worldIn, x, y, z, owner);
         setSize(0.5F, 0.5F);
+//Should noclip by default ig
+        this.noClip = true;
 
         this.lifetimeMax = lifetimeMax;
 
@@ -108,13 +115,17 @@ public class EntityExplosiveShockwave extends EntityWithOwner
         this.explosionPushForce = explosionPushForce;
         this.explosionFire = explosionFire;
         this.explosionParticleType = explosionParticleType;
+
+        this.specialExplosionThreshold = specialExplosionThreshold;
 	}
 
-    public void setSubshockwaves(boolean subshockwavesEnabled,
+    public void setSubshockwaves(boolean subshockwavesEnabled, int subshockwavesLifetime,
     double subshockwavesSpeedX, double subshockwavesSpeedY, double subshockwavesSpeedZ, double subshockwavesAccelerationVal,
     int subshockwavesExplosionTimer, double subshockwavesExplosionRadius)
     {
         this.subshockwavesEnabled = subshockwavesEnabled;
+        this.subshockwavesLifetime = subshockwavesLifetime;
+
         this.subshockwavesSpeedX = subshockwavesSpeedX;
         this.subshockwavesSpeedY = subshockwavesSpeedY;
         this.subshockwavesSpeedZ = subshockwavesSpeedZ;
@@ -142,10 +153,9 @@ public class EntityExplosiveShockwave extends EntityWithOwner
 //Periodic explosions
             if((this.realTicksExisted % this.explosionTimer) == 0)
             {
-//              this.world.newExplosion(entityResponsible, this.posX, this.posY + (this.explosionRadius / 1.5F), this.posZ, this.explosionRadius, false, false);
                 ExplosionUtil.performOptimizedExplosion(this.world, this.owner, this.posX, this.posY, this.posZ,
-                this.explosionRadius, true, this.explosionDamage, this.explosionPush, this.explosionPushForce, false, 9999.0F, this.explosionFire, 
-                true, this.explosionParticleType, false);
+                    this.explosionRadius, !this.harmlessSwitch, this.explosionDamage, this.explosionPush, this.explosionPushForce, false, 9999.0F, this.explosionFire, 
+                    true, this.explosionParticleType, false);
 
 //Increment explosion counter
                 ++this.specialExplosionCounter;
@@ -165,11 +175,12 @@ public class EntityExplosiveShockwave extends EntityWithOwner
                         if(this.owner != null)
                         {
                             EntityExplosiveShockwave splitShockwave = new EntityExplosiveShockwave(this.world, this.posX, this.posY, this.posZ,
-                            this.owner,  
-                            50, false, 3.0F, this.subshockwavesSpeedX, this.subshockwavesSpeedY, this.subshockwavesSpeedZ, this.subshockwavesAccelerationVal,
-                            false, 3.0D, 9,
-                            this.subshockwavesExplosionTimer, this.subshockwavesExplosionRadius, this.explosionDamage, 
-                            this.explosionPush, this.explosionPushForce, false, this.explosionParticleType, 69420);
+                                this.owner,  
+                                this.subshockwavesLifetime, false, 3.0F, 
+                                this.subshockwavesSpeedX, this.subshockwavesSpeedY, this.subshockwavesSpeedZ, this.subshockwavesAccelerationVal,
+                                false, 3.0D, 9,
+                                this.subshockwavesExplosionTimer, this.subshockwavesExplosionRadius, this.explosionDamage, 
+                                this.explosionPush, this.explosionPushForce, false, this.explosionParticleType, 69420);
 
 		                    splitShockwave.setLocationAndAngles(this.posX, this.posY, this.posZ, this.rotationYaw, 0.0F);
 
@@ -250,10 +261,14 @@ public class EntityExplosiveShockwave extends EntityWithOwner
         compound.setBoolean("ExplosionFire", this.explosionFire);
         compound.setInteger("ExplosionParticleType", this.explosionParticleType);
 
+        compound.setBoolean("HarmlessSwitch", this.harmlessSwitch);
+
         compound.setInteger("SpecialExplosionCounter", this.specialExplosionCounter);
         compound.setInteger("SpecialExplosionThreshold", this.specialExplosionThreshold);
 
         compound.setBoolean("SubshockwavesEnabled", this.subshockwavesEnabled);
+        compound.setInteger("SubshockwavesLifetime", this.subshockwavesLifetime);
+
         compound.setDouble("SubshockwavesSpeedX", this.subshockwavesSpeedX);
         compound.setDouble("SubshockwavesSpeedY", this.subshockwavesSpeedY);
         compound.setDouble("SubshockwavesSpeedZ", this.subshockwavesSpeedZ);
@@ -292,10 +307,14 @@ public class EntityExplosiveShockwave extends EntityWithOwner
         if (compound.hasKey("ExplosionFire")) { this.explosionFire = compound.getBoolean("ExplosionFire"); }
         if (compound.hasKey("ExplosionParticleType")) { this.explosionParticleType = compound.getInteger("ExplosionParticleType"); }
 
+        if (compound.hasKey("HarmlessSwitch")) { this.harmlessSwitch = compound.getBoolean("SubshockwavesEnabled"); }
+
         if (compound.hasKey("SpecialExplosionCounter")) { this.specialExplosionCounter = compound.getInteger("SpecialExplosionCounter"); }
         if (compound.hasKey("SpecialExplosionThreshold")) { this.specialExplosionThreshold = compound.getInteger("SpecialExplosionThreshold"); }
 
         if (compound.hasKey("SubshockwavesEnabled")) { this.subshockwavesEnabled = compound.getBoolean("SubshockwavesEnabled"); }
+        if (compound.hasKey("SubshockwavesLifetime")) { this.subshockwavesLifetime = compound.getInteger("SubshockwavesLifetime"); }
+
         if (compound.hasKey("SubshockwavesSpeedX")) { this.subshockwavesSpeedX = compound.getDouble("SubshockwavesSpeedX"); } 
         if (compound.hasKey("SubshockwavesSpeedY")) { this.subshockwavesSpeedY = compound.getDouble("SubshockwavesSpeedY"); } 
         if (compound.hasKey("SubshockwavesSpeedZ")) { this.subshockwavesSpeedZ = compound.getDouble("SubshockwavesSpeedZ"); } 

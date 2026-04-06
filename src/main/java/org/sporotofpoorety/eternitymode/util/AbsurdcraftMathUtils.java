@@ -220,6 +220,26 @@ public final class AbsurdcraftMathUtils {
 
 
 
+
+    public static double simpleSummationDouble(double stepInitial, double stepIncrement, int stepCount)
+    {
+        double currentStep = stepInitial;
+        double accumulatedTotal = 0.0D;
+
+
+        for(int stepAt = 1; stepAt <= stepCount; stepAt++)
+        {
+            currentStep += stepIncrement;
+
+            accumulatedTotal += currentStep;       
+        }
+
+
+        return accumulatedTotal;
+    }
+
+
+
 /*
 //For this, provide a starting vector,
 //a number of stops and radians for the ring and the spreads

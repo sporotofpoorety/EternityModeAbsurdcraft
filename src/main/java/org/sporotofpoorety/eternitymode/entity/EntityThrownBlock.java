@@ -32,6 +32,7 @@ import net.minecraft.world.World;
 
 
 import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
+import org.sporotofpoorety.eternitymode.util.BlockUtil;
 
 
 
@@ -65,6 +66,8 @@ public class EntityThrownBlock extends EntityWithOwner
         super(worldIn);
 
         this.basisState = Blocks.STONE.getDefaultState();
+
+        this.lifetimeMax = 600;
     }
 
     public EntityThrownBlock(World worldIn, double x, double y, double z, 
@@ -193,9 +196,6 @@ public class EntityThrownBlock extends EntityWithOwner
      */
     public void onUpdate()
     {
-//      if(this.owner == null) { System.out.println("Owner not"); } else { System.out.println("Owner yes"); }
-//      if(this.controller == null) { System.out.println("Controller not"); } else { System.out.println("Controller yes"); }
-
 //Get basis block
         Block basisBlock = this.basisState == null ? Blocks.AIR : this.basisState.getBlock();
 
@@ -237,7 +237,8 @@ public class EntityThrownBlock extends EntityWithOwner
             if(!this.dontBreakInitialPos)
             {
 //Break that blockpos
-                this.world.setBlockToAir(blockPosAt); 
+//              this.world.setBlockToAir(blockPosAt);
+                BlockUtil.destroyBlockPos(blockPosAt, this.world, 999999999.9F, false, false, 69420); 
             }
         }
 
@@ -271,7 +272,7 @@ public class EntityThrownBlock extends EntityWithOwner
 
 
 //Basic movement
-        this.performBasicMovement();
+        if(!this.dontMove) { this.performBasicMovement(); }
 
 
 

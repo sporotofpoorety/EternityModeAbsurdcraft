@@ -53,7 +53,7 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
 
 //Common architecture for scheduled actions
     @Unique
-    private static final ConcurrentLinkedQueue<QueuedActionAtPos> queuedActionsAtPos = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<QueuedActionAtPos> queuedActionsAtPos = new ConcurrentLinkedQueue<>();
 
 
 
