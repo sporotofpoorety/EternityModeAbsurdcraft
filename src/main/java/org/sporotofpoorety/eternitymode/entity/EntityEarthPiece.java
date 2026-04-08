@@ -460,8 +460,7 @@ public class EntityEarthPiece extends EntityWithOwner
 //New puppet entity
                         PuppetEntity puppetBlock = new PuppetEntity(thrownBlock, 
                         (double) atX * 1.05D, (double) atY * 1.05D, (double) atZ * 1.05D, 0, 0);
-//Grant UUID separately
-                        puppetBlock.puppetUUID = thrownBlock.getUniqueID();
+
 
 //Add block to puppet list
                         this.puppetEntities.add(puppetBlock);

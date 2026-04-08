@@ -16,6 +16,8 @@ public class PuppetEntity
     public Entity entity;
     public UUID puppetUUID;
 
+    public boolean previousValidatePuppetFailed;
+
     public double offsetX, offsetY, offsetZ;
 
     public int controlTime;
@@ -29,6 +31,7 @@ public class PuppetEntity
     double offsetX, double offsetY, double offsetZ, int controlTime, int controlState) 
     {
         this.entity = entity;
+        this.puppetUUID = entity.getUniqueID();
 
         this.offsetX = offsetX;
         this.offsetY = offsetY;

@@ -10,6 +10,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
@@ -26,13 +27,11 @@ public abstract class EntityWithOwner extends Entity
 
     public EntityLivingBase owner;
     public UUID ownerUUID;
-    public int ownerCheckCooldown;
-    public int ownerCheckCooldownMax;
+    public boolean previousValidateOwnerFailed;
 
     public Entity controller;
     public UUID controllerUUID;
-    public int controllerCheckCooldown;
-    public int controllerCheckCooldownMax;
+    public boolean previousValidateControllerFailed;
 
     public List<PuppetEntity> puppetEntities = new ArrayList<>();
 
@@ -65,14 +64,10 @@ public abstract class EntityWithOwner extends Entity
 //Just safeguarding defaults
         this.owner = owner;
         if(this.owner != null) { this.ownerUUID = owner.getUniqueID(); }
-        this.ownerCheckCooldown = 0;
-        this.ownerCheckCooldownMax = 20;
 
 //Just safeguarding defaults
         this.controller = null;
         this.controllerUUID = null;
-        this.controllerCheckCooldown = 0;
-        this.controllerCheckCooldownMax = 20;
 
 //Defaults for entities that won't explicitly set this
         this.gravitySpeed = 0.08D;
@@ -93,21 +88,14 @@ public abstract class EntityWithOwner extends Entity
         this.accelerationVal = accelerationVal;
     }
 
-    /**
-     * (abstract) Protected helper method to write subclass entity data to NBT.
-     */
     protected void writeEntityToNBT(NBTTagCompound compound)
     {
         compound.setInteger("RealTicksExisted", this.realTicksExisted);
         compound.setInteger("LifetimeMax", this.lifetimeMax);
 
         if(this.ownerUUID != null) { compound.setUniqueId("OwnerUUID", this.ownerUUID); }
-        compound.setInteger("OwnerCheckCooldown", this.ownerCheckCooldown);
-        compound.setInteger("OwnerCheckCooldownMax", this.ownerCheckCooldownMax);
 
         if(this.controllerUUID != null) { compound.setUniqueId("ControllerUUID", this.controllerUUID); }
-        compound.setInteger("ControllerCheckCooldown", this.controllerCheckCooldown);
-        compound.setInteger("ControllerCheckCooldownMax", this.controllerCheckCooldownMax);
 
         this.nbtWritePuppetList(compound);
 
@@ -118,24 +106,25 @@ public abstract class EntityWithOwner extends Entity
         compound.setBoolean("DontMove", this.dontMove);
     }
 
-
-    /**
-     * (abstract) Protected helper method to read subclass entity data from NBT.
-     */
     protected void readEntityFromNBT(NBTTagCompound compound)
     {
         if (compound.hasKey("RealTicksExisted")) { this.realTicksExisted = compound.getInteger("RealTicksExisted"); }
         if (compound.hasKey("LifetimeMax")) { this.lifetimeMax = compound.getInteger("LifetimeMax"); }
 
-        if (compound.hasKey("OwnerUUID")) { this.ownerUUID = compound.getUniqueId("OwnerUUID"); }
-        if (compound.hasKey("OwnerCheckCooldown")) { this.ownerCheckCooldown = compound.getInteger("OwnerCheckCooldown"); }
-        if (compound.hasKey("OwnerCheckCooldownMax")) { this.ownerCheckCooldownMax = compound.getInteger("OwnerCheckCooldownMax"); }
+        if (compound.hasKey("OwnerUUID")) 
+        { 
+            this.ownerUUID = compound.getUniqueId("OwnerUUID"); 
+            this.validateOwner();
+        }
 
-        if (compound.hasKey("ControllerUUID")) { this.controllerUUID = compound.getUniqueId("ControllerUUID"); }
-        if (compound.hasKey("ControllerCheckCooldown")) { this.controllerCheckCooldown = compound.getInteger("ControllerCheckCooldown"); }
-        if (compound.hasKey("ControllerCheckCooldownMax")) { this.controllerCheckCooldownMax = compound.getInteger("ControllerCheckCooldownMax"); }
+        if (compound.hasKey("ControllerUUID")) 
+        { 
+            this.controllerUUID = compound.getUniqueId("ControllerUUID"); 
+            this.validateController();
+        }
 
         this.nbtReadPuppetList(compound);
+        this.validatePuppets(false);
 
         if (compound.hasKey("GravitySpeed")) { this.gravitySpeed = compound.getDouble("GravitySpeed"); }
         if (compound.hasKey("AcceleratesVertically")) { this.acceleratesVertically = compound.getBoolean("AcceleratesVertically"); }
@@ -162,6 +151,13 @@ public abstract class EntityWithOwner extends Entity
                 puppetToStore.setInteger("PuppetTime", puppetEntity.controlTime);
                 puppetToStore.setInteger("PuppetState", puppetEntity.controlState);
                 puppetToStore.setUniqueId("PuppetUUID", puppetEntity.puppetUUID);
+                if(puppetEntity.storedVec != null) 
+                {
+                    puppetToStore.setDouble("PuppetVecX", puppetEntity.storedVec.x);
+                    puppetToStore.setDouble("PuppetVecY", puppetEntity.storedVec.y);
+                    puppetToStore.setDouble("PuppetVecZ", puppetEntity.storedVec.z);
+                }
+                puppetToStore.setDouble("PuppetDistance", puppetEntity.storedDistance);
 //Append it to puppet array
             puppetListToStore.appendTag(puppetToStore);
         }
@@ -198,16 +194,18 @@ public abstract class EntityWithOwner extends Entity
                     storedPuppet.getInteger("PuppetTime"),
                     storedPuppet.getInteger("PuppetState")
                 );
-                puppet.puppetUUID = storedPuppet.getUniqueId("PuppetUUID");
+                if(storedPuppet.hasKey("PuppetUUID")) { puppet.puppetUUID = storedPuppet.getUniqueId("PuppetUUID"); }
+                if(storedPuppet.hasKey("PuppetVecX")) 
+                { 
+                    puppet.storedVec 
+                        = new Vec3d(storedPuppet.getDouble("PuppetVecX"), storedPuppet.getDouble("PuppetVecY"), storedPuppet.getDouble("PuppetVecZ"));
+                }
+                if(storedPuppet.hasKey("PuppetDistance")) { puppet.storedDistance = storedPuppet.getDouble("PuppetDistance"); }
 
 //Store in the puppet list
                 this.puppetEntities.add(puppet);
             }
         }
-
-
-//Try to retrieve puppets
-        this.validatePuppets();
     }
 
 
@@ -237,41 +235,28 @@ public abstract class EntityWithOwner extends Entity
             if(this.realTicksExisted >= this.lifetimeMax) { this.onLifetimeExpire(); return; }
 
 
-//If no owner check cooldown
-            if(this.ownerCheckCooldown <= 0)
+//Periodically validate owner, controller and puppets
+            if(this.realTicksExisted % 20 == 0)
             {
-//Try to validate owner
-                this.performOwnerValidation();
-//Apply check cooldown
-                this.ownerCheckCooldown = this.ownerCheckCooldownMax;
-            }
-            else
-            {
-//Else decrement owner check cooldown
-                --this.ownerCheckCooldown;
-            }
+//Checks for two failed validations in a row
+                if(this.performOwnerValidation()) { this.previousValidateOwnerFailed = false; }
+                else
+                {
+                    this.previousValidateOwnerFailed = true;
+                }
 
+//Checks for two failed validations in a row
+                if(this.performControllerValidation()) { this.previousValidateControllerFailed = false; }
+                else
+                {
+                    this.previousValidateControllerFailed = true;
+                }
 
-//If no controller check cooldown
-            if(this.controllerCheckCooldown <= 0)
-            {
-//Try to validate controller
-                this.performControllerValidation();
-//Apply check cooldown
-                this.controllerCheckCooldown = this.controllerCheckCooldownMax;
-            }
-            else
-            {
-//Else decrement controller check cooldown
-                --this.controllerCheckCooldown;
-            }
-
-
-//If this has puppet entities
-            if(!this.puppetEntities.isEmpty())
-            {
-//Validate, restore, and clean
-                this.performPuppetsValidation();
+//Checks for two failed validations in a row
+                if(!this.puppetEntities.isEmpty())
+                {
+                    this.performPuppetsValidation(true);
+                }
             }
         }    
     }
@@ -298,6 +283,17 @@ public abstract class EntityWithOwner extends Entity
     }
 
 
+
+    public boolean performOwnerValidation()
+    {
+        return this.validateOwner();
+    }
+
+
+    public boolean ownerValidConditions(Entity toValidate)
+    {
+        return (toValidate instanceof EntityLivingBase);
+    }
 
 
 //Validate owner and return if successful
@@ -343,6 +339,18 @@ public abstract class EntityWithOwner extends Entity
 
 
 
+    public boolean performControllerValidation()
+    {
+        return this.validateController();
+    }
+
+
+    public boolean controllerValidConditions(Entity toValidate)
+    {
+        return true;
+    }
+
+
 //Validate controller and return if successful
     public boolean validateController()
     {
@@ -386,8 +394,21 @@ public abstract class EntityWithOwner extends Entity
 
 
 
+
+    public void performPuppetsValidation(boolean trackFailures)
+    {
+        this.validatePuppets(trackFailures);
+    }
+
+
+    public boolean puppetValidConditions(Entity toValidate)
+    {
+        return true;
+    } 
+
+
 //Validate puppet entities
-    public void validatePuppets()
+    public void validatePuppets(boolean trackFailures)
     {
 //Iterator for them
         Iterator<PuppetEntity> iter = this.puppetEntities.iterator();
@@ -402,8 +423,27 @@ public abstract class EntityWithOwner extends Entity
 //If puppet invalid
             if(!validatePuppet(puppet)) 
             {
+//If tracking failures
+                if(trackFailures)
+                {
+//And already failed
+                    if(puppet.previousValidatePuppetFailed)
+                    {
 //Remove puppet
-                iter.remove();
+                        iter.remove();
+                    }
+//Regardless set puppet failed
+                    puppet.previousValidatePuppetFailed = true;
+                }
+            }
+            else
+            {
+//If tracking failures
+                if(trackFailures)
+                {
+//Set puppet succeeded
+                    puppet.previousValidatePuppetFailed = false;   
+                }
             }
         }
     }
@@ -425,7 +465,7 @@ public abstract class EntityWithOwner extends Entity
             Entity foundEntity = ((WorldServer) this.world).getEntityFromUuid(puppet.puppetUUID);
 
 //If found any
-            if (foundEntity != null) 
+            if (foundEntity != null && this.puppetValidConditions(foundEntity)) 
             {
 //Restore puppet entity
                 puppet.entity = foundEntity;
@@ -464,41 +504,6 @@ public abstract class EntityWithOwner extends Entity
         {
             this.motionY -= this.gravitySpeed;
         }
-    }
-
-
-
-
-    public boolean ownerValidConditions(Entity toValidate)
-    {
-        return (toValidate instanceof EntityLivingBase);
-    }
-
-    public void performOwnerValidation()
-    {
-        this.validateOwner();
-    }
-
-
-    public boolean controllerValidConditions(Entity toValidate)
-    {
-        return true;
-    }
-
-    public void performControllerValidation()
-    {
-        this.validateController();
-    }
-
-
-    public boolean puppetValidConditions(Entity toValidate)
-    {
-        return true;
-    } 
-
-    public void performPuppetsValidation()
-    {
-        this.validatePuppets();
     }
 
 }
