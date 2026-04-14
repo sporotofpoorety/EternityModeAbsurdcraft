@@ -1,9 +1,13 @@
 package org.sporotofpoorety.eternitymode.entity;
 
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+
 import java.util.List;
+
 import javax.annotation.Nullable;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.ITileEntityProvider;
@@ -41,7 +45,10 @@ public class EntityThrownBlock extends EntityWithOwner
 {
 
     protected static final DataParameter<BlockPos> ORIGIN = EntityDataManager.<BlockPos>createKey(EntityThrownBlock.class, DataSerializers.BLOCK_POS);
-    public IBlockState basisState;
+    protected static final DataParameter<Optional<IBlockState>> BASIS_STATE 
+        = EntityDataManager.<Optional<IBlockState>>createKey(EntityThrownBlock.class, DataSerializers.OPTIONAL_BLOCK_STATE);
+
+//  public IBlockState basisState;
 
 
     public NBTTagCompound tileEntityData;
@@ -65,7 +72,7 @@ public class EntityThrownBlock extends EntityWithOwner
     {
         super(worldIn);
 
-        this.basisState = Blocks.STONE.getDefaultState();
+//      this.basisState = Blocks.STONE.getDefaultState();
 
         this.lifetimeMax = 600;
     }
@@ -81,7 +88,8 @@ public class EntityThrownBlock extends EntityWithOwner
         this.lifetimeMax = 600;
 
 
-        this.basisState = fallingBlockState;
+//      this.basisState = fallingBlockState;
+        this.setBasisState(fallingBlockState);
 
 
         this.setOrigin(new BlockPos(this));
@@ -109,6 +117,7 @@ public class EntityThrownBlock extends EntityWithOwner
     protected void entityInit()
     {
         this.dataManager.register(ORIGIN, BlockPos.ORIGIN);
+        this.dataManager.register(BASIS_STATE, Optional.absent());
     }
 
 
@@ -121,9 +130,10 @@ public class EntityThrownBlock extends EntityWithOwner
 
 
 //Get basis block (air as failsafe)
-        Block basisBlock = this.basisState == null ? Blocks.AIR : this.basisState.getBlock();
+//      Block basisBlock = this.basisState == null ? Blocks.AIR : this.basisState.getBlock();
+        Block basisBlock = this.getBasisState() == null ? Blocks.AIR : this.getBasisState().getBlock();
 //Set block metadata
-        compound.setByte("Data", (byte)basisBlock.getMetaFromState(this.basisState));
+        compound.setByte("Data", (byte)basisBlock.getMetaFromState(this.getBasisState()));
 
 //Get basis block name
         ResourceLocation resourcelocation = Block.REGISTRY.getNameForObject(basisBlock);
@@ -161,15 +171,10 @@ public class EntityThrownBlock extends EntityWithOwner
 
 
 //Get block basis from name, 
-//then get state basis from metadata
+//then get blockstate from metadata
         if (compound.hasKey("Block", 8)) 
-            { this.basisState = Block.getBlockFromName(compound.getString("Block")).getStateFromMeta(i); }
-
-//If block basis air or null
-        Block basisBlock = this.basisState.getBlock();
-        if (basisBlock == null || basisBlock.getDefaultState().getMaterial() == Material.AIR)
-//Stone as failsafe
-            { this.basisState = Blocks.STONE.getDefaultState(); }
+//          { this.basisState = Block.getBlockFromName(compound.getString("Block")).getStateFromMeta(i); }
+            { this.setBasisState(Block.getBlockFromName(compound.getString("Block")).getStateFromMeta(i)); }
 
 
 //Get tile entity data
@@ -197,11 +202,11 @@ public class EntityThrownBlock extends EntityWithOwner
     public void onUpdate()
     {
 //Get basis block
-        Block basisBlock = this.basisState == null ? Blocks.AIR : this.basisState.getBlock();
+        Block basisBlock = this.getBasisState() == null ? Blocks.AIR : this.getBasisState().getBlock();
 
 
 //If state is invalid, set dead
-        if (this.basisState == null || this.basisState.getMaterial() == Material.AIR)
+        if (this.getBasisState() == null || this.getBasisState().getMaterial() == Material.AIR)
         {
             this.setDead();
             return;
@@ -277,12 +282,9 @@ public class EntityThrownBlock extends EntityWithOwner
 
 
 
+//Despawn/place logic
         if (!this.world.isRemote)
         {
-//Get block pos this is at
-            BlockPos blockPosAt = new BlockPos(this);
-
-
 //If this is on ground and is solid
             if (this.onGround && !this.noClip)
             {
@@ -290,17 +292,39 @@ public class EntityThrownBlock extends EntityWithOwner
                 this.onHitGround();
             }
 
+
 //If this not on ground
             else
             {
 //But fell out of bounds
-                if (!this.world.isRemote && (blockPosAt.getY() < 1))
+                BlockPos blockPosAt = new BlockPos(this);
+                if ((blockPosAt.getY() < -128))
                 {
 //Then set dead
                     this.setDead();
                 }
             }
+
+
+//Failsafe ground hit or inside block
+            if(this.realTicksExisted % 20 == 0)
+            {
+//Get blockstate of current pos and pos under
+                IBlockState stateOfPos = this.world.getBlockState(new BlockPos((int) this.posX, (int) this.posY, (int) this.posZ));
+                IBlockState stateOfUnder = this.world.getBlockState(new BlockPos((int) this.posX, (int) (this.posY - 1.0D), (int) this.posZ));
+
+//If there is a solid block
+//at or under this, and this is set to fall
+                if((stateOfPos.getMaterial().isSolid() || stateOfUnder.getMaterial().isSolid()) 
+                && !this.noClip && this.motionY < 0.0D)
+                {
+//Hit ground logic
+
+                    this.onHitGround();
+                }
+            }
         }
+
     }
 
 
@@ -308,13 +332,13 @@ public class EntityThrownBlock extends EntityWithOwner
     public void onLifetimeExpire()
     {
 //Drop item if should
-        Block basisBlock = this.basisState.getBlock();
+        Block basisBlock = this.getBasisState().getBlock();
 
         if(basisBlock != null)
         {
             if (this.shouldDropItem && this.world.getGameRules().getBoolean("doEntityDrops"))
             {
-                this.entityDropItem(new ItemStack(basisBlock, 1, basisBlock.damageDropped(this.basisState)), 0.0F);
+                this.entityDropItem(new ItemStack(basisBlock, 1, basisBlock.damageDropped(this.getBasisState())), 0.0F);
             }
         }
 
@@ -344,11 +368,11 @@ public class EntityThrownBlock extends EntityWithOwner
 
     public void onHitGround()
     {
-        Block basisBlock = this.basisState.getBlock();
+        Block basisBlock = this.getBasisState().getBlock();
         BlockPos blockPosAt = new BlockPos(this);
         IBlockState blockStateAt = this.world.getBlockState(blockPosAt);
 
-        boolean isPowder = this.basisState.getBlock() == Blocks.CONCRETE_POWDER;
+        boolean isPowder = this.getBasisState().getBlock() == Blocks.CONCRETE_POWDER;
         boolean isPowderInWater = isPowder && this.world.getBlockState(blockPosAt).getMaterial() == Material.WATER;
 
 
@@ -392,14 +416,14 @@ public class EntityThrownBlock extends EntityWithOwner
 //And block can't keep falling
             && (!BlockFalling.canFallThrough(this.world.getBlockState(blockPosAt.down())) || isPowderInWater)
 //Place saved block state 
-            && this.world.setBlockState(blockPosAt, this.basisState, 3))
+            && this.world.setBlockState(blockPosAt, this.getBasisState(), 3))
             {
 
 //Run custom logic for
 //blocks like sand and gravel
                 if (basisBlock instanceof BlockFalling)
                 {
-                    ((BlockFalling)basisBlock).onEndFalling(this.world, blockPosAt, this.basisState, blockStateAt);
+                    ((BlockFalling)basisBlock).onEndFalling(this.world, blockPosAt, this.getBasisState(), blockStateAt);
                 }
 
 
@@ -432,7 +456,7 @@ public class EntityThrownBlock extends EntityWithOwner
 //If not allowed to place block, drop it instead
             else if (this.shouldDropItem && this.world.getGameRules().getBoolean("doEntityDrops"))
             {
-                this.entityDropItem(new ItemStack(basisBlock, 1, basisBlock.damageDropped(this.basisState)), 0.0F);
+                this.entityDropItem(new ItemStack(basisBlock, 1, basisBlock.damageDropped(this.getBasisState())), 0.0F);
             }
         }
 
@@ -502,9 +526,9 @@ public class EntityThrownBlock extends EntityWithOwner
     }
 
     @Nullable
-    public IBlockState getBlock()
+    public IBlockState getBasisState()
     {
-        return this.basisState;
+        return (IBlockState)((Optional)this.dataManager.get(BASIS_STATE)).orNull();
     }
 
 
@@ -518,9 +542,9 @@ public class EntityThrownBlock extends EntityWithOwner
         this.dataManager.set(ORIGIN, origin);
     }
 
-    public void setDealsDamage(boolean dealsDamage)
+    public void setBasisState(@Nullable IBlockState state)
     {
-        this.dealsDamage = dealsDamage;
+        this.dataManager.set(BASIS_STATE, Optional.fromNullable(state));
     }
 
 }

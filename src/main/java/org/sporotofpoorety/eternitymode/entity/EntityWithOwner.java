@@ -232,7 +232,7 @@ public abstract class EntityWithOwner extends Entity
         if(!this.world.isRemote)
         {
 //Universalized lifetime
-            if(this.realTicksExisted >= this.lifetimeMax) { this.onLifetimeExpire(); return; }
+            if(this.realTicksExisted > this.lifetimeMax) { this.onLifetimeExpire(); return; }
 
 
 //Periodically validate owner, controller and puppets

@@ -35,9 +35,9 @@ public class RenderThrownBlock extends Render<EntityThrownBlock>
      */
     public void doRender(EntityThrownBlock entity, double x, double y, double z, float entityYaw, float partialTicks)
     {
-        if (entity.getBlock() != null)
+        if (entity.getBasisState() != null)
         {
-            IBlockState iblockstate = entity.getBlock();
+            IBlockState iblockstate = entity.getBasisState();
 
             if (iblockstate.getRenderType() == EnumBlockRenderType.MODEL)
             {
