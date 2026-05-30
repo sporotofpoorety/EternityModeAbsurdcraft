@@ -1,7 +1,12 @@
 package org.sporotofpoorety.eternitymode.util;
 
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
+
+import electroblob.wizardry.Wizardry;
 
 
 
@@ -31,6 +36,13 @@ public final class MiscUtil
 //And return new compound            
             return atCompound.getCompoundTag(compoundKey);
         }
+    }
+
+
+    public static void screenShakeForNearbyPlayers(int shakeIntensity)
+    {
+        EntityPlayer localPlayer = Minecraft.getMinecraft().player;
+        Wizardry.proxy.shakeScreen(localPlayer, shakeIntensity);
     }
 }
 

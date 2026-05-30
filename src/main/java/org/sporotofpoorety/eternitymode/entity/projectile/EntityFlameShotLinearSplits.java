@@ -75,20 +75,38 @@ public class EntityFlameShotLinearSplits extends EntityFlameShotLinear {
 
     public void onTrueSetDead()
     {
-        if(this.owner == null || !(this.owner instanceof EntityLiving)) 
+        if(!this.world.isRemote)
         {
-            ProjectileUtil.shootAimedFireballSpreadCoord(this.posX, this.posY, this.posZ, 
-            null, this, null,
-            this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
-            this.splitDamage, this.splitSpeed, this.splitAcceleration,
-            this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);  
-        }
-        else 
-        {
-            ProjectileUtil.shootAimedFireballSpreadEntity(this.owner, this, ((EntityLiving) this.owner).getAttackTarget(), 
-            this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
-            this.splitDamage, this.splitSpeed, this.splitAcceleration,
-            this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);    
+            if(this.owner == null || !(this.owner instanceof EntityLiving)) 
+            {
+                ProjectileUtil.shootAimedFireballSpreadCoord(this.posX, this.posY, this.posZ, 
+                null, this, null,
+                this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
+                this.splitDamage, this.splitSpeed, this.splitAcceleration,
+                this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);  
+            }
+            else 
+            {
+                EntityLivingBase attackTarget = ((EntityLiving)this.owner).getAttackTarget();
+                if(attackTarget != null) 
+                { 
+                    Vec3d targetVec = new Vec3d(attackTarget.posX - this.posX, attackTarget.posY - this.posY, attackTarget.posZ - this.posZ).normalize();  
+
+                    EntityFlameShotLinear directShot = new EntityFlameShotLinear(this.world, this.posX, this.posY, this.posZ, 
+                        this.owner,
+                        100, targetVec.x * this.splitSpeed, targetVec.y * this.splitSpeed, targetVec.z * this.splitSpeed, 
+                        this.splitAcceleration, 0.0D, 
+                        0.3D, true, true, this.splitDamage, 
+                        2, 2, 0.06D,
+                        20, this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);
+                    this.world.spawnEntity(directShot);
+                }
+
+                ProjectileUtil.shootAimedFireballSpreadEntity(this.owner, this, ((EntityLiving) this.owner).getAttackTarget(), 
+                this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
+                this.splitDamage, this.splitSpeed, this.splitAcceleration,
+                this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);    
+            }
         }
     }
 

@@ -15,9 +15,7 @@ import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import electroblob.wizardry.Wizardry;
 
 
-import org.sporotofpoorety.eternitymode.client.render.RenderProjectileBase;
-import org.sporotofpoorety.eternitymode.client.render.RenderProjectileBaseItem;
-import org.sporotofpoorety.eternitymode.client.render.RenderThrownBlock;
+import org.sporotofpoorety.eternitymode.client.render.*;
 import org.sporotofpoorety.eternitymode.core.EternityModeCommonProxy;
 import org.sporotofpoorety.eternitymode.entity.*;
 import org.sporotofpoorety.eternitymode.entity.projectile.*;
@@ -51,7 +49,7 @@ public class EternityModeClientProxy extends EternityModeCommonProxy {
 		RenderingRegistry.registerEntityRenderingHandler
         (
             EntityFlameShotLinear.class,
-		        manager -> new RenderProjectileBase(manager, 0.7f, new ResourceLocation(Wizardry.MODID, "textures/entity/fireball.png"), false)
+		        manager -> new RenderProjectileBase(manager, 1.4f, new ResourceLocation(Wizardry.MODID, "textures/entity/fireball.png"), false)
         );
 
 		RenderingRegistry.registerEntityRenderingHandler
@@ -64,6 +62,18 @@ public class EternityModeClientProxy extends EternityModeCommonProxy {
         (
             EntityThrownBlock.class, 
             manager -> new RenderThrownBlock(manager)
+        );
+
+	    RenderingRegistry.registerEntityRenderingHandler
+        (
+            EntityMeteorBlock.class, 
+            manager -> new RenderMeteorBlock(manager)
+        );
+
+	    RenderingRegistry.registerEntityRenderingHandler
+        (
+            EntityMeteorBlockHoming.class, 
+            manager -> new RenderMeteorBlock(manager)
         );
     }
 }

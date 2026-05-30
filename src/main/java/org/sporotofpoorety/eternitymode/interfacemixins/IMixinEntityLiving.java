@@ -16,11 +16,13 @@ public interface IMixinEntityLiving
     public void queuedActionsEmptyLogic();
 
 
+    public int getRealTicksExisted();
     public boolean getAbsurdcraftStunned();
     public int getAbsurdcraftStunnedTimer();
     public ConcurrentLinkedQueue<QueuedActionAtPos> getQueuedActions();
 
 
+    public void setRealTicksExisted(int realTicks);
     public void setAbsurdcraftStunned(boolean isStunned);
     public void setAbsurdcraftStunnedTimer(int time);
     public void addQueuedAction(QueuedActionAtPos queuedAction);

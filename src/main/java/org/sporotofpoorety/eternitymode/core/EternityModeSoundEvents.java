@@ -14,9 +14,12 @@ import org.sporotofpoorety.eternitymode.Tags;
 
 public class EternityModeSoundEvents 
 {
-	
+	public static final SoundEvent ENTITY_BLASTER_CHARGING = createSoundEvent("entity.blastercharging");	
+	public static final SoundEvent ENTITY_BLASTER_SOUND = createSoundEvent("entity.blastersound");
 	public static final SoundEvent ENTITY_DIZZY = createSoundEvent("entity.dizzy");
 	public static final SoundEvent ENTITY_GAUSS_NUKE = createSoundEvent("entity.gaussnuke");
+	public static final SoundEvent ENTITY_SLAM_EXPLOSION = createSoundEvent("entity.slamexplosion");
+	public static final SoundEvent ENTITY_STAR_WINDUP = createSoundEvent("entity.starwindup");
 	public static final SoundEvent ENTITY_TACTICAL_NUKE = createSoundEvent("entity.tacticalnuke");
 	public static final SoundEvent ENTITY_BRAINSLIME_CHARGE = createSoundEvent("entity.brainslime.slimecharge");
 	public static final SoundEvent ENTITY_CREEPER_ANNOYED = createSoundEvent("entity.creeper.annoyed");
@@ -58,8 +61,12 @@ public class EternityModeSoundEvents
         {
 			event.getRegistry().registerAll
             (
+                    ENTITY_BLASTER_CHARGING, 
+                    ENTITY_BLASTER_SOUND, 
                     ENTITY_DIZZY,
                     ENTITY_GAUSS_NUKE,
+                    ENTITY_SLAM_EXPLOSION,
+                    ENTITY_STAR_WINDUP,
                     ENTITY_TACTICAL_NUKE,
 					ENTITY_BRAINSLIME_CHARGE,
                     ENTITY_CREEPER_ANNOYED,

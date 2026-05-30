@@ -51,6 +51,9 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
 //Named this way for compatibility
     @Unique private int absurdcraftStunnedTimer;
 
+    @Unique
+    private static final DataParameter<Integer> REAL_TICKS_EXISTED = EntityDataManager.<Integer>createKey(EntityLiving.class, DataSerializers.VARINT);
+
 //Common architecture for scheduled actions
     @Unique
     private final ConcurrentLinkedQueue<QueuedActionAtPos> queuedActionsAtPos = new ConcurrentLinkedQueue<>();
@@ -60,13 +63,14 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
 
     @Inject
     (
-//Inject in this method
         method = "onUpdate",
-//At tail (low priority after all)
-        at = @At("TAIL")
+        at = @At("HEAD")
     )
-    private void onUpdateStunTimer(CallbackInfo callInfo)
+    private void onUpdateStunAndRealTicks(CallbackInfo callInfo)
     {
+        this.setRealTicksExisted(this.getRealTicksExisted() + 1);
+
+
         if(this.absurdcraftStunnedTimer > 0)
         {
             Entity selfEntity = (Entity) (Object) this;
@@ -209,7 +213,8 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
     private void entityInitNewDataParameter(CallbackInfo callInfo)
     {
         Entity selfEntity = (Entity) (Object) this;
-//Register the new data parameter
+//Register the new data parameters
+        selfEntity.getDataManager().register(REAL_TICKS_EXISTED, Integer.valueOf(0));
         selfEntity.getDataManager().register(IS_ABSURDCRAFT_STUNNED, Boolean.valueOf(false));         
     }
 
@@ -223,6 +228,7 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
     private void writeNewNBT(NBTTagCompound compound, CallbackInfo callInfo)
     {
 //New NBT below
+        compound.setInteger("RealTicksExisted", this.getRealTicksExisted());
         compound.setBoolean("AbsurdcraftStunned", this.getAbsurdcraftStunned());
         compound.setInteger("AbsurdcraftStunnedTimer", this.getAbsurdcraftStunnedTimer());
 
@@ -239,6 +245,7 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
     private void readNewNBT(NBTTagCompound compound, CallbackInfo callInfo)
     {
 //New NBT below
+        if (compound.hasKey("RealTicksExisted")) { this.setRealTicksExisted(compound.getInteger("RealTicksExisted")); }
         if (compound.hasKey("AbsurdcraftStunned")) { this.setAbsurdcraftStunned(compound.getBoolean("AbsurdcraftStunned"));}
         if (compound.hasKey("AbsurdcraftStunnedTimer")) { this.setAbsurdcraftStunnedTimer(compound.getInteger("AbsurdcraftStunnedTimer")); }
 
@@ -311,6 +318,11 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
 
 //New getters
 
+    public int getRealTicksExisted()
+    {
+        Entity selfEntity = (Entity) (Object) this;
+        return ((Integer)selfEntity.getDataManager().get(REAL_TICKS_EXISTED)).intValue();
+    }
 
 //Named this way for compatibility
     public boolean getAbsurdcraftStunned()
@@ -333,6 +345,11 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
 
 //New setters
 
+    public void setRealTicksExisted(int realTicks)
+    {
+        Entity selfEntity = (Entity) (Object) this;
+        selfEntity.getDataManager().set(REAL_TICKS_EXISTED, Integer.valueOf(realTicks));    
+    }
 
     public void setAbsurdcraftStunned(boolean isStunned)
     {

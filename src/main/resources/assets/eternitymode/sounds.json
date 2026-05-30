@@ -1,4 +1,20 @@
 {
+    "entity.blastercharging":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/blastercharging"
+        ]
+    },
+    "entity.blastersound":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/blastersound"
+        ]
+    },
     "entity.dizzy":
     {
         "category": "hostile",
@@ -13,6 +29,22 @@
         "sounds":
         [
             "eternitymode:entity/gaussnuke"
+        ]
+    },
+    "entity.slamexplosion":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/slamexplosion"
+        ]
+    },
+    "entity.starwindup":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/starwindup"
         ]
     },
     "entity.tacticalnuke":

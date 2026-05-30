@@ -186,7 +186,7 @@ public final class ProjectileUtil {
             100, 
             currentDirection.x * shotSpeed, currentDirection.y * shotSpeed, currentDirection.z * shotSpeed,
             shotAcceleration, 0.0D,
-            0.3D, true, true, shotDamage,
+            0.6D, true, true, shotDamage,
             2, 2, 0.06D,
             20, shotExplodes, shotExplosionPower, shotFire, shotDestruction);
 
@@ -225,7 +225,7 @@ public final class ProjectileUtil {
             100,
             currentDirection.x * shotSpeed, currentDirection.y * shotSpeed, currentDirection.z * shotSpeed,
             shotAcceleration, 0.0D,
-            0.3D, true, true, shotDamage,
+            0.6D, true, true, shotDamage,
             1, 2, 0.06D,
             20, shotExplodes, shotExplosionPower, shotFire, shotDestruction);
 

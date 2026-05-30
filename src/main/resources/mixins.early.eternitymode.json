@@ -8,7 +8,7 @@
 	"mixins": [
         "MixinEntity",
         "MixinEntityLiving",
-        "MixinEntitySlime"
+        "MixinEntitySlime",
     ],
 	"server": [],
 	"client": []

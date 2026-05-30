@@ -28,11 +28,9 @@ public class EntityExplosiveShockwave extends EntityWithOwner
 
     public boolean oscillationEnabled;
     public double oscillationDistance;
+    public double oscillationSineWaveStep;
     public double oscillationX;
     public double oscillationZ;
-    public int oscillationOrientationDuration;
-    public int oscillationOrientationProgress;
-    public boolean oscillationOrientationCurrentlyPositive;
  
     public int explosionTimer;
     public double explosionRadius;
@@ -72,7 +70,7 @@ public class EntityExplosiveShockwave extends EntityWithOwner
     public EntityExplosiveShockwave(World worldIn, double x, double y, double z, 
     EntityLivingBase owner,
     int lifetimeMax, boolean hasGravity, float shockwaveStepHeight, double speedX, double speedY, double speedZ, double accelerationVal,
-    boolean oscillationEnabled, double oscillationDistance, int oscillationOrientationDuration,
+    boolean oscillationEnabled, double oscillationDistance, double oscillationSineWaveStepCount,
     int explosionTimer, double explosionRadius, float explosionDamage, 
     boolean explosionPush, double explosionPushForce, boolean explosionFire, int explosionParticleType, int specialExplosionThreshold) 
     {
@@ -94,19 +92,11 @@ public class EntityExplosiveShockwave extends EntityWithOwner
         this.oscillationEnabled = oscillationEnabled;
 //Distance from one end to the other
         this.oscillationDistance = oscillationDistance;
+//Sine wave step
+        this.oscillationSineWaveStep = (2.0D * Math.PI) / oscillationSineWaveStepCount;
 //Oscillate sideways
         this.oscillationX = Math.cos(Math.atan2(speedZ, speedX) + (0.5D * Math.PI));
         this.oscillationZ = Math.sin(Math.atan2(speedZ, speedX) + (0.5D * Math.PI));
-//Make sure oscillation duration is odd
-//This is the duration to go from one end to the other
-        this.oscillationOrientationDuration = oscillationOrientationDuration; 
-        if ((oscillationOrientationDuration % 2) == 0) { oscillationOrientationDuration++; }
-//Oscillation progress starts 
-//in the middle, but it can be overriden by NBT
-        this.oscillationOrientationProgress = (oscillationOrientationDuration / 2) + 1;
-//Oscillation starts either positive or negative randomly
-        int orientationStartsNegOrPos = this.rand.nextInt(2);
-        this.oscillationOrientationCurrentlyPositive = (orientationStartsNegOrPos > 0) ? true : false; 
 
         this.explosionTimer = explosionTimer;
         this.explosionRadius = explosionRadius;
@@ -202,33 +192,19 @@ public class EntityExplosiveShockwave extends EntityWithOwner
 //If oscillation enabled
             if(this.oscillationEnabled)
             {
-//Move positively or negatively
-                if(this.oscillationOrientationCurrentlyPositive)
-                {
-//Distance divided by duration, times oscillation cos and sin
-                    this.move(MoverType.SELF, (oscillationDistance / oscillationOrientationDuration) * oscillationX, 
-                        0.0D, (oscillationDistance / oscillationOrientationDuration) * oscillationZ);                
-                }
-                else
-                {
-                    this.move(MoverType.SELF, -1.0D * (oscillationDistance / oscillationOrientationDuration) * oscillationX, 
-                        0.0D, -1.0D * (oscillationDistance / oscillationOrientationDuration) * oscillationZ);       
-                }
-
-
-//Increment oscillation orientation progress
-                if(this.oscillationOrientationProgress < oscillationOrientationDuration)
-                {
-                    oscillationOrientationProgress++;
-                }
-//If at max invert orientation positivity
-                else
-                {
-                    oscillationOrientationCurrentlyPositive = !oscillationOrientationCurrentlyPositive;
-//And reset oscillation orientation progress
-                    oscillationOrientationProgress = 1;
-                }
+                this.performOscillation();
             }
+        }
+    }
+
+
+    public void performOscillation()
+    {
+        if (this.oscillationEnabled) 
+        {
+            double currentMovement = this.oscillationDistance * Math.sin(this.realTicksExisted * this.oscillationSineWaveStep);
+            
+            this.move(MoverType.SELF, currentMovement * this.oscillationX, 0.0, currentMovement * this.oscillationZ);
         }
     }
 
@@ -249,9 +225,7 @@ public class EntityExplosiveShockwave extends EntityWithOwner
 
         compound.setBoolean("OscillationEnabled", this.oscillationEnabled);
         compound.setDouble("OscillationDistance", this.oscillationDistance);
-        compound.setInteger("OscillationOrientationDuration", this.oscillationOrientationDuration);
-        compound.setInteger("OscillationOrientationProgress", this.oscillationOrientationProgress);
-        compound.setBoolean("OscillationOrientationCurrentlyPositive", this.oscillationOrientationCurrentlyPositive);
+        compound.setDouble("OscillationSineWaveStep", this.oscillationSineWaveStep);
 
         compound.setInteger("ExplosionTimer", this.explosionTimer);
         compound.setDouble("ExplosionRadius", this.explosionRadius);
@@ -292,12 +266,9 @@ public class EntityExplosiveShockwave extends EntityWithOwner
 
         if (compound.hasKey("OscillationEnabled")) { this.oscillationEnabled = compound.getBoolean("OscillationEnabled"); }
         if (compound.hasKey("OscillationDistance")) { this.oscillationDistance = compound.getDouble("OscillationDistance"); }
+        if (compound.hasKey("OscillationSineWaveStep")) { this.oscillationSineWaveStep = compound.getDouble("OscillationSineWaveStep"); }
         this.oscillationX = Math.cos(Math.atan2(this.speedZ, this.speedX) + (0.5D * Math.PI));
         this.oscillationZ = Math.sin(Math.atan2(this.speedZ, this.speedX) + (0.5D * Math.PI));
-        if (compound.hasKey("OscillationOrientationDuration")) { this.oscillationOrientationDuration = compound.getInteger("OscillationOrientationDuration"); }
-        if (compound.hasKey("OscillationOrientationProgress")) { this.oscillationOrientationProgress = compound.getInteger("OscillationOrientationProgress"); }
-        if (compound.hasKey("OscillationOrientationCurrentlyPositive")) 
-            { this.oscillationOrientationCurrentlyPositive = compound.getBoolean("OscillationOrientationCurrentlyPositive"); }
 
         if (compound.hasKey("ExplosionTimer")) { this.explosionTimer = compound.getInteger("ExplosionTimer"); }
         if (compound.hasKey("ExplosionRadius")) { this.explosionRadius = compound.getDouble("ExplosionRadius"); }
@@ -307,7 +278,7 @@ public class EntityExplosiveShockwave extends EntityWithOwner
         if (compound.hasKey("ExplosionFire")) { this.explosionFire = compound.getBoolean("ExplosionFire"); }
         if (compound.hasKey("ExplosionParticleType")) { this.explosionParticleType = compound.getInteger("ExplosionParticleType"); }
 
-        if (compound.hasKey("HarmlessSwitch")) { this.harmlessSwitch = compound.getBoolean("SubshockwavesEnabled"); }
+        if (compound.hasKey("HarmlessSwitch")) { this.harmlessSwitch = compound.getBoolean("HarmlessSwitch"); }
 
         if (compound.hasKey("SpecialExplosionCounter")) { this.specialExplosionCounter = compound.getInteger("SpecialExplosionCounter"); }
         if (compound.hasKey("SpecialExplosionThreshold")) { this.specialExplosionThreshold = compound.getInteger("SpecialExplosionThreshold"); }

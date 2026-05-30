@@ -41,7 +41,7 @@ public class EntityFlameShotLinear extends EntityProjectileLinear {
         hitCheckSize, projectileStopsAtEntity, projectileStopsAtBlock, projectileHitDamage,  
         particleLifetime, particleDensity, particleVelocity);
 
-        this.setSize(0.5F, 0.5F);
+        this.setSize(1.0F, 1.0F);
 
         this.fireDuration = fireDuration;
         this.shouldExplode = shouldExplode;

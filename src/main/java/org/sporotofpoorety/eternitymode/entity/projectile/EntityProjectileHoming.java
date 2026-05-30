@@ -162,12 +162,6 @@ public class EntityProjectileHoming extends EntityProjectileRaytrace {
     }
 
 
-    public boolean projectileHomingConditions()
-    {
-        return true;
-    }
-
-
     public void projectileHomingStart()
     {
         this.isPreHoming = false;

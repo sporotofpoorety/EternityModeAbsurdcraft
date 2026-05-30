@@ -41,6 +41,28 @@ public class EternityModeEntityRegistry
         );
     }
 
+//Register unspawnable entity
+//with specified render tracker range and frequency
+    private static <T extends Entity> void registerUnspawnable
+    (
+        RegistryEvent.Register<EntityEntry> event, Class<T> entityClass, String name, int id, int trackRange, int trackFrequency 
+    ) 
+    {
+//In the entity 
+//registry event, register...
+        event.getRegistry().register
+        (
+//An entity entry builder for this class
+            EntityEntryBuilder.<T>create()
+                .entity(entityClass)
+                .id(new ResourceLocation(Tags.MOD_ID, name), id)
+                .name(name)
+                .tracker(trackRange, trackFrequency, true)
+                .build()
+        );
+    }
+
+
 //Register spawnable entity
 //with default render tracker range and frequency
     private static <T extends Entity> void registerSpawnable
@@ -101,6 +123,8 @@ public class EternityModeEntityRegistry
         registerUnspawnable(event, EntityFlameShotHoming.class, "flame_shot_homing", id++);
         registerUnspawnable(event, EntityFlameShotLinear.class, "flame_shot_linear", id++);
         registerUnspawnable(event, EntityFlameShotLinearSplits.class, "flame_shot_linear_splits", id++);
+        registerUnspawnable(event, EntityMeteorBlock.class, "meteor_block", id++, 128, 1);
+        registerUnspawnable(event, EntityMeteorBlockHoming.class, "meteor_block_homing", id++, 128, 1);
         registerUnspawnable(event, EntityThrownBlock.class, "thrown_block", id++);
         registerUnspawnable(event, EntityParticleSpiral.class, "entity_spiral_particle", id++);
     }

@@ -129,6 +129,12 @@ public class EntityThrownBlock extends EntityWithOwner
         super.writeEntityToNBT(compound);
 
 
+//Save origin pos
+        compound.setInteger("OriginPosX", this.getOrigin().getX());
+        compound.setInteger("OriginPosY", this.getOrigin().getY());
+        compound.setInteger("OriginPosZ", this.getOrigin().getZ());
+
+
 //Get basis block (air as failsafe)
 //      Block basisBlock = this.basisState == null ? Blocks.AIR : this.basisState.getBlock();
         Block basisBlock = this.getBasisState() == null ? Blocks.AIR : this.getBasisState().getBlock();
@@ -164,6 +170,13 @@ public class EntityThrownBlock extends EntityWithOwner
     protected void readEntityFromNBT(NBTTagCompound compound)
     {
         super.readEntityFromNBT(compound);
+
+
+//Restore origin pos
+        if (compound.hasKey("OriginPosX")) 
+        { 
+            this.setOrigin(new BlockPos(compound.getInteger("OriginPosX"), compound.getInteger("OriginPosY"), compound.getInteger("OriginPosZ")));
+        }
 
 
 //Get block metadata
@@ -249,35 +262,17 @@ public class EntityThrownBlock extends EntityWithOwner
 
 
 
-
-//If should do damage
-        if (this.dealsDamage)
+        if(!this.world.isRemote)
         {
-//Get entities within AABB
-            List<Entity> list = Lists.newArrayList(this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox()));
-
-//For each one, damage
-            for (Entity entity : list)
+//If should do damage
+            if (this.dealsDamage)
             {
-                if(entity != this.owner)
-                {
-                	if(this.owner == null)
-                	{
-                		entity.attackEntityFrom(DamageSource.causeThrownDamage(this, this), this.thrownBlockDamage);
-                	}
-                	else
-                	{
-                		entity.attackEntityFrom(DamageSource.causeThrownDamage(this, this.owner), this.thrownBlockDamage);
-                	}
-                }
+                this.dealDamage();
             }
-        }
-
-
-
 
 //Basic movement
-        if(!this.dontMove) { this.performBasicMovement(); }
+            if(!this.dontMove) { this.performBasicMovement(); }
+        }
 
 
 
@@ -328,6 +323,29 @@ public class EntityThrownBlock extends EntityWithOwner
     }
 
 
+    public void dealDamage()
+    {
+//Get entities within AABB
+        List<Entity> list = Lists.newArrayList(this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox()));
+
+//For each one, damage
+        for (Entity entity : list)
+        {
+            if(entity != this.owner)
+            {
+            	if(this.owner == null)
+            	{
+            		entity.attackEntityFrom(DamageSource.causeThrownDamage(this, this), this.thrownBlockDamage);
+            	}
+            	else
+            	{
+            		entity.attackEntityFrom(DamageSource.causeThrownDamage(this, this.owner), this.thrownBlockDamage);
+            	}
+            }
+        }
+    }
+
+
 //On lifetime expire
     public void onLifetimeExpire()
     {
@@ -336,7 +354,10 @@ public class EntityThrownBlock extends EntityWithOwner
 
         if(basisBlock != null)
         {
-            if (this.shouldDropItem && this.world.getGameRules().getBoolean("doEntityDrops"))
+            if (this.shouldDropItem && this.world.getGameRules().getBoolean("doEntityDrops")
+//If this is not an unbreakable block
+            && this.getBasisState().getBlockHardness(this.world, this.getOrigin()) > 0.0F 
+            && basisBlock != Blocks.BEDROCK && basisBlock != Blocks.END_PORTAL_FRAME)
             {
                 this.entityDropItem(new ItemStack(basisBlock, 1, basisBlock.damageDropped(this.getBasisState())), 0.0F);
             }
@@ -406,9 +427,12 @@ public class EntityThrownBlock extends EntityWithOwner
 //Set dead
         this.setDead();
 
-
+        
 //Check if should place block
-        if (!this.dontPlaceBlock)
+        if (!this.dontPlaceBlock
+//Check hardness and block type
+        && this.getBasisState().getBlockHardness(this.world, this.getOrigin()) > 0.0F 
+        && basisBlock != Blocks.BEDROCK && basisBlock != Blocks.END_PORTAL_FRAME)
         {
 
 //If allowed to place at pos
@@ -454,7 +478,10 @@ public class EntityThrownBlock extends EntityWithOwner
 
 
 //If not allowed to place block, drop it instead
-            else if (this.shouldDropItem && this.world.getGameRules().getBoolean("doEntityDrops"))
+            else if (this.shouldDropItem && this.world.getGameRules().getBoolean("doEntityDrops")
+//As long as this is not an unbreakable block
+            && this.getBasisState().getBlockHardness(this.world, this.getOrigin()) > 0.0F 
+            && basisBlock != Blocks.BEDROCK && basisBlock != Blocks.END_PORTAL_FRAME)
             {
                 this.entityDropItem(new ItemStack(basisBlock, 1, basisBlock.damageDropped(this.getBasisState())), 0.0F);
             }
