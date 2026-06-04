@@ -26,18 +26,23 @@ import org.sporotofpoorety.eternitymode.util.ExplosionUtil;
 public class EntityMeteorBlockHoming extends EntityMeteorBlock
 {
 
-    boolean firstBeenShot;
+    public boolean firstBeenShot;
 
-    boolean isPreHoming;
-    int timePreHoming;
-    int timePreHomingMax;
+    public boolean isPreHoming;
+    public int timePreHoming;
+    public int timePreHomingMax;
     boolean isHoming;
-    int homingTime;
-    boolean homingTimeHasMax;
-    int homingTimeMax;
-    double homingSpeed;
-    int homingMode;
-    boolean isPostHoming;
+    public int homingTime;
+    public boolean homingTimeHasMax;
+    public int homingTimeMax;
+    public double homingSpeed;
+    public int homingMode;
+    public boolean isPostHoming;
+
+    public boolean homingSnapEnabled; 
+    public boolean homingSnapVertical; 
+    public double homingSnapThreshold;
+    public double homingSnapSteps;
 
 
 
@@ -55,7 +60,8 @@ public class EntityMeteorBlockHoming extends EntityMeteorBlock
     int splitProjectileCount, double splitConeRadians, int splitAimMode,
     float splitDamage, double splitSpeed, double splitAcceleration,
     boolean shouldSplit, boolean splitExplodes, float splitExplosionPower, boolean splitFire, boolean splitDestruction,
-    int timePreHomingMax, boolean homingTimeHasMax, int homingTimeMax, double homingSpeed, int homingMode)
+    int timePreHomingMax, boolean homingTimeHasMax, int homingTimeMax, double homingSpeed, int homingMode,
+    boolean homingSnapEnabled, boolean homingSnapVertical, double homingSnapThreshold, double homingSnapSteps)
     {
         super(worldIn, x, y, z, owner, dealsDamage, thrownBlockDamage,
         lifetimeMax, speedX, speedY, speedZ, 
@@ -77,6 +83,11 @@ public class EntityMeteorBlockHoming extends EntityMeteorBlock
         this.homingSpeed = homingSpeed;
         this.homingMode = homingMode;
         this.isPostHoming = false;
+
+        this.homingSnapEnabled = homingSnapEnabled;
+        this.homingSnapVertical = homingSnapVertical;
+        this.homingSnapThreshold = homingSnapThreshold;
+        this.homingSnapSteps = homingSnapSteps;
     }
 
 
@@ -100,6 +111,11 @@ public class EntityMeteorBlockHoming extends EntityMeteorBlock
         compound.setDouble("HomingSpeed", this.homingSpeed);
         compound.setInteger("HomingMode", this.homingMode);
         compound.setBoolean("IsPostHoming", this.isPostHoming);
+
+        compound.setBoolean("HomingSnapEnabled", this.homingSnapEnabled);
+        compound.setBoolean("HomingSnapVertical", this.homingSnapVertical);
+        compound.setDouble("HomingSnapThreshold", this.homingSnapThreshold);
+        compound.setDouble("HomingSnapSteps", this.homingSnapSteps);
     }
 
 
@@ -123,6 +139,11 @@ public class EntityMeteorBlockHoming extends EntityMeteorBlock
         if (compound.hasKey("HomingSpeed")) { this.homingSpeed = compound.getDouble("HomingSpeed"); }
         if (compound.hasKey("HomingMode")) { this.homingMode = compound.getInteger("HomingMode"); }
         if (compound.hasKey("IsPostHoming")) { this.isPostHoming = compound.getBoolean("IsPostHoming"); }
+
+        if (compound.hasKey("HomingSnapEnabled")) { this.homingSnapEnabled = compound.getBoolean("HomingSnapEnabled"); }
+        if (compound.hasKey("HomingSnapVertical")) { this.homingSnapVertical = compound.getBoolean("HomingSnapVertical"); }
+        if (compound.hasKey("HomingSnapThreshold")) { this.homingSnapThreshold = compound.getDouble("HomingSnapThreshold"); }
+        if (compound.hasKey("HomingSnapSteps")) { this.homingSnapSteps = compound.getDouble("HomingSnapSteps"); }
     }
 
 
@@ -245,9 +266,36 @@ public class EntityMeteorBlockHoming extends EntityMeteorBlock
                 double targetDistZ = ownerTarget.posZ - this.posZ;
 
 //Accelerate based on how far target is
-                this.motionX += targetDistX * (0.01D * this.homingSpeed);
-                this.motionY += targetDistY * (0.01D * this.homingSpeed);
-                this.motionZ += targetDistZ * (0.01D * this.homingSpeed);
+                double extraX = targetDistX * (0.01D * this.homingSpeed);
+                double extraY = targetDistY * (0.01D * this.homingSpeed);
+                double extraZ = targetDistZ * (0.01D * this.homingSpeed);
+
+//Can snap to target if strayed too far
+                if(this.homingSnapEnabled)
+                {
+                    if(this.homingSnapVertical)
+                    {
+                        if(Math.sqrt(targetDistX * targetDistX + targetDistY * targetDistY + targetDistZ * targetDistZ) >= this.homingSnapThreshold)
+                        {
+                            this.motionX = extraX * this.homingSnapSteps;
+                            this.motionY = extraY * this.homingSnapSteps;
+                            this.motionZ = extraZ * this.homingSnapSteps;
+                        }
+                    }
+                    else
+                    {
+                        if(Math.sqrt(targetDistX * targetDistX + targetDistZ * targetDistZ) >= this.homingSnapThreshold)
+                        {
+                            this.motionX = extraX * this.homingSnapSteps;
+                            this.motionY = extraY * this.homingSnapSteps;
+                            this.motionZ = extraZ * this.homingSnapSteps;
+                        }
+                    }
+                }
+
+                this.motionX += extraX;
+                this.motionY += extraY;
+                this.motionZ += extraZ;
             }
         }
 

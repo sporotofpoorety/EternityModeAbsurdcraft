@@ -33,9 +33,11 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.SoundCategory;
 
 
 import org.sporotofpoorety.eternitymode.client.particles.ParticleSpiral; 
+import org.sporotofpoorety.eternitymode.core.EternityModeSoundEvents;
 
 
 
@@ -48,9 +50,10 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
 //Named this way for compatibility
     @Unique
     private static final DataParameter<Boolean> IS_ABSURDCRAFT_STUNNED = EntityDataManager.<Boolean>createKey(EntityLiving.class, DataSerializers.BOOLEAN);
-//Named this way for compatibility
+    @Unique private boolean absurdcraftStunnedInitial;
     @Unique private int absurdcraftStunnedTimer;
 
+//Real ticks existed
     @Unique
     private static final DataParameter<Integer> REAL_TICKS_EXISTED = EntityDataManager.<Integer>createKey(EntityLiving.class, DataSerializers.VARINT);
 
@@ -69,26 +72,35 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
     private void onUpdateStunAndRealTicks(CallbackInfo callInfo)
     {
         this.setRealTicksExisted(this.getRealTicksExisted() + 1);
+    }
+
+
+    @Inject
+    (
+        method = "onUpdate",
+        at = @At("TAIL")
+    )
+    private void onUpdateStun(CallbackInfo callInfo)
+    {
+        if(this.absurdcraftStunnedInitial)
+        {
+            this.onAbsurdcraftStunned();
+            this.onAbsurdcraftStunnedExtra();
+            this.absurdcraftStunnedInitial = false;
+        }        
 
 
         if(this.absurdcraftStunnedTimer > 0)
-        {
-            Entity selfEntity = (Entity) (Object) this;
-
-            if((selfEntity.ticksExisted % 9) == 0)
-            {
-                for (int angleStepAt = 0; angleStepAt < 9; angleStepAt++) 
-                {
-                    Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleSpiral(selfEntity.world, 9,
-                    selfEntity.posX, selfEntity.posY + (double) (selfEntity.height * 1.15F), selfEntity.posZ, selfEntity.posX, selfEntity.posZ, 
-                    65, 40, angleStepAt, (double) (selfEntity.width * 1.15F), 0.0D));
-                }
-            }
-
-            
+        {   
             if(--absurdcraftStunnedTimer <= 0)
             {
                 this.setAbsurdcraftStunned(false);
+                this.onLoseAbsurdcraftStunned();
+            }
+            else
+            {
+                this.duringAbsurdcraftStunned();
+                this.duringAbsurdcraftStunnedExtra();
             }
         }
     }
@@ -230,6 +242,7 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
 //New NBT below
         compound.setInteger("RealTicksExisted", this.getRealTicksExisted());
         compound.setBoolean("AbsurdcraftStunned", this.getAbsurdcraftStunned());
+        compound.setBoolean("AbsurdcraftStunnedInitial", this.getAbsurdcraftStunnedInitial());
         compound.setInteger("AbsurdcraftStunnedTimer", this.getAbsurdcraftStunnedTimer());
 
         this.nbtWriteQueuedActions(compound);
@@ -247,6 +260,7 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
 //New NBT below
         if (compound.hasKey("RealTicksExisted")) { this.setRealTicksExisted(compound.getInteger("RealTicksExisted")); }
         if (compound.hasKey("AbsurdcraftStunned")) { this.setAbsurdcraftStunned(compound.getBoolean("AbsurdcraftStunned"));}
+        if (compound.hasKey("AbsurdcraftStunnedInitial")) { this.setAbsurdcraftStunnedInitial(compound.getBoolean("AbsurdcraftStunnedInitial"));}
         if (compound.hasKey("AbsurdcraftStunnedTimer")) { this.setAbsurdcraftStunnedTimer(compound.getInteger("AbsurdcraftStunnedTimer")); }
 
         this.nbtReadQueuedActions(compound);
@@ -331,6 +345,11 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
         return ((Boolean)selfEntity.getDataManager().get(IS_ABSURDCRAFT_STUNNED)).booleanValue();
     }
 
+    public boolean getAbsurdcraftStunnedInitial()
+    {
+        return this.absurdcraftStunnedInitial;
+    }
+
     public int getAbsurdcraftStunnedTimer()
     {
         return this.absurdcraftStunnedTimer;
@@ -351,15 +370,96 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
         selfEntity.getDataManager().set(REAL_TICKS_EXISTED, Integer.valueOf(realTicks));    
     }
 
+    public void duringAbsurdcraftStunned()
+    {
+        Entity selfEntity = (Entity) (Object) this;
+
+        if((selfEntity.ticksExisted % 9) == 0)
+        {
+            for (int angleStepAt = 0; angleStepAt < 9; angleStepAt++) 
+            {
+                Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleSpiral(selfEntity.world, 9,
+                selfEntity.posX, selfEntity.posY + (double) (selfEntity.height * 1.15F), selfEntity.posZ, selfEntity.posX, selfEntity.posZ, 
+                65, 40, angleStepAt, (double) (selfEntity.width * 1.15F), 0.0D));
+            }
+        }
+    }
+
+    public void duringAbsurdcraftStunnedExtra()
+    {
+
+    }
+
+    public void onLoseAbsurdcraftStunned()
+    {
+
+    }
+
+    public void onAbsurdcraftStunned()
+    {
+        EntityLiving self = (EntityLiving) (Object) this;
+        Entity selfEntity = (Entity) (Object) this;
+        EntityLivingBase selfEntityLivingBase = (EntityLivingBase) (Object) this;
+//Stop moving
+        self.getNavigator().clearPath();
+//Play sound
+        EntityLivingBase attackTarget = self.getAttackTarget();
+        if(selfEntity.isNonBoss())
+        {
+            if(attackTarget != null)
+            {
+                selfEntity.world.playSound(null, attackTarget.posX, attackTarget.posY, attackTarget.posZ,
+                EternityModeSoundEvents.ENTITY_DIZZY, SoundCategory.HOSTILE, 5.0F, 1.0F);            
+            }
+            else
+            {
+                selfEntity.playSound(EternityModeSoundEvents.ENTITY_DIZZY, 5.0F, 1.0F);
+            }
+        }
+        else
+        {
+            if(attackTarget != null)
+            {
+                selfEntity.world.playSound(null, attackTarget.posX, attackTarget.posY, attackTarget.posZ,
+                EternityModeSoundEvents.ENTITY_DIZZY, SoundCategory.HOSTILE, 8.0F, 1.0F);            
+            }
+            else
+            {
+                selfEntity.playSound(EternityModeSoundEvents.ENTITY_DIZZY, 8.0F, 1.0F);
+            }
+        }
+//Clear target
+        self.setAttackTarget(null);
+        selfEntityLivingBase.setRevengeTarget(null);
+    }
+
+    public void onAbsurdcraftStunnedExtra()
+    {
+    
+    }
+
     public void setAbsurdcraftStunned(boolean isStunned)
     {
         Entity selfEntity = (Entity) (Object) this;
         selfEntity.getDataManager().set(IS_ABSURDCRAFT_STUNNED, Boolean.valueOf(isStunned)); 
     }
 
+    public void setAbsurdcraftStunnedInitial(boolean isStunnedInitial)
+    {
+        this.absurdcraftStunnedInitial = isStunnedInitial;
+    }
+
     public void setAbsurdcraftStunnedTimer(int time)
     {
         this.absurdcraftStunnedTimer = time;
+    }
+
+    public void setAbsurdcraftStunned(boolean isStunned, int time)
+    {
+        Entity selfEntity = (Entity) (Object) this;
+        selfEntity.getDataManager().set(IS_ABSURDCRAFT_STUNNED, Boolean.valueOf(isStunned));
+        this.absurdcraftStunnedTimer = time;
+        if(isStunned) { this.absurdcraftStunnedInitial = true; } 
     }
 
 //Add queued action

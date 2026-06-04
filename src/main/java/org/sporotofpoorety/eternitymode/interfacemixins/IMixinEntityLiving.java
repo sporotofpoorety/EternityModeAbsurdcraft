@@ -18,12 +18,20 @@ public interface IMixinEntityLiving
 
     public int getRealTicksExisted();
     public boolean getAbsurdcraftStunned();
+    public boolean getAbsurdcraftStunnedInitial();
     public int getAbsurdcraftStunnedTimer();
     public ConcurrentLinkedQueue<QueuedActionAtPos> getQueuedActions();
 
 
     public void setRealTicksExisted(int realTicks);
+    public void duringAbsurdcraftStunned();
+    public void duringAbsurdcraftStunnedExtra();
+    public void onLoseAbsurdcraftStunned();
+    public void onAbsurdcraftStunned();
+    public void onAbsurdcraftStunnedExtra();
     public void setAbsurdcraftStunned(boolean isStunned);
+    public void setAbsurdcraftStunnedInitial(boolean isStunnedInitial);
     public void setAbsurdcraftStunnedTimer(int time);
+    public void setAbsurdcraftStunned(boolean isStunned, int time);
     public void addQueuedAction(QueuedActionAtPos queuedAction);
 }

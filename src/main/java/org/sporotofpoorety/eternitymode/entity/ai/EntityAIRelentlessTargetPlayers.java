@@ -116,6 +116,8 @@ public class EntityAIRelentlessTargetPlayers extends EntityAIBase
         && (horizontalRangeSq < (targetPlayer.posX - attacker.posX) * (targetPlayer.posX - attacker.posX)
             + (targetPlayer.posZ - attacker.posZ) * (targetPlayer.posZ - attacker.posZ)))
         { return false; }
+//Check if target got externaly set to null
+        if(this.attacker.getAttackTarget() == null) { return false; }
         
 
         return true;

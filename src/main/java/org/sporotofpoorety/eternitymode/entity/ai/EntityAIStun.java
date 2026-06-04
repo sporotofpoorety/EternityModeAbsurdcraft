@@ -27,7 +27,7 @@ public class EntityAIStun extends EntityAIBase
      */
     public boolean shouldExecute()
     {
-        return (stunnedEntityMixin.getAbsurdcraftStunned());
+        return (this.stunnedEntityMixin.getAbsurdcraftStunned());
     }
 
 	/**
@@ -35,7 +35,7 @@ public class EntityAIStun extends EntityAIBase
 	*/
 	public boolean continueExecuting()
     {
-        return (stunnedEntityMixin.getAbsurdcraftStunned());
+        return (this.stunnedEntityMixin.getAbsurdcraftStunned());
     }
 
     /**
@@ -43,11 +43,8 @@ public class EntityAIStun extends EntityAIBase
      */
     public void startExecuting()
     {
-//Stop moving
-        this.stunnedEntity.getNavigator().clearPath();
-//Clear target
-        this.stunnedEntity.setAttackTarget(null);
-        this.stunnedEntity.setRevengeTarget(null);
+        this.stunnedEntityMixin.onAbsurdcraftStunned();
+        this.stunnedEntityMixin.onAbsurdcraftStunnedExtra();
     }
 
     /**
