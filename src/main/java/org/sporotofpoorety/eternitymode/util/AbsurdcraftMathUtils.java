@@ -65,6 +65,7 @@ public final class AbsurdcraftMathUtils {
 
 //Normalize original forward direction just in case
         Vec3d forwardNormalized = forwardOriginal.normalize();
+        radialPopulation.add(forwardNormalized);
 
 
 //Orthonormal basis of the original forward direction
@@ -85,7 +86,8 @@ public final class AbsurdcraftMathUtils {
 
 
 //Now get to placing the points
-        for (int projectileAt = 0; projectileAt < pointCount; projectileAt++) {
+        for (int projectileAt = 0; projectileAt < pointCount; projectileAt++) 
+        {
 
 //Evenly distribute samples in the middle of each stop
             double middleFactor = (projectileAt + 0.5) / pointCount;

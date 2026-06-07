@@ -23,6 +23,14 @@
             "eternitymode:entity/dizzy"
         ]
     },
+    "entity.dizzyboss":
+    {
+        "category": "hostile",
+        "sounds":
+        [
+            "eternitymode:entity/dizzyboss"
+        ]
+    },
     "entity.gaussnuke":
     {
         "category": "hostile",

@@ -52,6 +52,10 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
     private static final DataParameter<Boolean> IS_ABSURDCRAFT_STUNNED = EntityDataManager.<Boolean>createKey(EntityLiving.class, DataSerializers.BOOLEAN);
     @Unique private boolean absurdcraftStunnedInitial;
     @Unique private int absurdcraftStunnedTimer;
+    @Unique private int absurdcraftStunnedDuration;
+    @Unique private float absurdcraftStunnedDamage;
+    @Unique private int absurdcraftStunnedCooldown;
+    @Unique private boolean absurdcraftStunnedIsPostStop;
 
 //Real ticks existed
     @Unique
@@ -96,12 +100,17 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
             {
                 this.setAbsurdcraftStunned(false);
                 this.onLoseAbsurdcraftStunned();
+                this.onLoseAbsurdcraftStunnedExtra();
             }
             else
             {
                 this.duringAbsurdcraftStunned();
                 this.duringAbsurdcraftStunnedExtra();
             }
+        }
+        else if(this.absurdcraftStunnedCooldown > 0)
+        {
+            --this.absurdcraftStunnedCooldown;
         }
     }
 
@@ -244,6 +253,10 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
         compound.setBoolean("AbsurdcraftStunned", this.getAbsurdcraftStunned());
         compound.setBoolean("AbsurdcraftStunnedInitial", this.getAbsurdcraftStunnedInitial());
         compound.setInteger("AbsurdcraftStunnedTimer", this.getAbsurdcraftStunnedTimer());
+        compound.setInteger("AbsurdcraftStunnedDuration", this.getAbsurdcraftStunnedDuration());
+        compound.setFloat("AbsurdcraftStunnedDamage", this.getAbsurdcraftStunnedDamage());
+        compound.setInteger("AbsurdcraftStunnedCooldown", this.getAbsurdcraftStunnedCooldown());
+        compound.setBoolean("AbsurdcraftStunnedIsPostStop", this.getAbsurdcraftStunnedIsPostStop());
 
         this.nbtWriteQueuedActions(compound);
     }
@@ -262,6 +275,10 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
         if (compound.hasKey("AbsurdcraftStunned")) { this.setAbsurdcraftStunned(compound.getBoolean("AbsurdcraftStunned"));}
         if (compound.hasKey("AbsurdcraftStunnedInitial")) { this.setAbsurdcraftStunnedInitial(compound.getBoolean("AbsurdcraftStunnedInitial"));}
         if (compound.hasKey("AbsurdcraftStunnedTimer")) { this.setAbsurdcraftStunnedTimer(compound.getInteger("AbsurdcraftStunnedTimer")); }
+        if (compound.hasKey("AbsurdcraftStunnedDuration")) { this.setAbsurdcraftStunnedDuration(compound.getInteger("AbsurdcraftStunnedDuration")); }
+        if (compound.hasKey("AbsurdcraftStunnedDamage")) { this.setAbsurdcraftStunnedDamage(compound.getFloat("AbsurdcraftStunnedDamage")); }
+        if (compound.hasKey("AbsurdcraftStunnedCooldown")) { this.setAbsurdcraftStunnedCooldown(compound.getInteger("AbsurdcraftStunnedCooldown")); }
+        if (compound.hasKey("AbsurdcraftStunnedIsPostStop")) { this.setAbsurdcraftStunnedIsPostStop(compound.getBoolean("AbsurdcraftStunnedIsPostStop")); }
 
         this.nbtReadQueuedActions(compound);
     }
@@ -355,6 +372,26 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
         return this.absurdcraftStunnedTimer;
     }
 
+    public int getAbsurdcraftStunnedDuration()
+    {
+        return this.absurdcraftStunnedDuration;
+    }
+
+    public float getAbsurdcraftStunnedDamage()
+    {
+        return this.absurdcraftStunnedDamage;
+    }
+
+    public int getAbsurdcraftStunnedCooldown()
+    {
+        return this.absurdcraftStunnedCooldown;
+    }
+
+    public boolean getAbsurdcraftStunnedIsPostStop()
+    {
+        return this.absurdcraftStunnedIsPostStop;
+    }
+
 //Get queued actions
     public ConcurrentLinkedQueue<QueuedActionAtPos> getQueuedActions()
     {
@@ -392,6 +429,11 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
 
     public void onLoseAbsurdcraftStunned()
     {
+        this.absurdcraftStunnedIsPostStop = true;
+    }
+
+    public void onLoseAbsurdcraftStunnedExtra()
+    {
 
     }
 
@@ -400,10 +442,29 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
         EntityLiving self = (EntityLiving) (Object) this;
         Entity selfEntity = (Entity) (Object) this;
         EntityLivingBase selfEntityLivingBase = (EntityLivingBase) (Object) this;
+
+//Play sound
+        this.onAbsurdcraftStunnedSound();
+
 //Stop moving
         self.getNavigator().clearPath();
-//Play sound
+//Clear target
+        self.setAttackTarget(null);
+        selfEntityLivingBase.setRevengeTarget(null);
+ 
+//Take self-damage
+        selfEntityLivingBase.setHealth(selfEntityLivingBase.getHealth() - this.getAbsurdcraftStunnedDamage());
+    }
+
+    public void onAbsurdcraftStunnedSound()
+    {
+        EntityLiving self = (EntityLiving) (Object) this;
+        Entity selfEntity = (Entity) (Object) this;
+        EntityLivingBase selfEntityLivingBase = (EntityLivingBase) (Object) this;
+
+//Get target
         EntityLivingBase attackTarget = self.getAttackTarget();
+//Play sound
         if(selfEntity.isNonBoss())
         {
             if(attackTarget != null)
@@ -421,16 +482,13 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
             if(attackTarget != null)
             {
                 selfEntity.world.playSound(null, attackTarget.posX, attackTarget.posY, attackTarget.posZ,
-                EternityModeSoundEvents.ENTITY_DIZZY, SoundCategory.HOSTILE, 8.0F, 1.0F);            
+                EternityModeSoundEvents.ENTITY_DIZZY_BOSS, SoundCategory.HOSTILE, 10.0F, 1.0F);            
             }
             else
             {
-                selfEntity.playSound(EternityModeSoundEvents.ENTITY_DIZZY, 8.0F, 1.0F);
+                selfEntity.playSound(EternityModeSoundEvents.ENTITY_DIZZY_BOSS, 10.0F, 1.0F);
             }
         }
-//Clear target
-        self.setAttackTarget(null);
-        selfEntityLivingBase.setRevengeTarget(null);
     }
 
     public void onAbsurdcraftStunnedExtra()
@@ -454,12 +512,35 @@ public abstract class MixinEntityLiving implements IMixinEntityLiving
         this.absurdcraftStunnedTimer = time;
     }
 
+    public void setAbsurdcraftStunnedDuration(int duration)
+    {
+        this.absurdcraftStunnedDuration = duration;
+    }
+
+    public void setAbsurdcraftStunnedDamage(float damage)
+    {
+        this.absurdcraftStunnedDamage = damage;
+    }
+
+    public void setAbsurdcraftStunnedCooldown(int cooldown)
+    {
+        this.absurdcraftStunnedCooldown = cooldown;
+    }
+
+    public void setAbsurdcraftStunnedIsPostStop(boolean isPostStop)
+    {
+        this.absurdcraftStunnedIsPostStop = isPostStop;
+    }
+
     public void setAbsurdcraftStunned(boolean isStunned, int time)
     {
-        Entity selfEntity = (Entity) (Object) this;
-        selfEntity.getDataManager().set(IS_ABSURDCRAFT_STUNNED, Boolean.valueOf(isStunned));
-        this.absurdcraftStunnedTimer = time;
-        if(isStunned) { this.absurdcraftStunnedInitial = true; } 
+        if(this.absurdcraftStunnedCooldown <= 0)
+        {
+            Entity selfEntity = (Entity) (Object) this;
+            selfEntity.getDataManager().set(IS_ABSURDCRAFT_STUNNED, Boolean.valueOf(isStunned));
+            this.absurdcraftStunnedTimer = time;
+            if(isStunned) { this.absurdcraftStunnedInitial = true; } 
+        }
     }
 
 //Add queued action

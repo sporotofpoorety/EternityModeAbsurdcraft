@@ -76,8 +76,7 @@ public final class ProjectileUtil {
 
 
 //Shotgun with entity-based position to aim from
-    public static ArrayList<Vec3d> flexibleFibonnaciShotgunEntity
-    (Entity aimerEntity, Entity targetEntity,
+    public static ArrayList<Vec3d> flexibleFibonnaciShotgunEntity(Entity aimerEntity, Entity targetEntity,
     int projectileCount, double coneRadians, int aimMode, double shotSpeed)
     {
 //Directions to shoot at
@@ -119,8 +118,7 @@ public final class ProjectileUtil {
 
 
 //Shotgun with manual position to aim from
-    public static ArrayList<Vec3d> flexibleFibonnaciShotgunCoord
-    (double aimX, double aimY, double aimZ, 
+    public static ArrayList<Vec3d> flexibleFibonnaciShotgunCoord(double aimX, double aimY, double aimZ, 
     Entity aimerEntity, Entity targetEntity,
     int projectileCount, double coneRadians, int aimMode, double shotSpeed)
     {
@@ -167,7 +165,7 @@ public final class ProjectileUtil {
 //Shoot aimer-based shotgun
     public static void shootAimedFireballSpreadEntity(EntityLivingBase ownerEntity, Entity aimerEntity, Entity targetEntity,
     int projectileCount, double coneRadians, int aimMode, 
-    float shotDamage, double shotSpeed, double shotAcceleration, 
+    int shotLifetime, float shotDamage, double shotSpeed, double shotAcceleration, 
     boolean shotExplodes, float shotExplosionPower, boolean shotFire, boolean shotDestruction)
     {
 //Get shotgun vectors
@@ -183,7 +181,7 @@ public final class ProjectileUtil {
 //Make new entity
             EntityFlameShotLinear entitySplit = new EntityFlameShotLinear(aimerEntity.world, aimerEntity.posX, aimerEntity.posY, aimerEntity.posZ,
             ownerEntity,
-            100, 
+            shotLifetime, 
             currentDirection.x * shotSpeed, currentDirection.y * shotSpeed, currentDirection.z * shotSpeed,
             shotAcceleration, 0.0D,
             0.6D, true, true, shotDamage,
@@ -206,7 +204,7 @@ public final class ProjectileUtil {
     public static void shootAimedFireballSpreadCoord(double x, double y, double z, 
     EntityLivingBase ownerEntity, Entity aimerEntity, Entity targetEntity,
     int projectileCount, double coneRadians, int aimMode, 
-    float shotDamage, double shotSpeed, double shotAcceleration, 
+    int shotLifetime, float shotDamage, double shotSpeed, double shotAcceleration, 
     boolean shotExplodes, float shotExplosionPower, boolean shotFire, boolean shotDestruction)
     {
 //Get shotgun vectors
@@ -222,7 +220,7 @@ public final class ProjectileUtil {
 //Make new entity
             EntityFlameShotLinear entitySplit = new EntityFlameShotLinear(aimerEntity.world, x, y, z,
             ownerEntity,
-            100,
+            shotLifetime,
             currentDirection.x * shotSpeed, currentDirection.y * shotSpeed, currentDirection.z * shotSpeed,
             shotAcceleration, 0.0D,
             0.6D, true, true, shotDamage,

@@ -17,6 +17,7 @@ public class EternityModeSoundEvents
 	public static final SoundEvent ENTITY_BLASTER_CHARGING = createSoundEvent("entity.blastercharging");	
 	public static final SoundEvent ENTITY_BLASTER_SOUND = createSoundEvent("entity.blastersound");
 	public static final SoundEvent ENTITY_DIZZY = createSoundEvent("entity.dizzy");
+	public static final SoundEvent ENTITY_DIZZY_BOSS = createSoundEvent("entity.dizzyboss");
 	public static final SoundEvent ENTITY_GAUSS_NUKE = createSoundEvent("entity.gaussnuke");
 	public static final SoundEvent ENTITY_SLAM_EXPLOSION = createSoundEvent("entity.slamexplosion");
 	public static final SoundEvent ENTITY_STAR_WINDUP = createSoundEvent("entity.starwindup");
@@ -64,6 +65,7 @@ public class EternityModeSoundEvents
                     ENTITY_BLASTER_CHARGING, 
                     ENTITY_BLASTER_SOUND, 
                     ENTITY_DIZZY,
+                    ENTITY_DIZZY_BOSS,
                     ENTITY_GAUSS_NUKE,
                     ENTITY_SLAM_EXPLOSION,
                     ENTITY_STAR_WINDUP,

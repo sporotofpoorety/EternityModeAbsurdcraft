@@ -43,7 +43,7 @@ public class EntityFlameShotLinearSplits extends EntityFlameShotLinear {
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage, 
     int particleLifetime, int particleDensity, double particleVelocity,
     int splitProjectileCount, double splitConeRadians, int splitAimMode,
-    float splitDamage, double splitSpeed, double splitAcceleration,
+    int splitLifetime, float splitDamage, double splitSpeed, double splitAcceleration,
     int fireDuration, boolean shouldExplode, float explosionPower, boolean explosionFire, boolean explosionDestruction,
     boolean splitExplodes, float splitExplosionPower, boolean splitFire, boolean splitDestruction)
     {
@@ -60,6 +60,7 @@ public class EntityFlameShotLinearSplits extends EntityFlameShotLinear {
         this.splitProjectileCount = splitProjectileCount; 
         this.splitConeRadians = splitConeRadians; 
         this.splitAimMode = splitAimMode;
+        this.splitLifetime = splitLifetime;
         this.splitDamage = splitDamage; 
         this.splitSpeed = splitSpeed; 
         this.splitAcceleration = splitAcceleration;
@@ -82,29 +83,14 @@ public class EntityFlameShotLinearSplits extends EntityFlameShotLinear {
                 ProjectileUtil.shootAimedFireballSpreadCoord(this.posX, this.posY, this.posZ, 
                 null, this, null,
                 this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
-                this.splitDamage, this.splitSpeed, this.splitAcceleration,
+                this.splitLifetime, this.splitDamage, this.splitSpeed, this.splitAcceleration,
                 this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);  
             }
             else 
             {
-                EntityLivingBase attackTarget = ((EntityLiving)this.owner).getAttackTarget();
-                if(attackTarget != null) 
-                { 
-                    Vec3d targetVec = new Vec3d(attackTarget.posX - this.posX, attackTarget.posY - this.posY, attackTarget.posZ - this.posZ).normalize();  
-
-                    EntityFlameShotLinear directShot = new EntityFlameShotLinear(this.world, this.posX, this.posY, this.posZ, 
-                        this.owner,
-                        100, targetVec.x * this.splitSpeed, targetVec.y * this.splitSpeed, targetVec.z * this.splitSpeed, 
-                        this.splitAcceleration, 0.0D, 
-                        0.3D, true, true, this.splitDamage, 
-                        2, 2, 0.06D,
-                        20, this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);
-                    this.world.spawnEntity(directShot);
-                }
-
                 ProjectileUtil.shootAimedFireballSpreadEntity(this.owner, this, ((EntityLiving) this.owner).getAttackTarget(), 
                 this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
-                this.splitDamage, this.splitSpeed, this.splitAcceleration,
+                this.splitLifetime, this.splitDamage, this.splitSpeed, this.splitAcceleration,
                 this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);    
             }
         }

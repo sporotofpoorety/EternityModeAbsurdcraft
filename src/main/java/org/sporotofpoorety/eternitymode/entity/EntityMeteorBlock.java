@@ -36,6 +36,7 @@ public class EntityMeteorBlock extends EntityThrownBlock
     int splitProjectileCount; 
     double splitConeRadians; 
     int splitAimMode;
+    int splitLifetime;
     float splitDamage; 
     double splitSpeed; 
     double splitAcceleration;
@@ -58,7 +59,7 @@ public class EntityMeteorBlock extends EntityThrownBlock
     double accelerationVal, double gravitySpeed,
     float explosionPower, boolean explosionFire, boolean explosionDestruction,
     int splitProjectileCount, double splitConeRadians, int splitAimMode,
-    float splitDamage, double splitSpeed, double splitAcceleration,
+    int splitLifetime, float splitDamage, double splitSpeed, double splitAcceleration,
     boolean shouldSplit, boolean splitExplodes, float splitExplosionPower, boolean splitFire, boolean splitDestruction)
     {
         super(worldIn, x, y, z, owner, WizardryBlocks.meteor.getDefaultState(), true, false, dealsDamage, thrownBlockDamage);
@@ -79,6 +80,7 @@ public class EntityMeteorBlock extends EntityThrownBlock
         this.splitProjectileCount = splitProjectileCount; 
         this.splitConeRadians = splitConeRadians; 
         this.splitAimMode = splitAimMode;
+        this.splitLifetime = splitLifetime;
         this.splitDamage = splitDamage; 
         this.splitSpeed = splitSpeed; 
         this.splitAcceleration = splitAcceleration;
@@ -106,6 +108,7 @@ public class EntityMeteorBlock extends EntityThrownBlock
         compound.setInteger("SplitProjectileCount", this.splitProjectileCount);
         compound.setDouble("SplitConeRadians", this.splitConeRadians);
         compound.setInteger("SplitAimMode", this.splitAimMode);
+        compound.setInteger("SplitLifetime", this.splitLifetime);
         compound.setFloat("SplitDamage", this.splitDamage);
         compound.setDouble("SplitSpeed", this.splitSpeed);
         compound.setDouble("SplitAcceleration", this.splitAcceleration);
@@ -133,6 +136,7 @@ public class EntityMeteorBlock extends EntityThrownBlock
         if (compound.hasKey("SplitProjectileCount")) { this.splitProjectileCount = compound.getInteger("SplitProjectileCount"); }
         if (compound.hasKey("SplitConeRadians")) { this.splitConeRadians = compound.getDouble("SplitConeRadians"); } 
         if (compound.hasKey("SplitAimMode")) { this.splitAimMode = compound.getInteger("SplitAimMode"); }
+        if (compound.hasKey("SplitLifetime")) { this.splitLifetime = compound.getInteger("SplitLifetime"); }
         if (compound.hasKey("SplitDamage")) { this.splitDamage = compound.getFloat("SplitDamage"); }
         if (compound.hasKey("SplitSpeed")) { this.splitSpeed = compound.getDouble("SplitSpeed"); } 
         if (compound.hasKey("SplitAcceleration")) { this.splitAcceleration = compound.getDouble("SplitAcceleration"); } 
@@ -169,7 +173,7 @@ public class EntityMeteorBlock extends EntityThrownBlock
         if(this.world.isRemote && this.ticksExisted % 2 == 0) 
         { 
             double atX = this.posX + (this.motionX * -0.2D);
-            double atY = this.posY + (this.height / 2.0D) + (this.motionY * -0.2D);
+            double atY = this.posY + 4.0D + (this.motionY * -0.2D);
             double atZ = this.posZ + (this.motionZ * -0.2D);
             ExplosiveHandler.spawnParticles(this.world, atX, atY, atZ, 1.6F, false, false); 
         }
@@ -195,7 +199,7 @@ public class EntityMeteorBlock extends EntityThrownBlock
             ProjectileUtil.shootAimedFireballSpreadCoord(this.prevPosX, this.prevPosY, this.prevPosZ, 
             null, this, null,
             this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
-            this.splitDamage, this.splitSpeed, this.splitAcceleration,
+            this.splitLifetime, this.splitDamage, this.splitSpeed, this.splitAcceleration,
             this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);  
         }
         else 
@@ -204,7 +208,7 @@ public class EntityMeteorBlock extends EntityThrownBlock
             ProjectileUtil.shootAimedFireballSpreadCoord(this.prevPosX, this.prevPosY, this.prevPosZ, 
             this.owner, this, ((EntityLiving) this.owner).getAttackTarget(),
             this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
-            this.splitDamage, this.splitSpeed, this.splitAcceleration,
+            this.splitLifetime, this.splitDamage, this.splitSpeed, this.splitAcceleration,
             this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);      
         }
     }

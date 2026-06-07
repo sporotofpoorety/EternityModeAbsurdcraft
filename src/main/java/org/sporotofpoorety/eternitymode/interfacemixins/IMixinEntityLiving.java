@@ -20,6 +20,10 @@ public interface IMixinEntityLiving
     public boolean getAbsurdcraftStunned();
     public boolean getAbsurdcraftStunnedInitial();
     public int getAbsurdcraftStunnedTimer();
+    public int getAbsurdcraftStunnedDuration();
+    public float getAbsurdcraftStunnedDamage();
+    public int getAbsurdcraftStunnedCooldown();
+    public boolean getAbsurdcraftStunnedIsPostStop();
     public ConcurrentLinkedQueue<QueuedActionAtPos> getQueuedActions();
 
 
@@ -27,11 +31,17 @@ public interface IMixinEntityLiving
     public void duringAbsurdcraftStunned();
     public void duringAbsurdcraftStunnedExtra();
     public void onLoseAbsurdcraftStunned();
+    public void onLoseAbsurdcraftStunnedExtra();
     public void onAbsurdcraftStunned();
+    public void onAbsurdcraftStunnedSound();
     public void onAbsurdcraftStunnedExtra();
     public void setAbsurdcraftStunned(boolean isStunned);
     public void setAbsurdcraftStunnedInitial(boolean isStunnedInitial);
     public void setAbsurdcraftStunnedTimer(int time);
+    public void setAbsurdcraftStunnedDuration(int duration);
+    public void setAbsurdcraftStunnedDamage(float damage);
+    public void setAbsurdcraftStunnedCooldown(int cooldown);
+    public void setAbsurdcraftStunnedIsPostStop(boolean isPostStop);
     public void setAbsurdcraftStunned(boolean isStunned, int time);
     public void addQueuedAction(QueuedActionAtPos queuedAction);
 }

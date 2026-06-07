@@ -54,7 +54,7 @@ public final class FireworkUtil
         explosionNBT.setBoolean("Flicker", hasFlicker);
         explosionNBT.setBoolean("Trail", hasTrail);
 
-//0 Small ball, 2 Large ball, 3 Star-shaped, 3 Creeper, 4 Burst
+//0 Small ball (default), 1 Large ball, 2 Star-shaped, 3 Creeper-head, 4 Burst
         explosionNBT.setByte("Type", (byte) explosionType);
 
 
@@ -98,7 +98,7 @@ public final class FireworkUtil
         explosionNBT.setBoolean("Flicker", hasFlicker);
         explosionNBT.setBoolean("Trail", hasTrail);
 
-//0 Small ball, 2 Large ball, 3 Star-shaped, 4 Creeper, 5 Burst
+//0 Small ball (default), 1 Large ball, 2 Star-shaped, 3 Creeper-head, 4 Burst
         explosionNBT.setByte("Type", (byte) explosionType);
 
 //Specified color

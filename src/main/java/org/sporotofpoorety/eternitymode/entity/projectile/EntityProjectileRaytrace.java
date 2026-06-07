@@ -54,6 +54,7 @@ public class EntityProjectileRaytrace extends EntityWithOwner
     int splitProjectileCount = 50; 
     double splitConeRadians = Math.PI;
     int splitAimMode = 0;
+    int splitLifetime = 100; 
     float splitDamage = 1.0F; 
     double splitSpeed = 1.0D;
     double splitAcceleration = 1.01D;
@@ -473,6 +474,7 @@ public class EntityProjectileRaytrace extends EntityWithOwner
         compound.setInteger("SplitProjectileCount", this.splitProjectileCount);
         compound.setDouble("SplitConeRadians", this.splitConeRadians);
         compound.setInteger("SplitAimMode", this.splitAimMode);
+        compound.setInteger("SplitLifetime", this.splitLifetime);
         compound.setFloat("SplitDamage", this.splitDamage);
         compound.setDouble("SplitSpeed", this.splitSpeed);
         compound.setDouble("SplitAcceleration", this.splitAcceleration);
@@ -513,6 +515,7 @@ public class EntityProjectileRaytrace extends EntityWithOwner
         if (compound.hasKey("SplitProjectileCount")) { this.splitProjectileCount = compound.getInteger("SplitProjectileCount"); }
         if (compound.hasKey("SplitConeRadians")) { this.splitConeRadians = compound.getDouble("SplitConeRadians"); } 
         if (compound.hasKey("SplitAimMode")) { this.splitAimMode = compound.getInteger("SplitAimMode"); }
+        if (compound.hasKey("SplitLifetime")) { this.splitLifetime = compound.getInteger("SplitLifetime"); }
         if (compound.hasKey("SplitDamage")) { this.splitDamage = compound.getFloat("SplitDamage"); }
         if (compound.hasKey("SplitSpeed")) { this.splitSpeed = compound.getDouble("SplitSpeed"); } 
         if (compound.hasKey("SplitAcceleration")) { this.splitAcceleration = compound.getDouble("SplitAcceleration"); } 

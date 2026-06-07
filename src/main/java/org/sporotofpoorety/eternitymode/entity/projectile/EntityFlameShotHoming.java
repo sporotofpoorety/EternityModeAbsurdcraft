@@ -95,7 +95,7 @@ public class EntityFlameShotHoming extends EntityProjectileHoming {
     double hitCheckSize, boolean projectileStopsAtEntity, boolean projectileStopsAtBlock, float projectileHitDamage,
     int particleLifetime, int particleDensity, double particleVelocity,
     int splitProjectileCount, double splitConeRadians, int splitAimMode,
-    float splitDamage, double splitSpeed, double splitAcceleration,
+    int splitLifetime, float splitDamage, double splitSpeed, double splitAcceleration,
     int timePreHomingMax, boolean homingTimeHasMax, int homingTimeMax, double homingSpeed, int homingMode, 
     int fireDuration, boolean shouldExplode, float explosionPower, boolean explosionFire, boolean explosionDestruction,
     boolean shouldSplit, boolean splitExplodes, float splitExplosionPower, boolean splitFire, boolean splitDestruction)
@@ -113,6 +113,7 @@ public class EntityFlameShotHoming extends EntityProjectileHoming {
         this.splitProjectileCount = splitProjectileCount; 
         this.splitConeRadians = splitConeRadians; 
         this.splitAimMode = splitAimMode;
+        this.splitLifetime = splitLifetime;
         this.splitDamage = splitDamage; 
         this.splitSpeed = splitSpeed; 
         this.splitAcceleration = splitAcceleration;
@@ -180,7 +181,7 @@ public class EntityFlameShotHoming extends EntityProjectileHoming {
             ProjectileUtil.shootAimedFireballSpreadCoord(this.prevPosX, this.prevPosY, this.prevPosZ, 
             null, this, null,
             this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
-            this.splitDamage, this.splitSpeed, this.splitAcceleration,
+            this.splitLifetime, this.splitDamage, this.splitSpeed, this.splitAcceleration,
             this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);  
         }
         else 
@@ -189,7 +190,7 @@ public class EntityFlameShotHoming extends EntityProjectileHoming {
             ProjectileUtil.shootAimedFireballSpreadCoord(this.prevPosX, this.prevPosY, this.prevPosZ, 
             this.owner, this, ((EntityLiving) this.owner).getAttackTarget(),
             this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
-            this.splitDamage, this.splitSpeed, this.splitAcceleration,
+            this.splitLifetime, this.splitDamage, this.splitSpeed, this.splitAcceleration,
             this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);      
         }
     }

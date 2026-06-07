@@ -28,9 +28,10 @@ public class EntityExplosiveShockwave extends EntityWithOwner
 
     public boolean oscillationEnabled;
     public double oscillationDistance;
-    public double oscillationSineWaveStep;
+    public double oscillationRadianStep;
     public double oscillationX;
     public double oscillationZ;
+    public double oscillationInitial;
  
     public int explosionTimer;
     public double explosionRadius;
@@ -70,7 +71,7 @@ public class EntityExplosiveShockwave extends EntityWithOwner
     public EntityExplosiveShockwave(World worldIn, double x, double y, double z, 
     EntityLivingBase owner,
     int lifetimeMax, boolean hasGravity, float shockwaveStepHeight, double speedX, double speedY, double speedZ, double accelerationVal,
-    boolean oscillationEnabled, double oscillationDistance, double oscillationSineWaveStepCount,
+    boolean oscillationEnabled, double oscillationDistance, double oscillationRadianStepCount,
     int explosionTimer, double explosionRadius, float explosionDamage, 
     boolean explosionPush, double explosionPushForce, boolean explosionFire, int explosionParticleType, int specialExplosionThreshold) 
     {
@@ -93,7 +94,7 @@ public class EntityExplosiveShockwave extends EntityWithOwner
 //Distance from one end to the other
         this.oscillationDistance = oscillationDistance;
 //Sine wave step
-        this.oscillationSineWaveStep = (2.0D * Math.PI) / oscillationSineWaveStepCount;
+        this.oscillationRadianStep = (2.0D * Math.PI) / oscillationRadianStepCount;
 //Oscillate sideways
         this.oscillationX = Math.cos(Math.atan2(speedZ, speedX) + (0.5D * Math.PI));
         this.oscillationZ = Math.sin(Math.atan2(speedZ, speedX) + (0.5D * Math.PI));
@@ -200,12 +201,9 @@ public class EntityExplosiveShockwave extends EntityWithOwner
 
     public void performOscillation()
     {
-        if (this.oscillationEnabled) 
-        {
-            double currentMovement = this.oscillationDistance * Math.sin(this.realTicksExisted * this.oscillationSineWaveStep);
-            
-            this.move(MoverType.SELF, currentMovement * this.oscillationX, 0.0, currentMovement * this.oscillationZ);
-        }
+        double currentMovement = this.oscillationInitial + (Math.sin(this.realTicksExisted * this.oscillationRadianStep) * this.oscillationDistance);
+        
+        this.move(MoverType.SELF, currentMovement * this.oscillationX, 0.0, currentMovement * this.oscillationZ);
     }
 
 
@@ -225,7 +223,8 @@ public class EntityExplosiveShockwave extends EntityWithOwner
 
         compound.setBoolean("OscillationEnabled", this.oscillationEnabled);
         compound.setDouble("OscillationDistance", this.oscillationDistance);
-        compound.setDouble("OscillationSineWaveStep", this.oscillationSineWaveStep);
+        compound.setDouble("OscillationRadianStep", this.oscillationRadianStep);
+        compound.setDouble("OscillationInitial", this.oscillationInitial);
 
         compound.setInteger("ExplosionTimer", this.explosionTimer);
         compound.setDouble("ExplosionRadius", this.explosionRadius);
@@ -266,9 +265,10 @@ public class EntityExplosiveShockwave extends EntityWithOwner
 
         if (compound.hasKey("OscillationEnabled")) { this.oscillationEnabled = compound.getBoolean("OscillationEnabled"); }
         if (compound.hasKey("OscillationDistance")) { this.oscillationDistance = compound.getDouble("OscillationDistance"); }
-        if (compound.hasKey("OscillationSineWaveStep")) { this.oscillationSineWaveStep = compound.getDouble("OscillationSineWaveStep"); }
+        if (compound.hasKey("OscillationRadianStep")) { this.oscillationRadianStep = compound.getDouble("OscillationRadianStep"); }
         this.oscillationX = Math.cos(Math.atan2(this.speedZ, this.speedX) + (0.5D * Math.PI));
         this.oscillationZ = Math.sin(Math.atan2(this.speedZ, this.speedX) + (0.5D * Math.PI));
+        if (compound.hasKey("OscillationInitial")) { this.oscillationInitial = compound.getDouble("OscillationInitial"); }
 
         if (compound.hasKey("ExplosionTimer")) { this.explosionTimer = compound.getInteger("ExplosionTimer"); }
         if (compound.hasKey("ExplosionRadius")) { this.explosionRadius = compound.getDouble("ExplosionRadius"); }

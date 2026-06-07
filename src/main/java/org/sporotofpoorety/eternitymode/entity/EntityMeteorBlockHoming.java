@@ -58,7 +58,7 @@ public class EntityMeteorBlockHoming extends EntityMeteorBlock
     double accelerationVal, double gravitySpeed,
     float explosionPower, boolean explosionFire, boolean explosionDestruction,
     int splitProjectileCount, double splitConeRadians, int splitAimMode,
-    float splitDamage, double splitSpeed, double splitAcceleration,
+    int splitLifetime, float splitDamage, double splitSpeed, double splitAcceleration,
     boolean shouldSplit, boolean splitExplodes, float splitExplosionPower, boolean splitFire, boolean splitDestruction,
     int timePreHomingMax, boolean homingTimeHasMax, int homingTimeMax, double homingSpeed, int homingMode,
     boolean homingSnapEnabled, boolean homingSnapVertical, double homingSnapThreshold, double homingSnapSteps)
@@ -68,7 +68,7 @@ public class EntityMeteorBlockHoming extends EntityMeteorBlock
         accelerationVal, gravitySpeed,
         explosionPower, explosionFire, explosionDestruction,
         splitProjectileCount, splitConeRadians, splitAimMode,
-        splitDamage, splitSpeed, splitAcceleration,
+        splitLifetime, splitDamage, splitSpeed, splitAcceleration,
         shouldSplit, splitExplodes, splitExplosionPower, splitFire, splitDestruction);
 
         this.firstBeenShot = false;
@@ -232,7 +232,7 @@ public class EntityMeteorBlockHoming extends EntityMeteorBlock
                 Vec3d targetDistNormalized = new Vec3d
                 (
                     ownerTarget.posX - this.posX,
-                    ownerTarget.posY - this.posY,
+                    (ownerTarget.posY + (ownerTarget.height / 2.0D) + 1.0D) - this.posY,
                     ownerTarget.posZ - this.posZ
                 );
 
@@ -262,7 +262,7 @@ public class EntityMeteorBlockHoming extends EntityMeteorBlock
             {
 //Get distance
                 double targetDistX = ownerTarget.posX - this.posX;
-                double targetDistY = ownerTarget.posY - this.posY;
+                double targetDistY = (ownerTarget.posY + (ownerTarget.height / 2.0D) + 1.0D) - this.posY;
                 double targetDistZ = ownerTarget.posZ - this.posZ;
 
 //Accelerate based on how far target is
