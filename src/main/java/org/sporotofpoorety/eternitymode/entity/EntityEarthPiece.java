@@ -34,10 +34,12 @@ public class EntityEarthPiece extends EntityWithOwner
     public String pieceType = "spin";
     public String pieceShape = "cube";
     public int pieceSize;
+    public float blockDamage = 1.0F;
 
 
     public int gatherTimer;
     public boolean gatherStarted;
+    public boolean gatherDontGrief;
 
     public int liftTimer;
     public double liftSpeed;
@@ -164,11 +166,12 @@ public class EntityEarthPiece extends EntityWithOwner
 
         compound.setString("PieceType", this.pieceType);
         compound.setString("PieceShape", this.pieceShape);
-        compound.setInteger("PieceSize", this.pieceSize);
+        compound.setFloat("BlockDamage", this.blockDamage);
 
 
         compound.setInteger("GatherTimer", this.gatherTimer);
         compound.setBoolean("GatherStarted", this.gatherStarted);
+        compound.setBoolean("GatherDontGrief", this.gatherDontGrief);
 
         compound.setInteger("LiftTimer", this.liftTimer);
         compound.setDouble("LiftSpeed", this.liftSpeed);
@@ -223,10 +226,12 @@ public class EntityEarthPiece extends EntityWithOwner
         if (compound.hasKey("PieceType")) { this.pieceType = compound.getString("PieceType"); }
         if (compound.hasKey("PieceShape")) { this.pieceShape = compound.getString("PieceShape"); }
         if (compound.hasKey("PieceSize")) { this.pieceSize = compound.getInteger("PieceSize"); }
+        if (compound.hasKey("BlockDamage")) { this.blockDamage = compound.getFloat("BlockDamage"); }
 
 
         if (compound.hasKey("GatherTimer")) { this.gatherTimer = compound.getInteger("GatherTimer"); }
         if (compound.hasKey("GatherStarted")) { this.gatherStarted = compound.getBoolean("GatherStarted"); }
+        if (compound.hasKey("GatherDontGrief")) { this.gatherDontGrief = compound.getBoolean("GatherDontGrief"); }
 
         if (compound.hasKey("LiftTimer")) { this.liftTimer = compound.getInteger("LiftTimer"); }
         if (compound.hasKey("LiftSpeed")) { this.liftSpeed = compound.getDouble("LiftSpeed"); }
@@ -444,8 +449,9 @@ public class EntityEarthPiece extends EntityWithOwner
                         (
                             this.world, blockOrigin.getX() + 0.5D, blockOrigin.getY() + 0.5D, blockOrigin.getZ() + 0.5D, 
                             this.owner, this.world.getBlockState(blockOrigin), 
-                            false, true, true, 1.0F
+                            false, true, true, this.blockDamage
                         );
+                        thrownBlock.dontBreakInitialPos = this.gatherDontGrief;
 
 //Give block controller and UUID
                         thrownBlock.controller = this;
