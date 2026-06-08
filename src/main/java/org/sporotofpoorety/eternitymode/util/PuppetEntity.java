@@ -31,7 +31,7 @@ public class PuppetEntity
     double offsetX, double offsetY, double offsetZ, int controlTime, int controlState) 
     {
         this.entity = entity;
-        this.puppetUUID = entity.getUniqueID();
+        if(entity != null) { this.puppetUUID = entity.getUniqueID(); }
 
         this.offsetX = offsetX;
         this.offsetY = offsetY;
