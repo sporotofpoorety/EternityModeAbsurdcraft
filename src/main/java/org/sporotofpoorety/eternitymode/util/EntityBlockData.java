@@ -17,6 +17,8 @@ public class EntityBlockData
     public boolean dealsDamage;
     public float thrownBlockDamage;
 
+    public boolean isSolid = true;
+
 
     public EntityBlockData(BlockPos blockOrigin, IBlockState basisState, 
     boolean dontPlaceBlock, boolean shouldDropItem, boolean dealsDamage, float thrownBlockDamage) 

@@ -367,24 +367,6 @@ public class EntityThrownBlock extends EntityWithOwner
     }
 
 
-//Controller validate failsafe
-    @Override
-    public boolean performControllerValidation()
-    {
-        boolean validationPassed = this.validateController();
-
-//If no controller and previous test failed too
-        if(!validationPassed && this.previousValidateControllerFailed)
-        {
-//Restore solidity
-            this.setBlockSolid(true);
-            this.dontMove = false;
-        }
-
-        return validationPassed;
-    }
-
-
 
 
     public void onHitGround()

@@ -19,6 +19,7 @@ import net.minecraft.world.World;
 import org.sporotofpoorety.eternitymode.entity.EntityThrownBlock;
 import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
 import org.sporotofpoorety.eternitymode.util.BlockUtil;
+import org.sporotofpoorety.eternitymode.util.PuppetBlock;
 import org.sporotofpoorety.eternitymode.util.PuppetEntity;
 
 
@@ -26,7 +27,6 @@ import org.sporotofpoorety.eternitymode.util.PuppetEntity;
 
 public class EntityEarthPiece extends EntityWithOwner 
 {
-
     public BlockPos searchBasis = new BlockPos(0, 0, 0);
 
     public String phaseAt;
@@ -71,6 +71,7 @@ public class EntityEarthPiece extends EntityWithOwner
     public EntityEarthPiece(World world) 
     {
         super(world);
+        this.puppetsStoredType = "block";
         setSize(0.5F, 0.5F);
 
         this.gravitySpeed = 0.1D;
@@ -89,6 +90,7 @@ public class EntityEarthPiece extends EntityWithOwner
     int flingTimer, double flingSpeed, double blockOutSpeed, double blockOutGravity)
     {
         super(world, x, y, z, owner);
+        this.puppetsStoredType = "block";
 //Trying to fix collision size
         this.setSize(0.5F, 0.5F);
         this.setInvisible(true);
@@ -267,149 +269,162 @@ public class EntityEarthPiece extends EntityWithOwner
 
 
 
+    public void recreatePuppetEntity(PuppetEntity puppetEntity)
+    {
+        PuppetBlock puppetBlock = (PuppetBlock) puppetEntity;
+
+
+//Make entity block at origin
+        EntityThrownBlock thrownBlock = new EntityThrownBlock
+        (
+            this.world, this.posX + puppetBlock.offsetX, this.posY + puppetBlock.offsetY, this.posZ + puppetBlock.offsetZ, 
+            this.owner, puppetBlock.blockData.basisState, 
+            puppetBlock.blockData.dontPlaceBlock, puppetBlock.blockData.shouldDropItem, puppetBlock.blockData.dealsDamage, puppetBlock.blockData.thrownBlockDamage
+        );
+//Has manual origin
+        thrownBlock.hasManualOrigin = true;
+        thrownBlock.setOrigin(puppetBlock.blockData.blockOrigin);
+//Don't break origin
+        thrownBlock.dontBreakInitialPos = this.gatherDontGrief;
+//Set blocks to despawn on reload
+        thrownBlock.onReloadDespawn = true;
+
+
+//Restore block solidity or non-solidity
+        thrownBlock.setBlockSolid(puppetBlock.blockData.isSolid);
+//Nor having its own movement
+        thrownBlock.dontMove = true;
+
+
+//Assign block entity to puppet
+        puppetEntity.entity = thrownBlock;
+
+//Spawn block
+        if (!this.world.isRemote) 
+        {
+            this.getEntityWorld().spawnEntity(thrownBlock); 
+        }
+    }
+
+    public void adjustPuppetEntities()
+    {
+        if(!this.world.isRemote && this.realTicksExisted % 20 == 0)
+        {
+            for(PuppetEntity puppetEntity : this.puppetEntities)
+            {
+                this.adjustPuppetEntity(puppetEntity);
+            }
+        }
+    }
+
+    public void adjustPuppetEntity(PuppetEntity puppet)
+    {
+        if(puppet.entity == null || puppet.entity.isDead)
+        {
+            this.recreatePuppetEntity(puppet);
+        }
+        else
+        {
+/*
+            puppet.entity.prevPosX = puppet.entity.posX;
+            puppet.entity.prevPosY = puppet.entity.posY;
+            puppet.entity.prevPosZ = puppet.entity.posZ;
+*/
+            puppet.entity.setPositionAndUpdate(this.posX + puppet.offsetX, this.posY + puppet.offsetY, this.posZ + puppet.offsetZ);
+        }
+    }
+
+
+
+
     @Override
     public void onUpdate() 
     {
         super.onUpdate();
 
-        if(this.world.isRemote) { return; }
-
-
+        if(this.world.isRemote) { return; } else { if(this.realTicksExisted % 20 == 0 && this.owner != null) { System.out.println("Piece exists and has owner"); } }
 
 
 //If no owner
-        if (this.owner == null) 
+        if (this.owner != null) 
         {
-//          System.out.println("Piece at premature expel");
-//Premature expel
-            this.phaseAt = "expel";
-        }
-
-
 //If not searched for blocks yet
-        else if(this.phaseAt.equals("search"))
-        {
-//Perform search
-            this.blockSearch();
-//And move to gather
-            this.phaseAt = "gather";
-        }
-
-
-//Wait for blocks to gather
-        else if(this.phaseAt.equals("gather"))
-        {
-            this.updateGatherPhase();
-        }
-
-
-//Lift up
-        else if(this.phaseAt.equals("lift"))
-        {
-            this.updateLiftPhase();
-        }
-
-
-//Set into position
-        else if(this.phaseAt.equals("position"))
-        {
-            if(this.pieceType.equals("spin"))
+            if(this.phaseAt.equals("search"))
             {
-                this.positionIntoSpin();
+//Perform search
+                this.blockSearch();
+//And move to gather
+                this.phaseAt = "gather";
             }
+//Wait for blocks to gather
+            else if(this.phaseAt.equals("gather"))
+            {
+                this.updateGatherPhase();
+            }
+//Lift up
+            else if(this.phaseAt.equals("lift"))
+            {
+                this.updateLiftPhase();
+            }
+//Set into position
+            else if(this.phaseAt.equals("position"))
+            {
+                if(this.pieceType.equals("spin"))
+                {
+                    this.positionIntoSpin();
+                }
 
 //If has been positioning too long
-            if(--this.positionTimer <= -10)
-            {
+                if(--this.positionTimer <= -10)
+                {
 //Failsafe expel
-                this.phaseAt = "expel";                
+                    this.phaseAt = "expel";                
+                }
             }
-        }
-
-
-        else if(this.phaseAt.equals("active"))
-        {
+            else if(this.phaseAt.equals("active"))
+            {
 //If this is a spinning piece
-            if(this.pieceType.equals("spin"))
-            {
+                if(this.pieceType.equals("spin"))
+                {
 //Active spin
-                this.activeSpin();
+                    this.activeSpin();
+                }
             }
-        }
-
-        else if(this.phaseAt.equals("homing"))
-        {
-            this.updateHomingPhase();
-        }
-
-        else if(this.phaseAt.equals("flung"))
-        {
-            double collisionExtent = (double) this.pieceSize + 1.0D;
-            AxisAlignedBB sensorBox = new AxisAlignedBB
-            (
-                this.posX - collisionExtent, this.posY - collisionExtent, this.posZ - collisionExtent, 
-                this.posX + collisionExtent, this.posY + collisionExtent, this.posZ + collisionExtent
-            );
-
-            if(this.world.collidesWithAnyBlock(sensorBox) || this.flingTimer-- <= 0)
+            else if(this.phaseAt.equals("homing"))
             {
-                this.phaseAt = "expel";
+                this.updateHomingPhase();
             }
+            else if(this.phaseAt.equals("flung"))
+            {
+                double collisionExtent = (double) this.pieceSize + 1.0D;
+                AxisAlignedBB sensorBox = new AxisAlignedBB
+                (
+                    this.posX - collisionExtent, this.posY - collisionExtent, this.posZ - collisionExtent, 
+                    this.posX + collisionExtent, this.posY + collisionExtent, this.posZ + collisionExtent
+                );
 
-            this.performMovementAndAdjustPuppets();
-        }
+                if(this.world.collidesWithAnyBlock(sensorBox) || this.flingTimer-- <= 0)
+                {
+                    this.phaseAt = "expel";
+                }
 
-        else if(this.phaseAt.equals("expel"))
-        {
-            this.expelBlocks();
-
-            this.setDead(); 
-            return;  
-        }
-    }
-
-
-
-
-//Make sure blocks stay in correct place
-    public void adjustPuppets()
-    {
-        for(PuppetEntity puppet : this.puppetEntities)
-        {
-            puppet.entity.prevPosX = puppet.entity.posX;
-            puppet.entity.prevPosY = puppet.entity.posY;
-            puppet.entity.prevPosZ = puppet.entity.posZ;
-            puppet.entity.setPosition(this.posX + puppet.offsetX, this.posY + puppet.offsetY, this.posZ + puppet.offsetZ);
-        }
-    }
-
-//Move with puppets, periodically adjust
-    public void moveAndAdjustPuppets(double x, double y, double z)
-    {
-        if(this.realTicksExisted % 10 == 0)
-        {
-            this.move(MoverType.SELF, x, y, z);
-            
-            this.adjustPuppets();
+                this.performBasicMovementAndPositionPuppets();
+            }
+            else if(this.phaseAt.equals("expel"))
+            {
+                this.expelBlocks();
+                this.setDead(); 
+                return;  
+            }
         }
         else
         {
-            this.moveWithPuppets(x, y, z);
-        }
-    } 
-
-//Movement logic with puppets, periodically adjust
-    public void performMovementAndAdjustPuppets()
-    {
-        if(this.realTicksExisted % 10 == 0)
-        {
-            this.performBasicMovement();
-            
-            this.adjustPuppets();
-        }
-        else
-        {
-            this.performBasicMovementWithPuppets();
+            if(this.realTicksExisted >= (this.lifetimeMax - 5)) 
+            { 
+                this.expelBlocks();
+                this.setDead(); 
+                return;  
+            }
         }
     }
 
@@ -439,7 +454,7 @@ public class EntityEarthPiece extends EntityWithOwner
                 {
 //Iterative cube origin
                     BlockPos blockOrigin = BlockUtil.findFirstSolidBlock(this.world, 
-                        this.searchBasis.getX() + atX, this.searchBasis.getY() + atY, this.searchBasis.getZ() + atZ, 16.0F, 16, 2);
+                        this.searchBasis.getX() + atX, this.searchBasis.getY() + atY, this.searchBasis.getZ() + atZ, 16.0F, (int) this.posY + 4, 2);
 
 //If origin not null
                     if(blockOrigin != null)
@@ -451,11 +466,11 @@ public class EntityEarthPiece extends EntityWithOwner
                             this.owner, this.world.getBlockState(blockOrigin), 
                             false, true, true, this.blockDamage
                         );
+//Optionally don't break origin
                         thrownBlock.dontBreakInitialPos = this.gatherDontGrief;
+//Set blocks to despawn on reload
+                        thrownBlock.onReloadDespawn = true;
 
-//Give block controller and UUID
-                        thrownBlock.controller = this;
-                        thrownBlock.controllerUUID = this.getUniqueID();
 
 //Set block not solid for now
                         thrownBlock.setBlockSolid(false);
@@ -463,9 +478,11 @@ public class EntityEarthPiece extends EntityWithOwner
                         thrownBlock.dontMove = true;
 
 
-//New puppet entity
-                        PuppetEntity puppetBlock = new PuppetEntity(thrownBlock, 
-                        (double) atX * 1.05D, (double) atY * 1.05D, (double) atZ * 1.05D, 0, 0);
+//New puppet block
+                        PuppetBlock puppetBlock = new PuppetBlock(thrownBlock, 
+                        (double) atX, (double) atY, (double) atZ, 0, 0,
+                        blockOrigin, thrownBlock.getBasisState(), 
+                        false, true, false, thrownBlock.thrownBlockDamage, false);
 
 
 //Add block to puppet list
@@ -558,7 +575,7 @@ public class EntityEarthPiece extends EntityWithOwner
         if(this.liftTimer > 0)
         {
 //Lift
-            this.moveAndAdjustPuppets(0.0D, this.liftSpeed, 0.0D);
+            this.moveAndPositionPuppets(0.0D, this.liftSpeed, 0.0D);
 //Lift timer
             --this.liftTimer;
         }
@@ -600,7 +617,7 @@ public class EntityEarthPiece extends EntityWithOwner
 
 //In any case, move to owner,
 //in a fraction of positioning time + using owner motion
-        this.moveAndAdjustPuppets(ownerInitialVec.x + this.owner.motionX, ownerInitialVec.y + this.owner.motionY, ownerInitialVec.z + this.owner.motionZ);
+        this.moveAndPositionPuppets(ownerInitialVec.x + this.owner.motionX, ownerInitialVec.y + this.owner.motionY, ownerInitialVec.z + this.owner.motionZ);
 
 
 //Check if close enough to owner to glue
@@ -639,7 +656,7 @@ public class EntityEarthPiece extends EntityWithOwner
         if(this.spinTimer > 0)
         {
 //Spin around owner (at offset)
-            this.moveAndAdjustPuppets
+            this.moveAndPositionPuppets
             (
                 (this.owner.posX + (Math.cos(this.spinRadian) * this.spinDistance)) - (this.posX), 
                 (this.owner.posY + this.positionAbove) - (this.posY), 
@@ -693,7 +710,7 @@ public class EntityEarthPiece extends EntityWithOwner
             {
                 Vec3d targetDir = new Vec3d(ownerTarget.posX - this.posX, (ownerTarget.posY + ownerTarget.height) - this.posY, ownerTarget.posZ - this.posZ).normalize();
 
-                this.moveAndAdjustPuppets(targetDir.x * this.homeSpeed, targetDir.y * this.homeSpeed, targetDir.z * this.homeSpeed); 
+                this.moveAndPositionPuppets(targetDir.x * this.homeSpeed, targetDir.y * this.homeSpeed, targetDir.z * this.homeSpeed); 
             }
         }
     }
@@ -737,6 +754,8 @@ public class EntityEarthPiece extends EntityWithOwner
 //Expel branch
     public void expelBlocks()
     {
+        System.out.println("Expelled " + this.puppetEntities.size() + " blocks");
+
         for(PuppetEntity puppet : this.puppetEntities)
         {
 //Aim direction based on offset

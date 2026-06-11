@@ -1,9 +1,6 @@
 package org.sporotofpoorety.eternitymode.util;
 
 
-import java.util.UUID;
-
-
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 
@@ -14,9 +11,6 @@ import net.minecraft.util.math.Vec3d;
 public class PuppetEntity 
 {
     public Entity entity;
-    public UUID puppetUUID;
-
-    public boolean previousValidatePuppetFailed;
 
     public double offsetX, offsetY, offsetZ;
 
@@ -31,7 +25,6 @@ public class PuppetEntity
     double offsetX, double offsetY, double offsetZ, int controlTime, int controlState) 
     {
         this.entity = entity;
-        if(entity != null) { this.puppetUUID = entity.getUniqueID(); }
 
         this.offsetX = offsetX;
         this.offsetY = offsetY;
