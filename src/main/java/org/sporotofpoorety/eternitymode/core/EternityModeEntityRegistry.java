@@ -117,15 +117,17 @@ public class EternityModeEntityRegistry
     {
 
 //Pass this entity register event, the entity class, name and id
-        registerUnspawnable(event, EntityEarthPiece.class, "earth_piece", id++);
+        registerUnspawnable(event, EntityEarthPiece.class, "earth_piece", id++, 200, 1);
         registerUnspawnable(event, EntityExplosiveShockwave.class, "explosive_shockwave", id++);
         registerUnspawnable(event, EntityFlameShotBouncing.class, "flame_shot_bouncing", id++);
         registerUnspawnable(event, EntityFlameShotHoming.class, "flame_shot_homing", id++);
         registerUnspawnable(event, EntityFlameShotLinear.class, "flame_shot_linear", id++);
         registerUnspawnable(event, EntityFlameShotLinearSplits.class, "flame_shot_linear_splits", id++);
-        registerUnspawnable(event, EntityMeteorBlock.class, "meteor_block", id++, 128, 1);
-        registerUnspawnable(event, EntityMeteorBlockHoming.class, "meteor_block_homing", id++, 128, 1);
-        registerUnspawnable(event, EntityThrownBlock.class, "thrown_block", id++);
+        registerUnspawnable(event, EntityMeteorBlock.class, "meteor_block", id++, 200, 1);
+        registerUnspawnable(event, EntityMeteorBlockHoming.class, "meteor_block_homing", id++, 200, 1);
+        registerUnspawnable(event, EntityThrownBlock.class, "thrown_block", id++, 200, 1);
         registerUnspawnable(event, EntityParticleSpiral.class, "entity_spiral_particle", id++);
+        registerUnspawnable(event, EntityDemonScythe.class, "demon_scythe", id++);
+        registerUnspawnable(event, EntityDarkShotLinear.class, "dark_shot_linear", id++);
     }
 }

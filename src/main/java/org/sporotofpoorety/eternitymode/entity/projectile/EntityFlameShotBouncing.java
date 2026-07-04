@@ -26,7 +26,7 @@ public class EntityFlameShotBouncing extends EntityProjectileBouncing {
     {
         super(worldIn);
 
-        this.setSize(0.5F, 0.5F);
+        this.setSize(1.0F, 1.0F);
 
         this.fireDuration = 20;
         this.shouldExplode = false;
@@ -52,7 +52,7 @@ public class EntityFlameShotBouncing extends EntityProjectileBouncing {
         particleLifetime, particleDensity, particleVelocity,
         acceleratesVertically, bounceUpExtra, bounceUpForce);
 
-        this.setSize(0.5F, 0.5F);
+        this.setSize(1.0F, 1.0F);
 
         this.fireDuration = fireDuration;
         this.shouldExplode = shouldExplode;

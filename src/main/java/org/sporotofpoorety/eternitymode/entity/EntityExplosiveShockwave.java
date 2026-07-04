@@ -8,11 +8,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
 
-import electroblob.wizardry.client.DrawingUtils;
-import electroblob.wizardry.util.ParticleBuilder;
-import electroblob.wizardry.util.ParticleBuilder.Type;
-
-
 import org.sporotofpoorety.eternitymode.entity.EntityWithOwner;
 import org.sporotofpoorety.eternitymode.util.ExplosionUtil;
 

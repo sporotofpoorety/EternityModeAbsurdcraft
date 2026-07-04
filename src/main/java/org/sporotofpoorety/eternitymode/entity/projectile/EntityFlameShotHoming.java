@@ -175,23 +175,41 @@ public class EntityFlameShotHoming extends EntityProjectileHoming {
 
     public void randomKaboom()
     {
-        if(this.owner == null || !(this.owner instanceof EntityLiving)) 
+        ArrayList<Vec3d> spreadDirections = new ArrayList<>();
+
+
+        if(this.owner == null || !(this.owner instanceof EntityLiving) || (((EntityLiving) this.owner).getAttackTarget() == null)) 
         {
-//          ProjectileUtil.shootAimedFireballSpreadCoord(this.posX, this.posY, this.posZ, 
-            ProjectileUtil.shootAimedFireballSpreadCoord(this.prevPosX, this.prevPosY, this.prevPosZ, 
-            null, this, null,
-            this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
-            this.splitLifetime, this.splitDamage, this.splitSpeed, this.splitAcceleration,
-            this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);  
+            spreadDirections 
+            = ProjectileUtil.fibonacciSpreadAimed
+                (this.prevPosX, this.prevPosY, this.prevPosZ, 
+                this.prevPosX + 0.01D, this.prevPosY + 1.0D, this.prevPosZ + 0.01D,
+                this.splitProjectileCount, this.splitConeRadians);
         }
         else 
         {
-//          ProjectileUtil.shootAimedFireballSpreadCoord(this.posX, this.posY + 0.5D, this.posZ, 
-            ProjectileUtil.shootAimedFireballSpreadCoord(this.prevPosX, this.prevPosY, this.prevPosZ, 
-            this.owner, this, ((EntityLiving) this.owner).getAttackTarget(),
-            this.splitProjectileCount, this.splitConeRadians, this.splitAimMode,
-            this.splitLifetime, this.splitDamage, this.splitSpeed, this.splitAcceleration,
-            this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);      
+            EntityLivingBase ownerTarget = ((EntityLiving) this.owner).getAttackTarget();
+
+            spreadDirections 
+            = ProjectileUtil.fibonacciSpreadAimed
+                (this.prevPosX, this.prevPosY, this.prevPosZ, 
+                ownerTarget.posX, ownerTarget.posY, ownerTarget.posZ,
+                this.splitProjectileCount, this.splitConeRadians);
+        }
+
+
+        for(Vec3d vecAt : spreadDirections)
+        {
+            EntityFlameShotLinear entitySplit = new EntityFlameShotLinear(this.world, this.prevPosX, this.prevPosY, this.prevPosZ,
+                this.owner,
+                this.splitLifetime, 
+                vecAt.x * this.splitSpeed, vecAt.y * this.splitSpeed, vecAt.z * this.splitSpeed,
+                this.splitAcceleration, 0.0D,
+                0.6D, true, true, this.splitDamage,
+                2, 2, 0.06D,
+                20, this.splitExplodes, this.splitExplosionPower, this.splitFire, this.splitDestruction);
+
+            this.world.spawnEntity(entitySplit);
         }
     }
 

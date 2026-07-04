@@ -75,5 +75,13 @@ public class EternityModeClientProxy extends EternityModeCommonProxy {
             EntityMeteorBlockHoming.class, 
             manager -> new RenderMeteorBlock(manager)
         );
+
+        RenderingRegistry.registerEntityRenderingHandler(EntityDemonScythe.class, RenderDemonScythe::new);
+
+		RenderingRegistry.registerEntityRenderingHandler
+        (
+            EntityDarkShotLinear.class,
+		        manager -> new RenderProjectileBase(manager, 1.4f, new ResourceLocation(Wizardry.MODID, "textures/entity/darkness_orb.png"), true)
+        );
     }
 }

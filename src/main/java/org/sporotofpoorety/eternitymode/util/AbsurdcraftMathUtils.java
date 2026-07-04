@@ -7,11 +7,16 @@ import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.Vec3d;
 
 
 
-public final class AbsurdcraftMathUtils {
+public final class AbsurdcraftMathUtils 
+{
+
+    public static final double PHI = 1.618033988749895;
+
 
     public static ArrayList<Integer> pickDifferentX(int pickX, int fromA, int toB)
     {
@@ -58,6 +63,7 @@ public final class AbsurdcraftMathUtils {
 
 
 
+//Generate angle spread
     public static ArrayList<Vec3d> fibonacciDirectionalSpread(Vec3d forwardOriginal, int pointCount, double coneEdgeRadians) 
     {
 //Array of radial vectors
@@ -141,89 +147,199 @@ public final class AbsurdcraftMathUtils {
 
 
 
-    public static Vec3d generatePredictiveAimVectorNoVertical(double aimX, double aimY, double aimZ,
-    Entity vecTarget, double aimerSpeedFactor)
+/*
+//How to get predictive aim?
+
+
+//First, keep in mind that vectors
+//use dot product instead of multiplication
+
+
+//Calculate convergence time for projectile and target
+
+1.
+Pvel*T
+= |Tmv*T + d0|
+
+
+//Square to get rid of that magnitude operator
+
+2.
+Pvel²*T²
+= Tmv²*T² + 2(Tmv*T)(d0) + d0²
+
+3.
+0
+= Tmv²*T² + 2(Tmv*T)(d0) + d0² - Pvel²*T² 
+
+4.
+0
+= (Tmv² - Pvel²)T² + (2 * Tmv * d0)T + d0²
+
+
+
+
+Discriminant
+= (2 * Tmv * d0)² - 4(Tmv² - Pvel²)(d0²)
+
+
+Roots
+= ( -(2 * Tmv * d0) +- sqrt((2 * Tmv * d0)² - 4(Tmv² - Pvel²)(d0²)) )  /  2(Tmv² - Pvel²)
+*/
+
+
+//Predictive aim (dynamically vertical or not)
+    public static Vec3d calcPredictiveAimDynamicVertical(Vec3d dist0, Entity target, double projVel, boolean canPredictVertical, double verticalThreshold)
     {
-//It turns out this is an 
-//implicit equation, rather than a clean formula,
-//i have to approximate the target's predicted distance through iteration
+        boolean shouldPredictVertical = false;
+
+//If can predict vertical
+        if(canPredictVertical)
+        {
+//If target height above threshold to predict
+            if(dist0.y >= verticalThreshold)
+            {
+                shouldPredictVertical = true;  
+            }
+//If target is player
+            if(target instanceof EntityPlayer)
+            {
+//And player is flying
+                if( ((EntityPlayer) target).isElytraFlying() )
+                {
+                    shouldPredictVertical = true;
+                } 
+            }
+        }
 
 
-
-//Get distance to target's current distance
-        Vec3d zerothApproxDist = new Vec3d
-        (
-            vecTarget.posX - aimX,
-            0.0D,
-            vecTarget.posZ - aimZ
-        );
-
-//Get arrival time to target's current distance
-        double zerothApproxArrivalTime = zerothApproxDist.length() / aimerSpeedFactor;
+//Get target movement
+//      Vec3d targetMv = new Vec3d(target.posX - target.lastTickPosX, target.posY - target.lastTickPosY, target.posZ - target.lastTickPosZ);
+        Vec3d targetMv = new Vec3d(target.motionX, target.motionY, target.motionZ);
 
 
-
-//Predict target distance based on motion
-        Vec3d firstApproxDist = 
-            zerothApproxDist.add
-            (
-                vecTarget.motionX * zerothApproxArrivalTime,
-                0.0D,
-                vecTarget.motionZ * zerothApproxArrivalTime
-            );
-
-//Get arrival time to target's predicted distance
-        double firstApproxArrivalTime = firstApproxDist.length() / aimerSpeedFactor;
+        if(shouldPredictVertical) { return calcPredictiveAimVec(dist0, targetMv, projVel); }
+        else { return calcPredictiveAimVecNoVertical(dist0, targetMv, projVel); }
+    }
 
 
+//Predictive aim
+    public static Vec3d calcPredictiveAimVec(Vec3d dist0, Vec3d targetMv, double projVel)
+    {
+//Get time to converge to target
+        double convergeTime = calcProjectileConvergeTime(dist0, targetMv, projVel);
 
-//Get final refined approximation of target's predicted distance
-        Vec3d secondApproxDist = 
-            zerothApproxDist.add
-            (
-                vecTarget.motionX * firstApproxArrivalTime,
-                0.0D,
-                vecTarget.motionZ * firstApproxArrivalTime
-            );
+//If valid converge time
+        if(convergeTime > 0.0D)
+        {
+//Get target's future offset
+            Vec3d targetFutureOffset = dist0.add(targetMv.scale(convergeTime));
 
-//Get arrival time to target's final predicted distance
-        double secondApproxArrivalTime = secondApproxDist.length() / aimerSpeedFactor;
+//Get aim vector to that offset
+            Vec3d predictiveAimVec = targetFutureOffset.normalize().scale(projVel);
+
+            return predictiveAimVec;
+        }
+//If no positive converge time, 
+//just use direct aim as a fallback
+        else
+        {
+            Vec3d fallbackAim = dist0.normalize().scale(projVel);
+
+            return fallbackAim;
+        }
+    }
+
+//Predictive aim (no vertical)
+    public static Vec3d calcPredictiveAimVecNoVertical(Vec3d dist0, Vec3d targetMv, double projVel)
+    {
+//Remove vertical component of target movement
+        Vec3d targetMvNoVtc = new Vec3d(targetMv.x, 0.0D, targetMv.z);
+
+//Get time to converge to target
+        double convergeTime = calcProjectileConvergeTime(dist0, targetMvNoVtc, projVel);
+
+//If valid converge time
+        if(convergeTime > 0.0D)
+        {
+//Get target's future offset
+            Vec3d targetFutureOffsetNoVtc = dist0.add(targetMvNoVtc.scale(convergeTime));
+
+//Get aim vector to that offset
+            Vec3d predictiveAimVec = targetFutureOffsetNoVtc.normalize().scale(projVel);
+
+            return predictiveAimVec;
+        }
+//If no pos converge, 
+//use fallback linear aim
+        else
+        {
+            Vec3d fallbackAim = dist0.normalize().scale(projVel);
+
+            return fallbackAim;
+        }
+    }
 
 
-        return secondApproxDist;
+/*
+Discriminant
+= (2 * Tmv * d0)² - 4(Tmv² - Pvel²)(d0²)
+
+
+Roots
+= ( -(2 * Tmv * d0) +- sqrt((2 * Tmv * d0)² - 4(Tmv² - Pvel²)(d0²)) )  /  2(Tmv² - Pvel²)
+*/
+    public static double calcProjectileConvergeTime(Vec3d dist0, Vec3d targetMv, double projVel)
+    {
+        double a = (targetMv.dotProduct(targetMv) - projVel * projVel);
+        double b = (2.0D * targetMv.dotProduct(dist0));
+        double c = (dist0.dotProduct(dist0));
+
+        double discriminant = (b * b) - (4.0D * a * c);
+
+
+//Check for valid converge time
+        if(discriminant >= 0.0D)
+        {
+            double rootFirst = ((-1.0D * b) + Math.sqrt(discriminant)) / (2.0D * a);
+            double rootSecond = ((-1.0D * b) - Math.sqrt(discriminant)) / (2.0D * a);
+
+
+//Pick lowest positive root
+            if(rootFirst > 0.0D)
+            {
+                if(rootSecond > 0.0D)
+                {
+                    return (rootSecond < rootFirst) ? rootSecond : rootFirst; 
+                }
+                else
+                {
+                    return rootFirst;
+                }
+            }
+            else
+            {
+                if(rootSecond > 0.0D)
+                {
+                    return rootSecond;
+                }
+//If neither are positive return no valid converge time
+                else
+                {
+                    return -1.0D;
+                }
+            }
+        }
+        else
+        {
+            return -1.0D;
+        }
     }
 
 
 
 
-    @Nullable
-	public static Vec3d predictTargetPositionNoVertical
-    (double aimX, double aimY, double aimZ,
-    Entity target, double aimerSpeed)
-    {
-        double targetDistance = Math.sqrt(Math.pow(target.posX - aimX, 2) + Math.pow(target.posZ - aimZ, 2));
-
-        double ticksUntilHit = targetDistance / aimerSpeed;
-
-        Vec3d targetPos = new Vec3d(target.posX, target.posY + (target.height / 2.0D), target.posZ);
-        Vec3d prevTargetPos = new Vec3d(target.prevPosX, target.prevPosY + (target.height / 2.0D), target.prevPosZ);
-
-        Vec3d targetMovement = targetPos.subtract(prevTargetPos).scale(ticksUntilHit * 0.95);
-        targetMovement = targetMovement.subtract(0, targetMovement.y, 0);
-
-        Vec3d futureTargetPos = targetPos.add(targetMovement);
-
-        Vec3d aimerVec = new Vec3d(aimX, aimY, aimZ);
-
-        Vec3d shootVec = futureTargetPos.subtract(aimerVec).normalize().scale(aimerSpeed);
-
-        return shootVec;
-	}
-
-
-
-
-    public static double simpleSummationDouble(double stepInitial, double stepIncrement, int stepCount)
+    public static double simpleSummationDecimal(double stepInitial, double stepIncrement, int stepCount)
     {
         double currentStep = stepInitial;
         double accumulatedTotal = 0.0D;
@@ -239,6 +355,50 @@ public final class AbsurdcraftMathUtils {
 
         return accumulatedTotal;
     }
+
+
+
+
+//Make cone of vectors,
+//constructed using trigonometry
+    public static ArrayList<Vec3d> shootCone(Vec3d trigAdjacent, double coneAngle, int pointCount)
+    {
+        ArrayList<Vec3d> conePoints = new ArrayList<>(pointCount);
+
+
+//Orthonormal basis of the original forward direction
+        Vec3d[] forwardBasis = makeOrthonormalBasis(trigAdjacent);
+//Get its axes
+        Vec3d orthoRight = forwardBasis[0];
+        Vec3d orthoUp = forwardBasis[1];
+        Vec3d orthoForward = forwardBasis[2];
+
+        
+//For each point in cone
+        double circumStep = (2.0D * Math.PI) / pointCount;
+        for(int pointAt = 0; pointAt < pointCount; pointAt++)
+        {
+            double circumAt = circumStep * pointAt;
+
+//Get the circular direction
+            Vec3d circumAtDir = orthoRight.scale(Math.cos(circumAt)).add(orthoUp.scale(Math.sin(circumAt)));
+//Scale circular direction 
+//by length of cone and tan of cone's angle
+            Vec3d trigOpposite = circumAtDir.scale(trigAdjacent.length()).scale(Math.tan(coneAngle / 2.0D)); 
+
+//Get hypothenuse of cone point,
+//using forward direction as cos and circular direction as sin
+            Vec3d conePointHypothenuse = trigAdjacent.add(trigOpposite);
+      
+//Add hypothenuse to cone points
+            conePoints.add(conePointHypothenuse);
+        }
+
+
+//Return total cone points
+        return conePoints;
+    }
+
 
 
 

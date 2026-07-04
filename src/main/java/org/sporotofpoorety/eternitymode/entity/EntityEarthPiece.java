@@ -342,7 +342,7 @@ public class EntityEarthPiece extends EntityWithOwner
     {
         super.onUpdate();
 
-        if(this.world.isRemote) { return; } else { if(this.realTicksExisted % 20 == 0 && this.owner != null) { System.out.println("Piece exists and has owner"); } }
+        if(this.world.isRemote) { return; } else { if(this.realTicksExisted % 20 == 0) { System.out.println("Piece exists"); } }
 
 
 //If no owner

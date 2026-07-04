@@ -17,11 +17,16 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+
 import org.sporotofpoorety.eternitymode.entity.EntityThrownBlock;
 
 
 
 
+@SideOnly(Side.CLIENT)
 public class RenderThrownBlock extends Render<EntityThrownBlock>
 {
     public RenderThrownBlock(RenderManager renderManagerIn)

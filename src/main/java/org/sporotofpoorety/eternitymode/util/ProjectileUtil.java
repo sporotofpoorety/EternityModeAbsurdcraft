@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 import electroblob.wizardry.util.ParticleBuilder;
 
@@ -48,59 +49,39 @@ public final class ProjectileUtil {
 
 
 
-    public static ArrayList<Vec3d> aimedFibonacciSpread
-    (double aimX, double aimY, double aimZ, double targetX, double targetY, double targetZ,
+//Spherical shotgun (linear)
+    public static ArrayList<Vec3d> fibonacciSpreadAimed
+    (double aimX, double aimY, double aimZ, 
+    double targetX, double targetY, double targetZ,
     int pointCount, double coneRadians)
     {
-//Fibonacci spread aimed from one point to another
+//From one point to another
         return AbsurdcraftMathUtils.fibonacciDirectionalSpread
             (new Vec3d(targetX - aimX, targetY - aimY, targetZ - aimZ), 
                 pointCount, coneRadians);     
     }
 
 
-    public static ArrayList<Vec3d> predictiveFibonacciSpread(double aimX, double aimY, double aimZ,
-    Entity vecTarget, double aimerSpeedFactor,
-    int pointCount, double coneRadians)
+//Spherical shotgun (predictive)
+    public static ArrayList<Vec3d> fibonacciSpreadPredictive
+    (World worldIn, Entity aimerEntity, Entity vecTarget, 
+    double aimX, double aimY, double aimZ, double projVel,
+    int pointCount, double coneRadians,
+    boolean canPredictVertical, double verticalThreshold)
     {
-        Vec3d predictiveVec = AbsurdcraftMathUtils.generatePredictiveAimVectorNoVertical(aimX, aimY, aimZ, vecTarget, aimerSpeedFactor);
+//If target is valid
+        if(vecTarget != null)
+        {
+//Get prediction vector
+            Vec3d predictiveVec = AbsurdcraftMathUtils.calcPredictiveAimDynamicVertical
+                (new Vec3d(vecTarget.posX - aimX, vecTarget.posY - aimY, vecTarget.posZ - aimZ), vecTarget, projVel, canPredictVertical, verticalThreshold);
 
 //Fibonacci spread aimed from 
 //aim pos to target entity's predicted movement
-        return AbsurdcraftMathUtils.fibonacciDirectionalSpread
-            (new Vec3d(predictiveVec.x, predictiveVec.y, predictiveVec.z), 
-                pointCount, coneRadians);
-    }
-
-
-
-
-//Shotgun with entity-based position to aim from
-    public static ArrayList<Vec3d> flexibleFibonnaciShotgunEntity(Entity aimerEntity, Entity targetEntity,
-    int projectileCount, double coneRadians, int aimMode, double shotSpeed)
-    {
-//Directions to shoot at
-        ArrayList<Vec3d> spreadDirections = new ArrayList<>();
-
-
-//If target is valid
-        if(targetEntity != null)
-        {
-//Direct aim
-            if(aimMode == 0) 
-            { 
-                spreadDirections.addAll(aimedFibonacciSpread(
-                    aimerEntity.posX, aimerEntity.posY, aimerEntity.posZ, 
-                    targetEntity.posX, targetEntity.posY, targetEntity.posZ, projectileCount, coneRadians)); 
-            }
-//Predictive aim
-            if(aimMode == 1) 
-            { 
-                spreadDirections.addAll(predictiveFibonacciSpread(
-                    aimerEntity.posX, aimerEntity.posY, aimerEntity.posZ, targetEntity, shotSpeed, projectileCount, coneRadians)); 
-            }
+            return AbsurdcraftMathUtils.fibonacciDirectionalSpread
+                (new Vec3d(predictiveVec.x, predictiveVec.y, predictiveVec.z), 
+                    pointCount, coneRadians);
         }
-//If no valid target
         else
         {
 //Random base direction
@@ -108,60 +89,14 @@ public final class ProjectileUtil {
                 aimerEntity.world.rand.nextDouble(), aimerEntity.world.rand.nextDouble(), aimerEntity.world.rand.nextDouble());
 
 //Make fibonacci spread
-            spreadDirections.addAll(AbsurdcraftMathUtils.fibonacciDirectionalSpread(randomDirection, projectileCount, coneRadians));
+            return AbsurdcraftMathUtils.fibonacciDirectionalSpread(randomDirection, pointCount, coneRadians);
         }
-
-
-//Return shotgun vectors
-        return spreadDirections;
-    }
-
-
-//Shotgun with manual position to aim from
-    public static ArrayList<Vec3d> flexibleFibonnaciShotgunCoord(double aimX, double aimY, double aimZ, 
-    Entity aimerEntity, Entity targetEntity,
-    int projectileCount, double coneRadians, int aimMode, double shotSpeed)
-    {
-//Directions to shoot at
-        ArrayList<Vec3d> spreadDirections = new ArrayList<>();
-
-
-//If target is valid
-        if(targetEntity != null)
-        {
-//Direct aim
-            if(aimMode == 0) 
-            { 
-                spreadDirections.addAll(aimedFibonacciSpread(
-                    aimX, aimY, aimZ,
-                    targetEntity.posX, targetEntity.posY, targetEntity.posZ, projectileCount, coneRadians)); 
-            }
-//Predictive aim
-            if(aimMode == 1) 
-            { 
-                spreadDirections.addAll(predictiveFibonacciSpread(
-                    aimX, aimY, aimZ, targetEntity, shotSpeed, projectileCount, coneRadians)); 
-            }
-        }
-//If no valid target
-        else
-        {
-//Random base direction
-            Vec3d randomDirection = new Vec3d(
-                aimerEntity.world.rand.nextDouble(), aimerEntity.world.rand.nextDouble(), aimerEntity.world.rand.nextDouble());
-
-//Make fibonacci spread
-            spreadDirections.addAll(AbsurdcraftMathUtils.fibonacciDirectionalSpread(randomDirection, projectileCount, coneRadians));
-        }
-
-
-//Return shotgun vectors
-        return spreadDirections;
     }
 
 
 
 
+/*
 //Shoot aimer-based shotgun
     public static void shootAimedFireballSpreadEntity(EntityLivingBase ownerEntity, Entity aimerEntity, Entity targetEntity,
     int projectileCount, double coneRadians, int aimMode, 
@@ -237,4 +172,5 @@ public final class ProjectileUtil {
             aimerEntity.world.spawnEntity(entitySplit);
         }
     }
+*/
 }

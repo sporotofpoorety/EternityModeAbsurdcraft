@@ -17,11 +17,13 @@ import org.sporotofpoorety.eternitymode.events.*;
 
 @Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION,
         guiFactory = "org.sporotofpoorety.eternitymode.config.EternityModeFactoryGui", dependencies= "required-after:mixinbooter@[10.1,);required-after:ebwizardry;required-after:cleanroom@[0.3.27-alpha,);required-after:potioncore;required:srpabsurdcraft")
-public class EternityModeAbsurdcraft {
+public class EternityModeAbsurdcraft 
+{
 
     public static final Logger LOGGER = LogManager.getLogger(Tags.MOD_NAME);
 
-    @SidedProxy(
+    @SidedProxy
+    (
         clientSide = "org.sporotofpoorety.eternitymode.core.EternityModeClientProxy",
         serverSide = "org.sporotofpoorety.eternitymode.core.EternityModeCommonProxy"
     )
@@ -34,7 +36,8 @@ public class EternityModeAbsurdcraft {
      * </a>
      */
     @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
+    public void preInit(FMLPreInitializationEvent event) 
+    {
 //      LOGGER.info("Hello From {}!", Tags.MOD_NAME);
 
 
@@ -42,6 +45,7 @@ public class EternityModeAbsurdcraft {
 		EternityModeConfig.load(event);
         MinecraftForge.EVENT_BUS.register(new EternityModeEntityEvents());
         MinecraftForge.EVENT_BUS.register(new EternityModePlayerEvents());
+        MinecraftForge.EVENT_BUS.register(new EternityModeAfterimageEvents());
     }
 
 }
