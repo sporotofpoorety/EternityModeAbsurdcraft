@@ -29,10 +29,13 @@ public class EternityModeTextureRegistry
     public static TextureAtlasSprite[] UNDERWATER_BLASTWAVE_SPRITES;
 
 
+//Take a texture map,
+//a resourcelocation name, and frame count
     private static TextureAtlasSprite[] registerSprites(TextureMap map, String baseName, int frameCount) 
     {
         TextureAtlasSprite[] sprites = new TextureAtlasSprite[frameCount];
 
+//Then fill that texture atlas with resource locations
         for (int i = 0; i < frameCount; i++) 
         {
             ResourceLocation location = new ResourceLocation(Tags.MOD_ID, "particle/" + baseName + (i + 1));
@@ -50,14 +53,14 @@ public class EternityModeTextureRegistry
         TextureMap map = event.getMap();
 
         BLANK_SPRITE = map.registerSprite(new ResourceLocation(Tags.MOD_ID, "particle/blank"));
-        BUBBLE_SPRITE = map.registerSprite(new ResourceLocation(Tags.MOD_ID, "particle/bubble"));
+        BUBBLE_SPRITE = map.registerSprite(new ResourceLocation(Tags.MOD_ID, "particle/explosion/bubble"));
 
-        BLASTWAVE_SPRITES = registerSprites(map, "blastwave", 21);
-        FIREBALL_SPRITES = registerSprites(map, "fireball", 9);
-        SHOCKWAVE_SPRITES = registerSprites(map, "shockwave", 16);
-        SMOKE_SPRITES = registerSprites(map, "smoke", 12);
-        SPARKS_SPRITES = registerSprites(map, "spark", 4);
-        UNDERWATER_BLASTWAVE_SPRITES = registerSprites(map, "underwaterblastwave", 21);
+        BLASTWAVE_SPRITES = registerSprites(map, "explosion/blastwave", 21);
+        FIREBALL_SPRITES = registerSprites(map, "explosion/fireball", 9);
+        SHOCKWAVE_SPRITES = registerSprites(map, "explosion/shockwave", 16);
+        SMOKE_SPRITES = registerSprites(map, "explosion/smoke", 12);
+        SPARKS_SPRITES = registerSprites(map, "explosion/spark", 4);
+        UNDERWATER_BLASTWAVE_SPRITES = registerSprites(map, "explosion/underwaterblastwave", 21);
     }
 
 }

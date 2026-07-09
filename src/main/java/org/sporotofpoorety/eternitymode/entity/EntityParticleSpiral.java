@@ -143,23 +143,23 @@ public class EntityParticleSpiral extends EntityWithOwner
 
     public void preArmLogic()
     {
-            for (int particleAt = 0; particleAt < 2; particleAt++)
-            {
-                float randomAngle = this.rand.nextFloat() * (2F * (float) Math.PI);
-                float randomExtent = this.rand.nextFloat() * (float) this.damageRadius;
+        for (int particleAt = 0; particleAt < 2; particleAt++)
+        {
+            float randomAngle = this.rand.nextFloat() * (2F * (float) Math.PI);
+            float randomExtent = this.rand.nextFloat() * (float) this.damageRadius;
 
 //Particle offset at random angle and distance from center
-                float particleOffsetX = MathHelper.sin(randomAngle) * randomExtent;
-                float particleOffsetZ = MathHelper.cos(randomAngle) * randomExtent;
+            float particleOffsetX = MathHelper.sin(randomAngle) * randomExtent;
+            float particleOffsetZ = MathHelper.cos(randomAngle) * randomExtent;
 
 //Offset from the spiral center
-                double particlePositionX = this.posX + (double) particleOffsetX;
-                double particlePositionY = this.posY + (this.rand.nextDouble() * this.damageHeight); 
-                double particlePositionZ = this.posZ + (double) particleOffsetZ;
+            double particlePositionX = this.posX + (double) particleOffsetX;
+            double particlePositionY = this.posY + (this.rand.nextDouble() * this.damageHeight); 
+            double particlePositionZ = this.posZ + (double) particleOffsetZ;
 
 //Lava particles
-                this.world.spawnParticle(EnumParticleTypes.LAVA, particlePositionX, particlePositionY, particlePositionZ, 0.0D, 0.0D, 0.0D);
-            }
+            this.world.spawnParticle(EnumParticleTypes.LAVA, particlePositionX, particlePositionY, particlePositionZ, 0.0D, 0.0D, 0.0D);
+        }
     }
 
 

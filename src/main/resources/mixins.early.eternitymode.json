@@ -7,8 +7,11 @@
 	"compatibilityLevel": "JAVA_8",
 	"mixins": [
         "MixinEntity",
+        "MixinEntityCreeper",
         "MixinEntityLiving",
         "MixinEntityLivingBase",
+        "MixinEntityMob",
+        "MixinEntityPlayer",
         "MixinEntitySlime"
     ],
 	"server": [],

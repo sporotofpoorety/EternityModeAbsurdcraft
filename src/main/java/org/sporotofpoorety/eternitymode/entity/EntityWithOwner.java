@@ -42,6 +42,8 @@ public abstract class EntityWithOwner extends Entity
 
     public boolean dontMove;
 
+    public float damageVal;
+
 
 
 
@@ -102,6 +104,8 @@ public abstract class EntityWithOwner extends Entity
         compound.setDouble("AccelerationVal", this.accelerationVal);
 
         compound.setBoolean("DontMove", this.dontMove);
+
+        compound.setFloat("DamageVal", this.damageVal);
     }
 
     protected void readEntityFromNBT(NBTTagCompound compound)
@@ -127,6 +131,8 @@ public abstract class EntityWithOwner extends Entity
         if (compound.hasKey("AccelerationVal")) { this.accelerationVal = compound.getDouble("AccelerationVal"); }
 
         if (compound.hasKey("DontMove")) { this.dontMove = compound.getBoolean("DontMove"); }
+
+        if (compound.hasKey("DamageVal")) { this.damageVal = compound.getFloat("DamageVal"); }
     }
 
 

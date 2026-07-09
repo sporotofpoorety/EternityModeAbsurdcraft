@@ -251,8 +251,8 @@ as a flag against their reapplication
                     event.player.sendMessage(new TextComponentTranslation
                     (
                             "chat.type.text",
-                            "Gabriel the Disgraced",
-                            new TextComponentString("§cMy immortality is waning, if i die again too shortly, i'll be gone for good.")
+                            "Voice in the back of your head",
+                            new TextComponentString("§cYOUR RESURRECTION IS WANING, LIKE WISPY TWITCHING CANDLEWAX. A CHILD OVERPOWERED AND DEVOURED BY A FILTHY MASS. KNOWING THE AGONY OF THE PREY ANIMAL. RESISTING THE ENLIGHTENMENT OF IMMACULATE TREPIDATION. WILL YOU INSIST, THIS OH-SO-NOBLE SERVICE, THIS VALIANT STUPIDITY? YOUR SPILT ENTRAILS ONLY FURTHER ENRAGE THOSE GLORIOUS AND WISENED. FODDER AND FOOL TO AN IMMACULATE DEATH SPIRAL.")
                     ));
 */
             }
@@ -281,7 +281,7 @@ as a flag against their reapplication
 //With permadeath message
 /*
                 event.player.sendMessage
-                    (new TextComponentString("§cGAME OVER."));
+                    (new TextComponentString("§cUNREMARKABLE, THE DEATH OF A NOBODY. UNREMARKABLE, PITIFUL FAILURE. UNREMARKABLE, ABSURD PUNCHLINE. SO DULY DELIVERED - A TIRED BEAT. MY THESIS REMAINS DEVASTATINGLY SUPERIOR, AND SO I GRANT YOU MY DEAREST THANKS. PERFECT CASE STUDY ON THE WRETCHED DESTINY OF YOUR KIND."));
 */
             }
         }
@@ -305,9 +305,9 @@ as a flag against their reapplication
 /*
                         event.player.sendMessage(new TextComponentTranslation
                         (
-                                "chat.type.text",
-                                "Gabriel the Disgraced",
-                                new TextComponentString("§cMy immortality has had time to regenerate, i suppose i'm safe... for now.")
+                            "chat.type.text",
+                            "Voice in the back of your head",
+                            new TextComponentString("§cRESURRECTION HAS RECOVERED. LEAVING THE STRINGENT AFTERTASTE OF SUFFOCATION. TAKING THE POUND OF FLESH FROM THE EVOLUTIONARILY DEFECTUOUS. YOU PUSH ONWARDS WITH ONLY THE MOST CANDID OF WARCRIES. YET OZYMANDIAS LAY LOW IN HIS GRAVE WHERE NONE MAY HEAR HIS SCREAMS.")
                         ));
 */
                     }

@@ -9,9 +9,11 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
+import net.minecraftforge.fml.common.registry.EntityRegistry;
 
 
 import org.sporotofpoorety.eternitymode.Tags;
+import org.sporotofpoorety.eternitymode.core.EternityModeAbsurdcraft;
 import org.sporotofpoorety.eternitymode.entity.*;
 import org.sporotofpoorety.eternitymode.entity.projectile.*;
 
@@ -63,6 +65,8 @@ public class EternityModeEntityRegistry
     }
 
 
+
+
 //Register spawnable entity
 //with default render tracker range and frequency
     private static <T extends Entity> void registerSpawnable
@@ -109,6 +113,7 @@ public class EternityModeEntityRegistry
 
 
 
+
 //IDs go up
     private static int id = 676869;
 //List of entities to register
@@ -127,6 +132,7 @@ public class EternityModeEntityRegistry
         registerUnspawnable(event, EntityMeteorBlockHoming.class, "meteor_block_homing", id++, 200, 1);
         registerUnspawnable(event, EntityThrownBlock.class, "thrown_block", id++, 200, 1);
         registerUnspawnable(event, EntityParticleSpiral.class, "entity_spiral_particle", id++);
+        //EntityRegistry.registerModEntity(new ResourceLocation(Tags.MOD_ID, "demon_scythe"), EntityDemonScythe.class, "demon_scythe", id++, EternityModeAbsurdcraft.INSTANCE, 128, 1, true);
         registerUnspawnable(event, EntityDemonScythe.class, "demon_scythe", id++);
         registerUnspawnable(event, EntityDarkShotLinear.class, "dark_shot_linear", id++);
     }

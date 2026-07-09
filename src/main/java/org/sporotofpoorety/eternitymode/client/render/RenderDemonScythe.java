@@ -25,7 +25,7 @@ import org.sporotofpoorety.eternitymode.entity.EntityDemonScythe;
 @SideOnly(Side.CLIENT)
 public class RenderDemonScythe extends Render<EntityDemonScythe>
 {
-    private static final ResourceLocation textureEmpty = new ResourceLocation("eternitymode:textures/entity/empty.png");
+    private static final ResourceLocation textureEmpty = new ResourceLocation("eternitymode:textures/empty.png");
     private static final IModelCustom mainObj = AdvancedModelLoader.loadModel(new ResourceLocation("eternitymode:textures/entity/demonscythe.obj"));
 
     public RenderDemonScythe(RenderManager renderManager) 

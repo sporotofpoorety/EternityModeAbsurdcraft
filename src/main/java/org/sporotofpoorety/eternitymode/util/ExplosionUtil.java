@@ -67,9 +67,9 @@ public final class ExplosionUtil
                             double entityDist = Math.sqrt
                             (Math.pow(affectedEntity.posX - atX, 2) + Math.pow(affectedEntity.posY - atY, 2) + Math.pow(affectedEntity.posZ - atZ, 2));
 
-                            affectedEntity.motionX += ((affectedEntity.posX - atX) * pushForce / Math.max(1.0D, entityDist));
-                            affectedEntity.motionY += ((affectedEntity.posY - atY) * pushForce / Math.max(1.0D, entityDist));
-                            affectedEntity.motionZ += ((affectedEntity.posZ - atZ) * pushForce / Math.max(1.0D, entityDist));
+                            affectedEntity.motionX += pushForce * (affectedEntity.posX - atX) / entityDist;
+                            affectedEntity.motionY += pushForce * (affectedEntity.posY - atY) / entityDist;
+                            affectedEntity.motionZ += pushForce * (affectedEntity.posZ - atZ) / entityDist;
                         }
                     }
                 }

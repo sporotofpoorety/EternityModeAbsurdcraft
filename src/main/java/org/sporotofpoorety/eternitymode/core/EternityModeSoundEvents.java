@@ -19,6 +19,7 @@ public class EternityModeSoundEvents
 	public static final SoundEvent ENTITY_DIZZY = createSoundEvent("entity.dizzy");
 	public static final SoundEvent ENTITY_DIZZY_BOSS = createSoundEvent("entity.dizzyboss");
 	public static final SoundEvent ENTITY_GAUSS_NUKE = createSoundEvent("entity.gaussnuke");
+	public static final SoundEvent ENTITY_SCYTHE_SWING = createSoundEvent("entity.scytheswing");
 	public static final SoundEvent ENTITY_SLAM_EXPLOSION = createSoundEvent("entity.slamexplosion");
 	public static final SoundEvent ENTITY_STAR_WINDUP = createSoundEvent("entity.starwindup");
 	public static final SoundEvent ENTITY_TACTICAL_NUKE = createSoundEvent("entity.tacticalnuke");
@@ -56,7 +57,8 @@ public class EternityModeSoundEvents
 
 
 	@Mod.EventBusSubscriber(modid = Tags.MOD_ID)
-	public static class RegistrationHandler {
+	public static class RegistrationHandler 
+    {
 		@SubscribeEvent
 		public static void registerSoundEvents(final RegistryEvent.Register<SoundEvent> event) 
         {
@@ -67,6 +69,7 @@ public class EternityModeSoundEvents
                     ENTITY_DIZZY,
                     ENTITY_DIZZY_BOSS,
                     ENTITY_GAUSS_NUKE,
+                    ENTITY_SCYTHE_SWING,
                     ENTITY_SLAM_EXPLOSION,
                     ENTITY_STAR_WINDUP,
                     ENTITY_TACTICAL_NUKE,
