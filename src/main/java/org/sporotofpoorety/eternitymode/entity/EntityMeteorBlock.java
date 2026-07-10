@@ -185,7 +185,7 @@ public class EntityMeteorBlock extends EntityThrownBlock
 
     public void meteorExplode()
     {
-        ExplosionUtil.performOptimizedExplosion(this.world, this.owner, this.posX, this.posY + (this.height / 2.0D), this.posZ,
+        ExplosionUtil.performOptimizedExplosion(this.world, this, this.owner, this.posX, this.posY + (this.height / 2.0D), this.posZ,
             this.explosionPower, true, this.thrownBlockDamage, true, 3.0D, this.explosionDestruction, 9999999.0F, this.explosionFire, 
             true, 1, true);
 

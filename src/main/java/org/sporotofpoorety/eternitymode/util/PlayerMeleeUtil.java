@@ -37,7 +37,7 @@ public final class PlayerMeleeUtil
     public static boolean isCriticalHit(EntityPlayer player, Entity target) 
     {
 //Swing nearly fully ready?
-        float attackCharge = player.getCooledAttackStrength(0.5F);
+        float attackCharge = getLatestCharge(player);
         if (attackCharge < 0.9f) { return false; }
         
 

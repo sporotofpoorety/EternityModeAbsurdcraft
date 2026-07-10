@@ -56,7 +56,7 @@ public class EntityDemonScythe extends EntityWithOwner
 //Particles on expire
     public void onLifetimeExpire()
     {
-        for (int particleAt = 0; particleAt < 1000; ++particleAt)
+        for (int particleAt = 0; particleAt < 2000; ++particleAt)
         {
             this.world.spawnParticle(EnumParticleTypes.PORTAL, 
             this.posX + (this.rand.nextDouble() - 0.5D) * 6.0D, 
@@ -77,7 +77,7 @@ public class EntityDemonScythe extends EntityWithOwner
 //Die and particles on collide
         if(!this.world.isRemote && this.world.collidesWithAnyBlock(this.getEntityBoundingBox().grow(1.5D, 0.1D, 1.5D))) 
         {
-            for (int particleAt = 0; particleAt < 1000; ++particleAt)
+            for (int particleAt = 0; particleAt < 2000; ++particleAt)
             {
                 this.world.spawnParticle(EnumParticleTypes.PORTAL, 
                 this.posX + (this.rand.nextDouble() - 0.5D) * 6.0D, 
@@ -98,7 +98,7 @@ public class EntityDemonScythe extends EntityWithOwner
 
         if(!this.world.isRemote)
         {
-            for (int particleAt = 0; particleAt < 20; ++particleAt)
+            for (int particleAt = 0; particleAt < 40; ++particleAt)
             {
                 this.world.spawnParticle(EnumParticleTypes.PORTAL, 
                 this.posX + (this.rand.nextDouble() - 0.5D) * 3.5D, 

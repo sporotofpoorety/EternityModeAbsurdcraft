@@ -38,28 +38,32 @@ import org.sporotofpoorety.eternitymode.util.BlockUtil;
 public final class ExplosionUtil 
 {
 
-    public static void performOptimizedExplosion(World worldIn, EntityLivingBase caster, double atX, double atY, double atZ,
+    public static void performOptimizedExplosion(World worldIn, Entity directSrc, EntityLivingBase indirSrc, double atX, double atY, double atZ,
     double radius, boolean dealsDamage, float damage, boolean hasPush, double pushForce, boolean breakBlocks, float breakHardness, boolean setsFire, 
     boolean hasParticles, int particleType, boolean hasSound)
     {
 
-        if(caster != null)
+        if(indirSrc != null)
         {
 //Simple AABB damage and knockback check
             if(dealsDamage)
             {
 //AABB and entities
                 AxisAlignedBB explosionAABB = new AxisAlignedBB(atX - radius, atY - radius, atZ - radius, atX + radius, atY + radius, atZ + radius);
-                List<Entity> affectedEntities = worldIn.getEntitiesWithinAABBExcludingEntity(caster, explosionAABB);
+                List<Entity> affectedEntities = worldIn.getEntitiesWithinAABBExcludingEntity(indirSrc, explosionAABB);
 
 
 //Hit entity if living, not same team as caster, not immune to explosions
                 for(Entity affectedEntity : affectedEntities)
                 {
-                    if(affectedEntity instanceof EntityLivingBase && !affectedEntity.isOnSameTeam(caster)
+                    if(affectedEntity instanceof EntityLivingBase && !affectedEntity.isOnSameTeam(indirSrc)
                     && !affectedEntity.isImmuneToExplosions())
                     {
-                        affectedEntity.attackEntityFrom(DamageSource.causeExplosionDamage(caster), damage);
+//Direct dmg
+                        if(directSrc == indirSrc) { affectedEntity.attackEntityFrom(DamageSource.causeExplosionDamage(indirSrc), damage); }
+//Indirect dmg
+                        else { affectedEntity.attackEntityFrom(DamageSource.causeIndirectDamage(directSrc, indirSrc).setExplosion(), damage); }
+
 
 //If has push, push entity
                         if(hasPush)

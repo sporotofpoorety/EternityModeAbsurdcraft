@@ -139,7 +139,7 @@ public class EntityExplosiveShockwave extends EntityWithOwner
 //Periodic explosions
             if((this.realTicksExisted % this.explosionTimer) == 0)
             {
-                ExplosionUtil.performOptimizedExplosion(this.world, this.owner, this.posX, this.posY, this.posZ,
+                ExplosionUtil.performOptimizedExplosion(this.world, this, this.owner, this.posX, this.posY, this.posZ,
                     this.explosionRadius, !this.harmlessSwitch, this.explosionDamage, this.explosionPush, this.explosionPushForce, false, 9999.0F, this.explosionFire, 
                     true, this.explosionParticleType, false);
 
