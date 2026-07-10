@@ -119,7 +119,6 @@ public abstract class EntityWithOwner extends Entity
         if (compound.hasKey("OwnerUUID")) 
         { 
             this.ownerUUID = compound.getUniqueId("OwnerUUID"); 
-            this.validateOwner();
         }
 
 
@@ -151,6 +150,9 @@ public abstract class EntityWithOwner extends Entity
                 this.setDead();
                 return;
             }
+
+//Try to restore owner
+            this.validateOwner();
 
 //Recreate puppet entities from stored data
             this.recreatePuppetEntities();
@@ -248,6 +250,7 @@ public abstract class EntityWithOwner extends Entity
 //and owner conditions met
                 if(foundEntity != null && this.ownerValidConditions(foundEntity))
                 {
+                    System.out.println("OWNER RESTORED!");
 //Restore owner
                     this.owner = (EntityLivingBase) foundEntity;
 //Check successful
