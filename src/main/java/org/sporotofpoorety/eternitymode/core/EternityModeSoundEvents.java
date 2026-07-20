@@ -19,6 +19,7 @@ public class EternityModeSoundEvents
 	public static final SoundEvent ENTITY_DIZZY = createSoundEvent("entity.dizzy");
 	public static final SoundEvent ENTITY_DIZZY_BOSS = createSoundEvent("entity.dizzyboss");
 	public static final SoundEvent ENTITY_GAUSS_NUKE = createSoundEvent("entity.gaussnuke");
+	public static final SoundEvent ENTITY_SCYTHE_DEMON = createSoundEvent("entity.scythedemon");
 	public static final SoundEvent ENTITY_SCYTHE_SWING = createSoundEvent("entity.scytheswing");
 	public static final SoundEvent ENTITY_SLAM_EXPLOSION = createSoundEvent("entity.slamexplosion");
 	public static final SoundEvent ENTITY_STAR_WINDUP = createSoundEvent("entity.starwindup");
@@ -69,6 +70,7 @@ public class EternityModeSoundEvents
                     ENTITY_DIZZY,
                     ENTITY_DIZZY_BOSS,
                     ENTITY_GAUSS_NUKE,
+                    ENTITY_SCYTHE_DEMON,
                     ENTITY_SCYTHE_SWING,
                     ENTITY_SLAM_EXPLOSION,
                     ENTITY_STAR_WINDUP,

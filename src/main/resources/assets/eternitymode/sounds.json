@@ -39,6 +39,14 @@
             "eternitymode:entity/gaussnuke"
         ]
     },
+    "entity.scythedemon":
+    {
+        "category": "neutral",
+        "sounds":
+        [
+            "eternitymode:entity/scythedemon"
+        ]
+    },
     "entity.scytheswing":
     {
         "category": "neutral",

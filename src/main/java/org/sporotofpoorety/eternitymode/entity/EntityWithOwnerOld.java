@@ -111,7 +111,7 @@ public abstract class EntityWithOwnerOld extends Entity
         if (compound.hasKey("RealTicksExisted")) { this.realTicksExisted = compound.getInteger("RealTicksExisted"); }
         if (compound.hasKey("LifetimeMax")) { this.lifetimeMax = compound.getInteger("LifetimeMax"); }
 
-        if (compound.hasKey("OwnerUUID")) 
+        if (compound.hasUniqueId("OwnerUUID")) 
         { 
             this.ownerUUID = compound.getUniqueId("OwnerUUID"); 
             this.validateOwner();

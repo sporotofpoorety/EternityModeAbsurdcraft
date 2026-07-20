@@ -28,7 +28,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
 import org.sporotofpoorety.eternitymode.config.EternityModeConfigGeneral;
 import org.sporotofpoorety.eternitymode.config.EternityModeConfigPlayerAttributes;
-import org.sporotofpoorety.eternitymode.util.MiscUtil;
+import org.sporotofpoorety.eternitymode.util.NBTUtil;
 
 import com.tmtravlr.potioncore.PotionCoreAttributes;
 
@@ -112,8 +112,8 @@ as a flag against their reapplication
 
 
 //Get persistent NBT
-        NBTTagCompound forgeData = MiscUtil.compoundInCompound("ForgeData", playerNBT);
-        NBTTagCompound playerPersisted = MiscUtil.compoundInCompound("PlayerPersisted", forgeData);
+        NBTTagCompound forgeData = NBTUtil.compoundInCompound("ForgeData", playerNBT);
+        NBTTagCompound playerPersisted = NBTUtil.compoundInCompound("PlayerPersisted", forgeData);
 //And log count
         Integer logCount = playerPersisted.getInteger("logCount");
 

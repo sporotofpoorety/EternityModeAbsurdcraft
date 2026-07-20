@@ -16,6 +16,8 @@ public class EntityDarkShotLinear extends EntityProjectileLinear
     public EntityDarkShotLinear(World worldIn) 
     {
         super(worldIn);
+
+        this.setSize(1.0F, 1.0F);
     }
 
     public EntityDarkShotLinear(World worldIn, double x, double y, double z, 

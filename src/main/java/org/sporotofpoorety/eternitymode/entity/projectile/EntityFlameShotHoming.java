@@ -12,13 +12,14 @@ import net.minecraft.world.World;
 
 import org.sporotofpoorety.eternitymode.entity.projectile.EntityFlameShotLinear;
 import org.sporotofpoorety.eternitymode.entity.projectile.EntityProjectileHoming;
-import org.sporotofpoorety.eternitymode.util.AbsurdcraftMathUtils;
 import org.sporotofpoorety.eternitymode.util.ExplosionUtil;
+import org.sporotofpoorety.eternitymode.util.ParticleUtil;
 import org.sporotofpoorety.eternitymode.util.ProjectileUtil;
 
 
 
-public class EntityFlameShotHoming extends EntityProjectileHoming {
+public class EntityFlameShotHoming extends EntityProjectileHoming 
+{
 
 
     int fireDuration;
@@ -143,7 +144,7 @@ public class EntityFlameShotHoming extends EntityProjectileHoming {
 
 		if(world.isRemote)
         {
-            ProjectileUtil.particlesFireball(this, this.particleLifetime, this.particleDensity, this.particleVelocity);
+            ParticleUtil.particlesFireball(this, this.particleLifetime, this.particleDensity, this.particleVelocity);
 		}
     }
 

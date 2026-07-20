@@ -8,7 +8,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 import org.sporotofpoorety.eternitymode.entity.projectile.EntityProjectileBouncing;
-import org.sporotofpoorety.eternitymode.util.ProjectileUtil;
+import org.sporotofpoorety.eternitymode.util.ParticleUtil;
 
 
 
@@ -100,7 +100,7 @@ public class EntityFlameShotBouncing extends EntityProjectileBouncing {
 
 		if(world.isRemote)
         {
-            ProjectileUtil.particlesFireball(this, this.particleLifetime, this.particleDensity, this.particleVelocity);
+            ParticleUtil.particlesFireball(this, this.particleLifetime, this.particleDensity, this.particleVelocity);
 		}
     }
 

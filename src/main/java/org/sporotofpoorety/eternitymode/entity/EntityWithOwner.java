@@ -29,7 +29,7 @@ public abstract class EntityWithOwner extends Entity
     public int realTicksExisted = 0;
     public int lifetimeMax = -1;
 
-    public EntityLivingBase owner;
+    public EntityLivingBase owner = null;
     public UUID ownerUUID;
     public boolean previousValidateOwnerFailed;
 
@@ -116,11 +116,10 @@ public abstract class EntityWithOwner extends Entity
         if (compound.hasKey("RealTicksExisted")) { this.realTicksExisted = compound.getInteger("RealTicksExisted"); }
         if (compound.hasKey("LifetimeMax")) { this.lifetimeMax = compound.getInteger("LifetimeMax"); }
 
-        if (compound.hasKey("OwnerUUID")) 
+        if (compound.hasUniqueId("OwnerUUID")) 
         { 
             this.ownerUUID = compound.getUniqueId("OwnerUUID"); 
         }
-
 
         if (compound.hasKey("PuppetsStoredType")) { this.puppetsStoredType = compound.getString("PuppetsStoredType"); }
         PuppetNBT.nbtReadPuppetList(this, compound);
@@ -234,34 +233,29 @@ public abstract class EntityWithOwner extends Entity
 //Validate owner and return if successful
     public boolean validateOwner()
     {
-
 //If there is a owner UUID
-        if(this.ownerUUID != null)
+        if(this.ownerUUID != null && this.world instanceof WorldServer)
         {
-//But no valid owner 
-            if(this.owner == null)
+//But no owner
+            if(owner == null)
             {
 //Try to get owner from UUID
-                Entity foundEntity  
-                = ((WorldServer)world).getEntityFromUuid(this.ownerUUID);
-
+                EntityLivingBase foundEntity  
+                = (EntityLivingBase) ((WorldServer)this.world).getEntityFromUuid(this.ownerUUID);
 
 //If owner found
 //and owner conditions met
                 if(foundEntity != null && this.ownerValidConditions(foundEntity))
                 {
-                    System.out.println("OWNER RESTORED!");
 //Restore owner
-                    this.owner = (EntityLivingBase) foundEntity;
+                    this.owner = foundEntity;
 //Check successful
                     return true;
                 }
             }
-
-//If there's both a owner and its UUID
+//If both owner and owner UUID, check successful
             else
             {
-//Check successful
                 return true;
             }
         }

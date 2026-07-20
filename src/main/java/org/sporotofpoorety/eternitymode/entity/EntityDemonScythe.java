@@ -29,7 +29,7 @@ public class EntityDemonScythe extends EntityWithOwner
     public EntityDemonScythe(World world) 
     {
         super(world);
-        setSize(0.5F, 0.5F);
+        setSize(3.5F, 0.5F);
 //Should noclip by default ig
         this.noClip = true;
         this.setNoGravity(true);
@@ -40,7 +40,7 @@ public class EntityDemonScythe extends EntityWithOwner
     int lifetimeMax) 
     {
         super(worldIn, x, y, z, owner);
-        setSize(0.5F, 0.5F);
+        setSize(3.5F, 0.5F);
 //Should noclip by default ig
         this.noClip = true;
         this.setNoGravity(true);
@@ -75,7 +75,7 @@ public class EntityDemonScythe extends EntityWithOwner
     public void onUpdate() 
     {
 //Die and particles on collide
-        if(!this.world.isRemote && this.world.collidesWithAnyBlock(this.getEntityBoundingBox().grow(1.5D, 0.1D, 1.5D))) 
+        if(!this.world.isRemote && this.world.collidesWithAnyBlock(this.getEntityBoundingBox())) 
         {
             for (int particleAt = 0; particleAt < 2000; ++particleAt)
             {
@@ -113,7 +113,7 @@ public class EntityDemonScythe extends EntityWithOwner
 
         if(this.owner != null)
         {
-            List<Entity> nearEntities = this.world.getEntitiesWithinAABBExcludingEntity(this.owner, this.getEntityBoundingBox().grow(2.75D, 2.75D, 2.75D));
+            List<Entity> nearEntities = this.world.getEntitiesWithinAABBExcludingEntity(this.owner, this.getEntityBoundingBox().grow(0.75D, 2.25D, 0.75D));
 
             if(this.owner instanceof EntityPlayer)
             {
@@ -162,7 +162,7 @@ public class EntityDemonScythe extends EntityWithOwner
     @Override
     public AxisAlignedBB getCollisionBoundingBox()
     {
-        return this.getEntityBoundingBox();
+        return null;
     }
 
     @Override

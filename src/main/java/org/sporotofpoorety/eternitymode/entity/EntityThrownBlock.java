@@ -71,6 +71,7 @@ public class EntityThrownBlock extends EntityWithOwner
     public EntityThrownBlock(World worldIn)
     {
         super(worldIn);
+        this.setSize(0.98F, 0.98F);
 
 //      this.basisState = Blocks.STONE.getDefaultState();
 
@@ -326,7 +327,7 @@ public class EntityThrownBlock extends EntityWithOwner
     public void dealDamage()
     {
 //Get entities within AABB
-        List<Entity> list = Lists.newArrayList(this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox()));
+        List<Entity> list = Lists.newArrayList(this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox().grow(0.22D)));
 
 //For each one, damage
         for (Entity entity : list)

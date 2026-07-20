@@ -54,6 +54,7 @@ public class EntityMeteorBlock extends EntityThrownBlock
     public EntityMeteorBlock(World worldIn)
     {
         super(worldIn);
+        this.setSize(7.84F, 7.84F);
     }
 
     public EntityMeteorBlock(World worldIn, double x, double y, double z, 
@@ -160,7 +161,6 @@ public class EntityMeteorBlock extends EntityThrownBlock
     public void onUpdate()
     {
         this.meteorLogic();
-        if(!this.shouldSplit) { this.motionY = -0.1D; }
 
         super.onUpdate();
     }
@@ -170,7 +170,6 @@ public class EntityMeteorBlock extends EntityThrownBlock
     {
         this.setFire(20);
 
-//      if(this.collided) { this.meteorExplode(); this.setDead(); return; }
         if(!this.world.isRemote && this.world.collidesWithAnyBlock(this.getEntityBoundingBox().grow(1.66D, 1.66D, 1.66D))) { this.meteorExplode(); this.setDead(); return; }
 
         if(this.world.isRemote && this.ticksExisted % 2 == 0) 
@@ -281,13 +280,15 @@ public class EntityMeteorBlock extends EntityThrownBlock
     @Override
     public AxisAlignedBB getCollisionBoundingBox()
     {
-        return this.getEntityBoundingBox();
+        return null;
+        //return this.getEntityBoundingBox();
     }
 
 
     /**
      * Return whether this entity should be rendered as on fire.
      */
+    @Override
     public boolean canRenderOnFire()
     {
         return true;

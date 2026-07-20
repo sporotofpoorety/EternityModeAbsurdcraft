@@ -4,7 +4,6 @@ package org.sporotofpoorety.eternitymode.util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketSoundEffect;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
@@ -15,33 +14,8 @@ import electroblob.wizardry.Wizardry;
 
 
 
-public final class MiscUtil 
+public final class PlayerEffectsUtil 
 {
-
-//Return compound at compound, 
-//and if it doesn't exist, create it
-    public static NBTTagCompound compoundInCompound(String compoundKey, NBTTagCompound atCompound) 
-    {
-
-//If key found
-        if(atCompound.hasKey(compoundKey)) 
-        {
-//Return nested compound with that key
-            return atCompound.getCompoundTag(compoundKey);
-        }
-
-//If key not found 
-        else 
-        {
-//Create a new compound
-            NBTTagCompound newCompound = new NBTTagCompound();
-//Then assign it to the parameter key
-            atCompound.setTag(compoundKey, newCompound);
-//And return new compound            
-            return atCompound.getCompoundTag(compoundKey);
-        }
-    }
-
 
     public static boolean isPosCloseToAnyPlayer(World world, double atX, double atZ, double distanceLimit, boolean countSpectator)
     {
@@ -79,18 +53,20 @@ public final class MiscUtil
     {
         for(EntityPlayer player : worldIn.playerEntities)
         {
-            if(player.getDistance(atX, atY, atZ) <= maxDist)
+            if(player instanceof EntityPlayerMP)
             {
-                ((EntityPlayerMP)player).connection.sendPacket
-                (
-                    new SPacketSoundEffect
+                if(player.getDistance(atX, atY, atZ) <= maxDist)
+                {
+                    ((EntityPlayerMP)player).connection.sendPacket
                     (
-                        soundEvent, category, atX, atY, atZ, volume, pitch
-                    ) 
-                );
+                        new SPacketSoundEffect
+                        (
+                            soundEvent, category, atX, atY, atZ, volume, pitch
+                        ) 
+                    );
+                }
             }
         }
     }
 }
-
 

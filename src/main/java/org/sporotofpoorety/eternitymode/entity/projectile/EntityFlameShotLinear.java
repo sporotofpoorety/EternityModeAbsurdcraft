@@ -7,7 +7,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
 import org.sporotofpoorety.eternitymode.entity.projectile.EntityProjectileLinear;
-import org.sporotofpoorety.eternitymode.util.ProjectileUtil;
+import org.sporotofpoorety.eternitymode.util.ParticleUtil;
 
 
 
@@ -61,7 +61,7 @@ public class EntityFlameShotLinear extends EntityProjectileLinear {
 
 		if(world.isRemote)
         {
-            ProjectileUtil.particlesFireball(this, this.particleLifetime, this.particleDensity, this.particleVelocity);
+            ParticleUtil.particlesFireball(this, this.particleLifetime, this.particleDensity, this.particleVelocity);
 		}
     }
 
