@@ -29,8 +29,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.sporotofpoorety.eternitymode.client.ExplosiveHandler;
+import org.sporotofpoorety.eternitymode.packets.ExplosionVisualPacket;
 import org.sporotofpoorety.eternitymode.util.BlockUtil;
+import org.sporotofpoorety.eternitymode.util.PacketUtil;
 
 
 
@@ -42,134 +47,143 @@ public final class ExplosionUtil
     double radius, boolean dealsDamage, float damage, boolean hasPush, double pushForce, boolean breakBlocks, float breakHardness, boolean setsFire, 
     boolean hasParticles, int particleType, boolean hasSound)
     {
-
-        if(indirSrc != null)
+        if(!worldIn.isRemote)
         {
-//Simple AABB damage and knockback check
-            if(dealsDamage)
+            if(indirSrc != null)
             {
+//Simple AABB damage and knockback check
+                if(dealsDamage)
+                {
 //AABB and entities
-                AxisAlignedBB explosionAABB = new AxisAlignedBB(atX - radius, atY - radius, atZ - radius, atX + radius, atY + radius, atZ + radius);
-                List<Entity> affectedEntities = worldIn.getEntitiesWithinAABBExcludingEntity(indirSrc, explosionAABB);
+                    AxisAlignedBB explosionAABB = new AxisAlignedBB(atX - radius, atY - radius, atZ - radius, atX + radius, atY + radius, atZ + radius);
+                    List<Entity> affectedEntities = worldIn.getEntitiesWithinAABBExcludingEntity(indirSrc, explosionAABB);
 
 
 //Hit entity if living, not same team as caster, not immune to explosions
-                for(Entity affectedEntity : affectedEntities)
-                {
-                    if(affectedEntity instanceof EntityLivingBase && !affectedEntity.isOnSameTeam(indirSrc)
-                    && !affectedEntity.isImmuneToExplosions())
+                    for(Entity affectedEntity : affectedEntities)
                     {
+                        if(affectedEntity instanceof EntityLivingBase && !affectedEntity.isOnSameTeam(indirSrc)
+                        && !affectedEntity.isImmuneToExplosions())
+                        {
 //Direct dmg
-                        if(directSrc == indirSrc) { affectedEntity.attackEntityFrom(DamageSource.causeExplosionDamage(indirSrc), damage); }
+                            if(directSrc == indirSrc) { affectedEntity.attackEntityFrom(DamageSource.causeExplosionDamage(indirSrc), damage); }
 //Indirect dmg
-                        else { affectedEntity.attackEntityFrom(DamageSource.causeIndirectDamage(directSrc, indirSrc).setExplosion(), damage); }
+                            else { affectedEntity.attackEntityFrom(DamageSource.causeIndirectDamage(directSrc, indirSrc).setExplosion(), damage); }
 
 
 //If has push, push entity
-                        if(hasPush)
-                        {
-                            double entityDist = Math.sqrt
-                            (Math.pow(affectedEntity.posX - atX, 2) + Math.pow(affectedEntity.posY - atY, 2) + Math.pow(affectedEntity.posZ - atZ, 2));
+                            if(hasPush)
+                            {
+                                double entityDist = Math.sqrt
+                                (Math.pow(affectedEntity.posX - atX, 2) + Math.pow(affectedEntity.posY - atY, 2) + Math.pow(affectedEntity.posZ - atZ, 2));
 
-                            affectedEntity.motionX += pushForce * (affectedEntity.posX - atX) / entityDist;
-                            affectedEntity.motionY += pushForce * (affectedEntity.posY - atY) / entityDist;
-                            affectedEntity.motionZ += pushForce * (affectedEntity.posZ - atZ) / entityDist;
+                                affectedEntity.motionX += pushForce * (affectedEntity.posX - atX) / entityDist;
+                                affectedEntity.motionY += pushForce * (affectedEntity.posY - atY) / entityDist;
+                                affectedEntity.motionZ += pushForce * (affectedEntity.posZ - atZ) / entityDist;
+                            }
                         }
                     }
                 }
             }
-        }
 
 
 
 
 //Block affecting logic
-        if(breakBlocks || setsFire)
-        {
+            if(breakBlocks || setsFire)
+            {
 //Block positions to potentially affect
-            ArrayList<BlockPos> affectedBlockPositions = new ArrayList<>();
+                ArrayList<BlockPos> affectedBlockPositions = new ArrayList<>();
 
 
 //Iterate block positions
-            for (int blockX = (int) -radius; blockX <= (int) radius; ++blockX)
-            {
-                for (int blockY = (int) -radius; blockY <= (int) radius; ++blockY)
+                for (int blockX = (int) -radius; blockX <= (int) radius; ++blockX)
                 {
-                    for (int blockZ = (int) -radius; blockZ <= (int) radius; ++blockZ)
+                    for (int blockY = (int) -radius; blockY <= (int) radius; ++blockY)
                     {
+                        for (int blockZ = (int) -radius; blockZ <= (int) radius; ++blockZ)
+                        {
 //Check potential pos
-                        BlockPos potentialPos = new BlockPos((int) atX + blockX, (int) atY + blockY, (int) atZ + blockZ);
+                            BlockPos potentialPos = new BlockPos((int) atX + blockX, (int) atY + blockY, (int) atZ + blockZ);
 
 //Add potential pos
-                        affectedBlockPositions.add(potentialPos);
+                            affectedBlockPositions.add(potentialPos);
+                        }
                     }
                 }
-            }
 
 
 //For each blockpos
-            for(BlockPos checkPos : affectedBlockPositions)
-            {
-//If explosion should break blocks
-                if(breakBlocks)
+                for(BlockPos checkPos : affectedBlockPositions)
                 {
+//If explosion should break blocks
+                    if(breakBlocks)
+                    {
 //Destroy with conditions
-                    BlockUtil.destroyBlockPos(checkPos, worldIn, breakHardness, false, false, 69420);
-                }
+                        BlockUtil.destroyBlockPos(checkPos, worldIn, breakHardness, false, false, 69420);
+                    }
 
 
 //If explosion should set fire
-                if(setsFire)
-                {
-//If pos is air and has solid block below
-                    if(worldIn.getBlockState(checkPos).getMaterial() == Material.AIR && worldIn.getBlockState(checkPos.down()).isFullBlock())
+                    if(setsFire)
                     {
+//If pos is air and has solid block below
+                        if(worldIn.getBlockState(checkPos).getMaterial() == Material.AIR && worldIn.getBlockState(checkPos.down()).isFullBlock())
+                        {
 //Set fire
-                        worldIn.setBlockState(checkPos, Blocks.FIRE.getDefaultState());
+                            worldIn.setBlockState(checkPos, Blocks.FIRE.getDefaultState());
+                        }
                     }
                 }
             }
-        }
 
 
-
-
-        if(hasParticles)
-        {
-            if(particleType <= 0)
+            if(hasParticles)
             {
-                if (radius >= 2.0D)
-                {
-                    worldIn.spawnParticle(EnumParticleTypes.EXPLOSION_HUGE, atX, atY, atZ, 1.0D, 0.0D, 0.0D);
-                }
-                else
-                {
-                    worldIn.spawnParticle(EnumParticleTypes.EXPLOSION_LARGE, atX, atY, atZ, 1.0D, 0.0D, 0.0D);
-                }
+                PacketUtil.sendPacketToNearbyPlayers(worldIn, atX, atY, atZ, 999.0D, 
+                    new ExplosionVisualPacket(particleType, atX, atY, atZ, (float) radius, breakBlocks));
             }
 
-            if(particleType == 1)
+
+            if(hasSound)
             {
-                ExplosiveHandler.spawnParticles(worldIn, atX, atY, atZ,
-                (float) radius, false, breakBlocks);
+                worldIn.playSound((EntityPlayer)null, atX, atY, atZ, SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 4.0F, (1.0F + (worldIn.rand.nextFloat() - worldIn.rand.nextFloat()) * 0.2F) * 0.7F);
             }
-
-            if(particleType == 2)
-            {
-                explosionVisual(worldIn, atX, atY, atZ, (float) radius);
-            }
-        }
-
-
-
-
-        if(hasSound)
-        {
-            worldIn.playSound((EntityPlayer)null, atX, atY, atZ, SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 4.0F, (1.0F + (worldIn.rand.nextFloat() - worldIn.rand.nextFloat()) * 0.2F) * 0.7F);
         }
     }
 
 
+    @SideOnly(Side.CLIENT)
+    public static void explosionParticleSelection(World worldIn, 
+    int particleType, double atX, double atY, double atZ, float radius, boolean breakBlocks)
+    {
+        if(particleType <= 0)
+        {
+            if (radius >= 2.0D)
+            {
+                worldIn.spawnParticle(EnumParticleTypes.EXPLOSION_HUGE, true, atX, atY, atZ, 1.0D, 0.0D, 0.0D);
+            }
+            else
+            {
+                worldIn.spawnParticle(EnumParticleTypes.EXPLOSION_LARGE, true, atX, atY, atZ, 1.0D, 0.0D, 0.0D);
+            }
+        }
+
+        if(particleType == 1)
+        {
+            explosionVisual(worldIn, atX, atY, atZ, radius);
+        }
+        if(particleType == 2)
+        {
+            ExplosiveHandler.spawnParticles(worldIn, atX, atY, atZ,
+            radius, false, breakBlocks);
+        }
+        if(particleType == 3)
+        {
+            ExplosiveHandler.spawnParticles(worldIn, atX, atY, atZ,
+            radius, true, breakBlocks);
+        }
+    }
 
 
 //Just recreating vanilla visuals logic
@@ -232,11 +246,11 @@ public final class ExplosionUtil
 
         if (radius >= 2.0F)
         {
-            worldIn.spawnParticle(EnumParticleTypes.EXPLOSION_HUGE, x, y, z, 1.0D, 0.0D, 0.0D);
+            worldIn.spawnParticle(EnumParticleTypes.EXPLOSION_HUGE, true, x, y, z, 1.0D, 0.0D, 0.0D);
         }
         else
         {
-            worldIn.spawnParticle(EnumParticleTypes.EXPLOSION_LARGE, x, y, z, 1.0D, 0.0D, 0.0D);
+            worldIn.spawnParticle(EnumParticleTypes.EXPLOSION_LARGE, true, x, y, z, 1.0D, 0.0D, 0.0D);
         }
 
 
@@ -261,8 +275,8 @@ public final class ExplosionUtil
             d3 = d3 * d7;
             d4 = d4 * d7;
             d5 = d5 * d7;
-            worldIn.spawnParticle(EnumParticleTypes.EXPLOSION_NORMAL, (d0 + x) / 2.0D, (d1 + y) / 2.0D, (d2 + z) / 2.0D, d3, d4, d5);
-            worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, d0, d1, d2, d3, d4, d5);
+            worldIn.spawnParticle(EnumParticleTypes.EXPLOSION_NORMAL, true, (d0 + x) / 2.0D, (d1 + y) / 2.0D, (d2 + z) / 2.0D, d3, d4, d5);
+            worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, true, d0, d1, d2, d3, d4, d5);
         }
     }
 

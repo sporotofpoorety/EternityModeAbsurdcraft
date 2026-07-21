@@ -23,7 +23,9 @@ import electroblob.wizardry.registry.WizardryBlocks;
 import org.sporotofpoorety.eternitymode.client.ExplosiveHandler;
 import org.sporotofpoorety.eternitymode.entity.EntityThrownBlock;
 import org.sporotofpoorety.eternitymode.entity.projectile.EntityFlameShotLinear;
+import org.sporotofpoorety.eternitymode.packets.ExplosionVisualPacket;
 import org.sporotofpoorety.eternitymode.util.ExplosionUtil;
+import org.sporotofpoorety.eternitymode.util.PacketUtil;
 import org.sporotofpoorety.eternitymode.util.ProjectileUtil;
 
 
@@ -172,12 +174,13 @@ public class EntityMeteorBlock extends EntityThrownBlock
 
         if(!this.world.isRemote && this.world.collidesWithAnyBlock(this.getEntityBoundingBox().grow(1.66D, 1.66D, 1.66D))) { this.meteorExplode(); this.setDead(); return; }
 
-        if(this.world.isRemote && this.ticksExisted % 2 == 0) 
+        if(!this.world.isRemote && this.ticksExisted % 2 == 0) 
         { 
             double atX = this.posX + (this.motionX * -0.2D);
             double atY = this.posY + 4.0D + (this.motionY * -0.2D);
             double atZ = this.posZ + (this.motionZ * -0.2D);
-            ExplosiveHandler.spawnParticles(this.world, atX, atY, atZ, 1.6F, false, false); 
+            PacketUtil.sendPacketToNearbyPlayers(this.world, atX, atY, atZ, 999.0D, 
+                new ExplosionVisualPacket(2, atX, atY, atZ, 1.6F, false));
         }
     }
 
@@ -186,7 +189,7 @@ public class EntityMeteorBlock extends EntityThrownBlock
     {
         ExplosionUtil.performOptimizedExplosion(this.world, this, this.owner, this.posX, this.posY + (this.height / 2.0D), this.posZ,
             this.explosionPower, true, this.thrownBlockDamage, true, 3.0D, this.explosionDestruction, 9999999.0F, this.explosionFire, 
-            true, 1, true);
+            true, 2, true);
 
 
         if(this.shouldSplit) { this.randomKaboom(); }

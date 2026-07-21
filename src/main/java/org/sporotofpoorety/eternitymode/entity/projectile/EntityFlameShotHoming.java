@@ -167,7 +167,7 @@ public class EntityFlameShotHoming extends EntityProjectileHoming
         {
             ExplosionUtil.performOptimizedExplosion(this.world, this, this.owner, this.posX, this.posY + (0.5F / 5.0F), this.posZ,
                 this.explosionPower, true, this.projectileHitDamage, true, 3.0D, this.explosionDestruction, 9999999.0F, this.explosionFire, 
-                true, 1, true);
+                true, 2, true);
         }
     }
 

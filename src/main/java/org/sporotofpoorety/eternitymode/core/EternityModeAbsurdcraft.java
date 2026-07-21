@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.sporotofpoorety.eternitymode.Tags;
 import org.sporotofpoorety.eternitymode.config.EternityModeConfig;
-import org.sporotofpoorety.eternitymode.core.EternityModeCommonProxy;
+import org.sporotofpoorety.eternitymode.core.*;
 import org.sporotofpoorety.eternitymode.events.*;
 
 
@@ -41,8 +41,9 @@ public class EternityModeAbsurdcraft
 //      LOGGER.info("Hello From {}!", Tags.MOD_NAME);
 
 
-        eternityModeProxy.registerRenderers();
 		EternityModeConfig.load(event);
+        eternityModeProxy.registerRenderers();
+        EternityModePacketRegistry.registerMessages();
         MinecraftForge.EVENT_BUS.register(new EternityModeEntityEvents());
         MinecraftForge.EVENT_BUS.register(new EternityModePlayerEvents());
         MinecraftForge.EVENT_BUS.register(new EternityModeAfterimageEvents());
